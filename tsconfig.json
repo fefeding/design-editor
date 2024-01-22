@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "jsx": "preserve",
+    "noImplicitAny": false,
+    "target": "es5",
+    "module": "ESNext",
+    "strict": false,
+    "allowJs": false,
+    "noUnusedLocals": false,
+    "strictNullChecks": false,
+    "strictFunctionTypes": false,
+    "preserveConstEnums": true,
+    "skipLibCheck": true,
+    "sourceMap": false,
+    "declaration": true,
+    "declarationDir": "dist",
+    "experimentalDecorators": true,
+    "downlevelIteration": true,
+    "baseUrl": ".",
+    "paths": {},
+    "lib": ["esnext", "dom", "dom.iterable", "scripthost"],
+    "types": []
+  },
+  "include": ["./src/**/*.ts", "./src/*.ts", "./src/**/*.vue", "./src/*.vue"],
+  "exclude": ["./src/__tests__/*", "demo", "node_modules"]
+}
