@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "node test/dev",
-    "build": "node build.js",
+    "build": "gulp && node build.js",
     "push": "npm publish --registry=https://registry.npmjs.org"
   },
   "devDependencies": {
@@ -16,6 +16,9 @@
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.6",
     "express": "^4.18.2",
+    "gulp": "^4.0.2",
+    "gulp-cli": "^2.3.0",
+    "gulp-typescript": "^6.0.0-alpha.1",
     "request": "^2.88.2",
     "rollup": "^2.79.1",
     "rollup-plugin-babel": "^4.4.0",

@@ -7,7 +7,7 @@ const typescript = require('rollup-plugin-typescript2');
 module.exports = {
     input: './src/index.ts',
     output: {
-      file: 'dist/index.js',
+      file: 'dist/index.es.js',
       /**
        * amd – 异步模块定义，用于像RequireJS这样的模块加载器
       cjs – CommonJS，适用于 Node 和 Browserify/Webpack
@@ -30,6 +30,7 @@ module.exports = {
       typescript({
         tsconfig: './tsconfig.json',
         tsconfigOverride: {
+          files: null,
           compilerOptions: {
             module: 'ESNext',
             declaration: true,

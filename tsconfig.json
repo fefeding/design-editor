@@ -1,4 +1,7 @@
 {
+  "files": [
+    "src/**/**/*.ts"
+  ],
   "compilerOptions": {
     "esModuleInterop": true,
     "moduleResolution": "node",

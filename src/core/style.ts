@@ -1,10 +1,9 @@
-import JElementStyleMap from '../constant/styleMap';
+import JElementStyleMap, { JElementStyleProperty } from '../constant/styleMap';
 
 let StyleNamesMap: Array<string> | undefined;
 export default class JElementStyle extends JElementStyleMap {
     constructor(option?: JElementStyleMap) {
-        super(option);
-
+        super();
         if(option) {
             this.apply(option);
         }
@@ -13,7 +12,7 @@ export default class JElementStyle extends JElementStyleMap {
     // 所有样式名称
     get names() {
         if(!StyleNamesMap) {
-            const map = new JElementStyleMap();
+            const map = new JElementStyleProperty();
             StyleNamesMap = Object.getOwnPropertyNames(map);
         }
         return StyleNamesMap;

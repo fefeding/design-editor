@@ -14,7 +14,7 @@ const rollupOptions = require('./rollup.config.js');
 async function build(format = 'es') {
 	
 	const outputOptions = Object.assign(rollupOptions.output, {
-		file: `./dist/index.js`,
+		file: `./dist/index.${format}.js`,
 		format
 	});
 
@@ -30,7 +30,7 @@ async function build(format = 'es') {
 
 async function watch(format = 'es') {
 	const outputOptions = Object.assign(rollupOptions.output, {
-		file: `./dist/index.js`,
+		file: `./dist/index.${format}.js`,
 		format
 	});
 	
