@@ -1,2 +1,3 @@
 
-console.log('hello html design  22');
+
+export * as JElement from "./core/element";

@@ -265,8 +265,8 @@ export default class JElement extends EventEmiter {
         }
         return {
             ...p,
-            x: p.x + this.editor.left,
-            y: p.y + this.editor.top
+            x: p.x + this.left,
+            y: p.y + this.top
         };
     }
     // 把控制层坐标转为渲染层
@@ -280,8 +280,8 @@ export default class JElement extends EventEmiter {
         }
         return {
             ...p,
-            x: p.x - this.editor.left,
-            y: p.y - this.editor.top
+            x: p.x,
+            y: p.y
         };
     }
 
@@ -296,8 +296,8 @@ export default class JElement extends EventEmiter {
         }
         return {
             ...p,
-            x: p.x - this.width/2,
-            y: p.y - this.height/2
+            x: p.x,
+            y: p.y
         };
     }
 
