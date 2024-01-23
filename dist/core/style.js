@@ -25,7 +25,9 @@ var __values = (this && this.__values) || function(o) {
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 import JElementStyleMap, { JElementStyleProperty } from '../constant/styleMap';
+import util from '../lib/util';
 var StyleNamesMap;
+var NumberStyleMap = ['left', 'top', 'right', 'bottom', 'width', 'height'];
 var JElementStyle = /** @class */ (function (_super) {
     __extends(JElementStyle, _super);
     function JElementStyle(option) {
@@ -56,8 +58,14 @@ var JElementStyle = /** @class */ (function (_super) {
                 var name_1 = _c.value;
                 if (typeof name_1 !== 'string')
                     continue;
-                if (typeof data[name_1] === 'string')
-                    target[name_1] = data[name_1];
+                if (typeof data[name_1] === 'string') {
+                    if (target instanceof JElementStyle) {
+                        target.setStyle(name_1, data[name_1]);
+                    }
+                    else {
+                        target[name_1] = data[name_1];
+                    }
+                }
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -72,6 +80,66 @@ var JElementStyle = /** @class */ (function (_super) {
     // 样式对应的元素
     JElementStyle.prototype.applyTo = function (element) {
         this.apply(this, element.style);
+    };
+    // 设置样式
+    JElementStyle.prototype.setStyle = function (name, value) {
+        this[name] = value;
+        this.emit('change', {
+            name: name,
+            value: value
+        });
+    };
+    // 转为json
+    JElementStyle.prototype.toJSON = function () {
+        var e_2, _a;
+        var obj = {};
+        try {
+            for (var _b = __values(this.names), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var name_2 = _c.value;
+                if (typeof this[name_2] === 'undefined')
+                    continue;
+                obj[name_2] = this[name_2];
+            }
+        }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_2) throw e_2.error; }
+        }
+        return obj;
+    };
+    // 生成样式代理
+    JElementStyle.createProxy = function (style) {
+        if (style === void 0) { style = {}; }
+        var jstyle = new JElementStyle(style);
+        // 样式代理处理
+        var proxy = new Proxy(jstyle, {
+            get: function (target, p, receiver) {
+                var v = target[p];
+                // 数字样式，处理px问题
+                if (typeof p === 'string' && NumberStyleMap.includes(p)) {
+                    if (v === '0')
+                        return 0;
+                    if (util.isPXNumber(v))
+                        return parseFloat(v);
+                }
+                return v;
+            },
+            set: function (target, p, value, receiver) {
+                // 非白名单样式不支持设置
+                if (typeof p !== 'string' || !style.names.includes(p))
+                    return false;
+                // 数字样式，处理px问题
+                if (NumberStyleMap.includes(p)) {
+                    value = typeof value === 'number' || util.isNumber(value) ? "".concat(value, "px") : value;
+                }
+                target.setStyle(p, value); // 应用到元素和类
+                return true;
+            }
+        });
+        return proxy;
     };
     return JElementStyle;
 }(JElementStyleMap));

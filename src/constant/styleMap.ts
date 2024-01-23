@@ -1,7 +1,7 @@
 
-
+import EventEmiter from 'eventemitter3';
 // 支持的样式属性列表
-export default class JElementStyleMap {
+export default class JElementStyleMap extends EventEmiter {
     accentColor?: string;
     alignContent?: string;
     alignItems?: string;
@@ -891,4 +891,17 @@ export class JElementStyleProperty extends JElementStyleMap {
     wordWrap: string='';
     writingMode: string='';
     zIndex: string='';
+}
+
+// 最外层容器默认样式
+export const ContainerDefaultStyle = {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: 10,
+    height: 10,
+    right: 'auto',
+    bottom: 'auto',
+    padding: '1px',
+    margin: '0'
 }

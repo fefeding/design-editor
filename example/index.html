@@ -32,7 +32,7 @@
 				  </ul>
 			  </div>
 			  <div class="col-8" style="height:100%; overflow: hidden;">
-				<div id="mycanvas_container" style="height:100%; overflow:auto;">
+				<div id="myeditor_container" style="height:100%; overflow:auto;">
 					<img id="btn_zoomin" src="images/zoom_in.png" style="position: fixed; left: 60%; bottom: 60px; z-index:100; transform:scale(0.6)" />
 					<img id="btn_zoomout" src="images/zoom_out.png" style="position: fixed; left: 65%; bottom: 60px; z-index:100; transform:scale(0.6)" />
 				</div>
@@ -45,33 +45,33 @@
 		
 	</body>
 	<script type="module">	
-		import JEditor from "../dist/j-editor.esm.js";
-
+		import JEditor from "../dist/index.es.js";
+		
+		console.log(JEditor);
 		const container = document.getElementById('container');
 		container.style.height = window.innerHeight + 'px';
 
-		const editor = new JEditor('mycanvas_container', {
+		const editor = new JEditor('myeditor_container', {
 			width: 800,
 			height: 600,
-			resolution: 1,
 			style: {
-				paddingBackgroundColor: '#eee'
+				backgroundColor: '#fff',
+				backgroundImage: 'https://jtcospublic.ciccten.com/public/image/bf.jpg',
+				containerBackgroundColor: '#eee'
 			}
 		});
 
 		// 大小改变后居中
 		editor.on('resize', function(size) {        
-			const scale  = Math.min(this.rootContainer.clientWidth / (this.width*1.2), this.rootContainer.clientHeight / (this.height*1.2));
-			if(scale < 1 && scale < this.scaleSize.x) {
+			const scale  = Math.min(this.dom.clientWidth / (this.width*1.2), this.dom.clientHeight / (this.height*1.2));
+			if(scale < 1 && scale < this.transform.scaleX) {
 				this.scale(scale);
 			}
-			// 滚动到居中
-			this.rootContainer.scrollTo(this.app.renderer.width/2-this.rootContainer.clientWidth/2, this.app.renderer.height/2-this.rootContainer.clientHeight/2)
 		})
 
 		//editor.scale(0.8);
 
-		editor.fromJSON({"backgroundUrl":"https://jtcospublic.ciccten.com/public/image/bf.jpg","backgroundColor":"#fffffff","width":600,"height":800,"children":[{"x":300,"y":400,"width":100,"height":100,"url":"https://pixijs.com/assets/bunny.png","rotation":0,"type":"image","style":{}},{"x":300,"y":100,"width":461,"height":39,"text":"Basic text, 中文测试, complete","rotation":0,"type":"text","style":{"fontFamily":"Crosterian","dropShadow":true,"dropShadowAlpha":0.3,"dropShadowAngle":2.1,"dropShadowBlur":4,"dropShadowColor":"0xeeeeee","dropShadowDistance":10,"fill":["#ffffff"],"stroke":"#004620","fontSize":22,"fontWeight":"lighter","lineJoin":"round","strokeThickness":1}},{"x":400,"y":500,"width":400,"height":400,"url":"https://jtcospublic.ciccten.com/config-server/1703730310545220869/idcard_qrcode.png","rotation":1.0471975511965976,"type":"image","style":{}}]})
+		editor.fromJSON({"style":{"backgroundImage":"https://jtcospublic.ciccten.com/public/image/bf.jpg","backgroundColor":"#fffffff"},"width":600,"height":800,"children":[{"x":300,"y":400,"width":100,"height":100,"url":"https://pixijs.com/assets/bunny.png","rotation":0,"type":"image","style":{}},{"x":300,"y":100,"width":461,"height":39,"text":"Basic text, 中文测试, complete","rotation":0,"type":"text","style":{"fontFamily":"Crosterian","dropShadow":true,"dropShadowAlpha":0.3,"dropShadowAngle":2.1,"dropShadowBlur":4,"dropShadowColor":"0xeeeeee","dropShadowDistance":10,"fill":["#ffffff"],"stroke":"#004620","fontSize":22,"fontWeight":"lighter","lineJoin":"round","strokeThickness":1}},{"x":400,"y":500,"width":400,"height":400,"url":"https://jtcospublic.ciccten.com/config-server/1703730310545220869/idcard_qrcode.png","rotation":1.0471975511965976,"type":"image","style":{}}]})
 
 		// 加载模板
 		async function loadTemplate(id) {
@@ -88,7 +88,6 @@
 				}
 			}
 		});
-		editor.background.url = 'https://jtcospublic.ciccten.com/public/image/bf.jpg';
 /*
 		const img = editor.createImage('https://pixijs.com/assets/bunny.png');
 		img.width = 100;
@@ -125,7 +124,7 @@
 		txt1.x = 300;
 		txt1.y = 100;*/
 
-		editor.loader.loadFont({
+		/*editor.loader.loadFont({
 			"zcool-kuaile-regular": 'fonts/zcool-kuaile-regular.woff2',
 		}, (e) => {
 			console.log('load fonts', e);
@@ -133,18 +132,8 @@
 			
 			const v = editor.loader.assets.get("zcool-kuaile-regular");
 			console.log('load fonts completed', v);
-		});
+		});*/
 
-		const preview = document.getElementById('previewImg');
-		async function createPreivew(delta) {
-			const data = await editor.toImage();
-			if(data !== preview.src) preview.src = data;
-			setTimeout(createPreivew, 5000);
-
-			const json = editor.toString();
-			//console.log(json);
-		};
-		setTimeout(createPreivew, 1000);
 
 		// 放大缩小
 		document.getElementById('btn_zoomin').onclick = function(){
@@ -156,7 +145,7 @@
 
 		// 调整大小
 		window.onresize = function() {
-			editor.resize();
+			//editor.resize();
 		}
 
 		

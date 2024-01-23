@@ -1,4 +1,5 @@
-export default class JElementStyleMap {
+import EventEmiter from 'eventemitter3';
+export default class JElementStyleMap extends EventEmiter {
     accentColor?: string;
     alignContent?: string;
     alignItems?: string;
@@ -886,3 +887,14 @@ export declare class JElementStyleProperty extends JElementStyleMap {
     writingMode: string;
     zIndex: string;
 }
+export declare const ContainerDefaultStyle: {
+    position: string;
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+    right: string;
+    bottom: string;
+    padding: string;
+    margin: string;
+};

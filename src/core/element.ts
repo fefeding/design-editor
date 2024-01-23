@@ -2,61 +2,59 @@ import EventEmiter from 'eventemitter3';
 import { v4 as uuidv4 } from 'uuid';
 import JStyleMap from '../constant/styleMap';
 import JStyle from './style';
-import util from './util';
+import JTransform from '../constant/transform';
+import util from '../lib/util';
 
-export default class JElement extends EventEmiter {
+export default class JElement<T extends HTMLElement = HTMLElement> extends EventEmiter {
 
     constructor(option) {
         super();
 
-        this.id = option.id || uuidv4().replace(/-/g, '');
-        this.type = option.type || '';
+        // 复制属性
+        for(const k in option) {
+            const v = option[k];
+            if(typeof k !== 'string' || (typeof v !== 'string' || typeof v !== 'number')) continue;
+            this[k] = v;
+        }
 
-        const numberStyleMap = ['left', 'top', 'right', 'bottom', 'width', 'height'];
-        const style = new JStyle(option.style);
+        this.id = this.id || option.id || uuidv4().replace(/-/g, '');
+        this.type = this.type || option.type || '';
+
+        const nodeType = option.nodeType || 'div';
+        this.dom = document.createElement(nodeType);
         // 样式代理处理
-        this.style = new Proxy<JStyleMap>(style, {
-            get(target, p, receiver) {
-                const v = target[p];
-                // 数字样式，处理px问题
-                if(typeof p === 'string' && numberStyleMap.includes(p)) {
-                    if(v === '0') return 0;
-                    if(util.isPXNumber(v)) return parseFloat(v);
-                }
-                return v;
-            },
-            set(target, p, value, receiver) {
-                // 非白名单样式不支持设置
-                if(typeof p !== 'string' || !style.names.includes(p)) return false;
-                // 数字样式，处理px问题
-                if(numberStyleMap.includes(p)) {
-                    target[p] = typeof value === 'number' || util.isNumber(value)? `${value}px`: value;
-                }
-                else {
-                    target[p] = value;
-                }
-                return true;
-            }
+        this.style = JStyle.createProxy();
+        this.style.on('change', (s) => {
+            this.setDomStyle(s.name, s.value);
         });
+        if(option.style) this.style.apply(option.style);
+
+        this.initOption(option);        
     }
+    // 初始化一些基础属性
+    initOption(option) {
+        this.x = option.x || option.left || 0;
+        this.y = option.y || option.top || 0;
 
-    init(option) {
-
+        this.width = option.width || option.width || 1;
+        this.height = option.height || option.height || 1;
     }
 
     id = '';
-
     // 类型名称
     type = '';
     // 子元素
-    children = [] as Array<JElement>;
+    private _children = [] as Array<JElement>;
+    get children() {
+        return this._children;
+    }
     // 控件最外层的容器
-    container = document.createElement('div');
+    dom: T;
     // 父元素
     parent: JElement | undefined;
 
     // 样式代理
-    style: JStyleMap;
+    style: JStyle;
 
     // 坐标X
     get x() {
@@ -123,9 +121,9 @@ export default class JElement extends EventEmiter {
     }
     get rotation() {
         const v = this.style.rotate;
-        if(/^\s*[\d\.]+\s*deg\s*/i.test(v)) return parseFloat(v);
-        else if(/^\s*[\d\.]+\s*rad\s*/i.test(v))  {
-            return this.angle * (180/Math.PI);
+        if(util.isDegNumber(v)) return parseFloat(v);
+        else if(util.isRadNumber(v))  {
+            return  util.radToDeg(this.angle);
         }
         return Number(v);
     }
@@ -135,9 +133,9 @@ export default class JElement extends EventEmiter {
     }
     get angle() {
         const v = this.style.rotate;
-        if(/^\s*[\d\.]+\s*rad\s*/i.test(v)) return parseFloat(v);
-        else if(/^\s*[\d\.]+\s*deg\s*/i.test(v))  {
-            return this.rotation * (Math.PI/180);
+        if(util.isRadNumber(v)) return parseFloat(v);
+        else if(util.isDegNumber(v))  {
+            return util.degToRad(this.rotation);
         }
         return Number(v);
     }
@@ -148,18 +146,6 @@ export default class JElement extends EventEmiter {
     set visible(v) {
         this.style.display = v? 'block': 'none';
     }
-    /*
-    get skew() {
-        return {
-            x: this.style.skew.x,
-            y: this.container.skew.y
-        };
-    }
-    set skew(v) {
-        if(!v) return;
-        if(typeof v.x !== 'undefined') this.container.skew.x = v.x;
-        if(typeof v.y !== 'undefined') this.container.skew.y = v.y;
-    }*/
 
     get zIndex() {
         return Number(this.style.zIndex || '0');
@@ -168,8 +154,37 @@ export default class JElement extends EventEmiter {
         this.style.zIndex = v + '';
     }
 
-    // 是否可以编辑
-    editable = true;
+    // 设置css到dom
+    setDomStyle(name: string, value: string) {
+        if(name === 'backgroundImage') {
+            if(!/^\s*url\(/.test(value)) value = `url(${value})`;
+        }
+        this.dom.style[name] = value;
+    }
+
+    // 设置样式
+    css(name: string|Object, value?: string) {
+        if(!name) return;
+        if(typeof name === 'object') {
+            for(const n of Object.getOwnPropertyNames(name)) {
+                this.css(n, name[n]);
+            }
+        }
+        else {
+            this.style[name] = value;
+        }
+        return this;
+    }
+    // dom属性
+    attr(name: string, value: string|number|undefined) {
+        if(typeof value !== 'undefined') {
+            this.dom.setAttribute(name, value+'');
+            return value;
+        }
+        else {
+            return this.dom.getAttribute(name);
+        }
+    }
 
     /*
     // 被选中
@@ -206,38 +221,35 @@ export default class JElement extends EventEmiter {
     }   
     // 移位
     move(dx, dy) {
-        this.x += dx;
-        this.y += dy;
+        this.left += dx;
+        this.top += dy;
     }
 
     // 重置大小
     resize(w, h) {
         if(typeof w === 'number') {
-            //const rw = w / this.sprite.texture.width;
-            //if(rw !== this.sprite.scale.x) this.sprite.scale.x = rw;
             this.width = w;
         }
         if(typeof h === 'number') {
-            //const rh = h / this.sprite.texture.height;
-            //if(rh !== this.sprite.scale.y) this.sprite.scale.y = rh;
             this.height = h;
         }
     }
 
     // 新增子元素
-    addChild(child: JElement) {
+    addChild(child: JElement|HTMLElement, parent: JElement = this) {
         if(Array.isArray(child)) {
             for(const c of child) {
-                this.addChild(c);
+                parent.addChild(c);
             }
-            return this;
+            return parent;
         }
         if(child instanceof JElement) {
-            this.container.appendChild(child.container);
-            this.children.push(child);
+            child.parent = parent;
+            parent.dom.appendChild(child.dom);
+            parent.children.push(child);
         }
         else {
-            this.container.appendChild(child);
+            parent.dom.appendChild(child);
         }
     }
 
@@ -247,11 +259,15 @@ export default class JElement extends EventEmiter {
     }
 
     // 移除子元素
-    removeChild(el: JElement) {
-        this.container.removeChild(el.container);
+    removeChild(el: JElement|HTMLElement) {
+        // @ts-ignore
+        this.dom.removeChild(el.dom || el);
+
         for(let i=this.children.length-1;i>-1; i--) {
             if(this.children[i] === el) return this.children.splice(i, 1);
         }
+        // @ts-ignore
+        delete el.parent;
     }
 
     // 把渲染层坐标转为控制层

@@ -1,3 +1,16 @@
 
+import JBaseComponent from './components/base';
+import JText from './components/text';
+import JImage from './components/image';
+import JElement from './core/element';
+import JEditor from './editor';
 
-export * as JElement from "./core/element";
+export {
+    JBaseComponent,
+    JText,
+    JImage,
+    JElement,
+    JEditor
+}
+
+export default JEditor;

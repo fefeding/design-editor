@@ -40,6 +40,44 @@ var __assign = function() {
     return __assign.apply(this, arguments);
 };
 
+function __awaiter(thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+}
+
+function __generator(thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+}
+
 function __values(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
@@ -89,8 +127,6 @@ function getDefaultExportFromCjs (x) {
 }
 
 var eventemitter3 = {exports: {}};
-
-eventemitter3.exports;
 
 (function (module) {
 
@@ -433,77 +469,14 @@ eventemitter3.exports;
 var eventemitter3Exports = eventemitter3.exports;
 var EventEmitter = /*@__PURE__*/getDefaultExportFromCjs(eventemitter3Exports);
 
-// Unique ID creation requires a high quality random # generator. In the browser we therefore
-// require the crypto API and do not support built-in fallback to lower quality random number
-// generators (like Math.random()).
-let getRandomValues;
-const rnds8 = new Uint8Array(16);
-function rng() {
-  // lazy load so that environments that need to polyfill have a chance to do so
-  if (!getRandomValues) {
-    // getRandomValues needs to be invoked in a context where "this" is a Crypto implementation.
-    getRandomValues = typeof crypto !== 'undefined' && crypto.getRandomValues && crypto.getRandomValues.bind(crypto);
-
-    if (!getRandomValues) {
-      throw new Error('crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported');
-    }
-  }
-
-  return getRandomValues(rnds8);
-}
-
-/**
- * Convert array of 16 byte values to UUID string format of the form:
- * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
- */
-
-const byteToHex = [];
-
-for (let i = 0; i < 256; ++i) {
-  byteToHex.push((i + 0x100).toString(16).slice(1));
-}
-
-function unsafeStringify(arr, offset = 0) {
-  // Note: Be careful editing this code!  It's been tuned for performance
-  // and works in ways you may not expect. See https://github.com/uuidjs/uuid/pull/434
-  return byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + '-' + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + '-' + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + '-' + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + '-' + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]];
-}
-
-const randomUUID = typeof crypto !== 'undefined' && crypto.randomUUID && crypto.randomUUID.bind(crypto);
-var native = {
-  randomUUID
-};
-
-function v4(options, buf, offset) {
-  if (native.randomUUID && !buf && !options) {
-    return native.randomUUID();
-  }
-
-  options = options || {};
-  const rnds = options.random || (options.rng || rng)(); // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
-
-  rnds[6] = rnds[6] & 0x0f | 0x40;
-  rnds[8] = rnds[8] & 0x3f | 0x80; // Copy bytes to buffer, if provided
-
-  if (buf) {
-    offset = offset || 0;
-
-    for (let i = 0; i < 16; ++i) {
-      buf[offset + i] = rnds[i];
-    }
-
-    return buf;
-  }
-
-  return unsafeStringify(rnds);
-}
-
 // 支持的样式属性列表
-var JElementStyleMap = /** @class */ (function () {
+var JElementStyleMap = /** @class */ (function (_super) {
+    __extends(JElementStyleMap, _super);
     function JElementStyleMap() {
+        return _super !== null && _super.apply(this, arguments) || this;
     }
     return JElementStyleMap;
-}());
+}(EventEmitter));
 // 样式属性集合
 var JElementStyleProperty = /** @class */ (function (_super) {
     __extends(JElementStyleProperty, _super);
@@ -988,8 +961,211 @@ var JElementStyleProperty = /** @class */ (function (_super) {
     }
     return JElementStyleProperty;
 }(JElementStyleMap));
+// 最外层容器默认样式
+var ContainerDefaultStyle = {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: 10,
+    height: 10,
+    right: 'auto',
+    bottom: 'auto',
+    padding: '1px',
+    margin: '0'
+};
 
-var StyleNamesMap;
+var util = {
+    // 是否是数字
+    isNumber: function (v) {
+        return typeof v === 'number' || /\s*[\d\.]+\s*/.test(v);
+    },
+    // 是否是带像素单位的字符串
+    isPXNumber: function (v) {
+        return /^\s*[\d\.]+\s*px\s*/i.test(v);
+    },
+    // 是否是带角度单位的字符串
+    isDegNumber: function (v) {
+        return /^\s*[\d\.]+\s*deg\s*/i.test(v);
+    },
+    // 是否是带弧度单位的字符串
+    isRadNumber: function (v) {
+        return /^\s*[\d\.]+\s*rad\s*/i.test(v);
+    },
+    // 转为像素字符串格式 
+    toPX: function (v) {
+        if (this.isNumber(v))
+            return v + 'px';
+        return v;
+    },
+    // 弧度转角度
+    radToDeg: function (v) {
+        return v * (180 / Math.PI);
+    },
+    // 角度转弧度
+    degToRad: function (v) {
+        return v * (Math.PI / 180);
+    },
+    // 转为角度格式
+    toDeg: function (v) {
+        if (this.isNumber(v))
+            return v + 'deg';
+        if (typeof v === 'string' && this.isRadNumber(v))
+            return this.toDeg(this.radToDeg(parseFloat(v)));
+        return v;
+    },
+    // 转为弧度格式
+    toRad: function (v) {
+        if (this.isNumber(v))
+            return v + 'rad';
+        if (typeof v === 'string' && this.isDegNumber(v))
+            return this.toRad(this.degToRad(parseFloat(v)));
+        return v;
+    }
+};
+
+var Transform = /** @class */ (function () {
+    function Transform(option, el) {
+        // x偏移量
+        this.translateX = 0;
+        // y偏移量
+        this.translateY = 0;
+        // z偏移量
+        this.translateZ = 0;
+        this.rotateX = 0;
+        this.rotateY = 0;
+        this.rotateZ = 0;
+        this.scaleX = 1;
+        this.scaleY = 1;
+        this.scaleZ = 1;
+        this.skewX = 0;
+        this.skewY = 0;
+        if (option)
+            Object.assign(this, option);
+        this.target = el;
+    }
+    Transform.prototype.from = function (data) {
+        if (data)
+            Object.assign(this, data);
+    };
+    // 生效
+    Transform.prototype.apply = function (el) {
+        if (el === void 0) { el = this.target; }
+        if (el && el.setStyle) {
+            el.setStyle('transform', this.toString());
+        }
+        else if (el && el.style)
+            el.style.transform = this.toString();
+    };
+    // 生成transform代理
+    Transform.createProxy = function (obj, el) {
+        if (obj === void 0) { obj = {}; }
+        var transform = new Transform(obj, el);
+        // 代理处理
+        var proxy = new Proxy(transform, {
+            get: function (target, p, receiver) {
+                var v = target[p];
+                return v;
+            },
+            set: function (target, p, value, receiver) {
+                target[p] = value;
+                target.apply(); // 生效
+                return true;
+            }
+        });
+        return proxy;
+    };
+    Transform.prototype.toString = function () {
+        var translate = "translateX(".concat(util.toPX(this.translateX), ") translateY(").concat(util.toPX(this.translateY), ") translateZ(").concat(util.toPX(this.translateZ), ")");
+        var rotate = "rotateX(".concat(util.toDeg(this.rotateX), ") rotateY(").concat(util.toDeg(this.rotateY), ") rotateZ(").concat(util.toDeg(this.rotateZ), ")");
+        var scale = "scaleX(".concat(this.scaleX, ") scaleY(").concat(this.scaleY, ") scaleZ(").concat(this.scaleZ, ")");
+        var skew = "skewX(".concat(util.toDeg(this.skewX), ") skewY(").concat(util.toDeg(this.skewY), ")");
+        return "transform: ".concat(translate, " ").concat(rotate, " ").concat(scale, " ").concat(skew);
+    };
+    Transform.prototype.toJSON = function () {
+        return {
+            translateX: this.translateX,
+            translateY: this.translateY,
+            translateZ: this.translateZ,
+            rotateX: this.rotateX,
+            rotateY: this.rotateY,
+            rotateZ: this.rotateZ,
+            scaleX: this.scaleX,
+            scaleY: this.scaleY,
+            scaleZ: this.scaleZ,
+            skewX: this.skewX,
+            skewY: this.skewY,
+        };
+    };
+    return Transform;
+}());
+
+// Unique ID creation requires a high quality random # generator. In the browser we therefore
+// require the crypto API and do not support built-in fallback to lower quality random number
+// generators (like Math.random()).
+let getRandomValues;
+const rnds8 = new Uint8Array(16);
+function rng() {
+  // lazy load so that environments that need to polyfill have a chance to do so
+  if (!getRandomValues) {
+    // getRandomValues needs to be invoked in a context where "this" is a Crypto implementation.
+    getRandomValues = typeof crypto !== 'undefined' && crypto.getRandomValues && crypto.getRandomValues.bind(crypto);
+
+    if (!getRandomValues) {
+      throw new Error('crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported');
+    }
+  }
+
+  return getRandomValues(rnds8);
+}
+
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+
+const byteToHex = [];
+
+for (let i = 0; i < 256; ++i) {
+  byteToHex.push((i + 0x100).toString(16).slice(1));
+}
+
+function unsafeStringify(arr, offset = 0) {
+  // Note: Be careful editing this code!  It's been tuned for performance
+  // and works in ways you may not expect. See https://github.com/uuidjs/uuid/pull/434
+  return byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + '-' + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + '-' + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + '-' + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + '-' + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]];
+}
+
+const randomUUID = typeof crypto !== 'undefined' && crypto.randomUUID && crypto.randomUUID.bind(crypto);
+var native = {
+  randomUUID
+};
+
+function v4(options, buf, offset) {
+  if (native.randomUUID && !buf && !options) {
+    return native.randomUUID();
+  }
+
+  options = options || {};
+  const rnds = options.random || (options.rng || rng)(); // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+
+  rnds[6] = rnds[6] & 0x0f | 0x40;
+  rnds[8] = rnds[8] & 0x3f | 0x80; // Copy bytes to buffer, if provided
+
+  if (buf) {
+    offset = offset || 0;
+
+    for (let i = 0; i < 16; ++i) {
+      buf[offset + i] = rnds[i];
+    }
+
+    return buf;
+  }
+
+  return unsafeStringify(rnds);
+}
+
+var StyleNamesMap = [];
+var NumberStyleMap = ['left', 'top', 'right', 'bottom', 'width', 'height'];
 var JElementStyle = /** @class */ (function (_super) {
     __extends(JElementStyle, _super);
     function JElementStyle(option) {
@@ -1002,9 +1178,24 @@ var JElementStyle = /** @class */ (function (_super) {
     Object.defineProperty(JElementStyle.prototype, "names", {
         // 所有样式名称
         get: function () {
-            if (!StyleNamesMap) {
+            var e_1, _a;
+            if (!StyleNamesMap.length) {
                 var map = new JElementStyleProperty();
-                StyleNamesMap = Object.getOwnPropertyNames(map);
+                var keys = Object.getOwnPropertyNames(map);
+                try {
+                    for (var keys_1 = __values(keys), keys_1_1 = keys_1.next(); !keys_1_1.done; keys_1_1 = keys_1.next()) {
+                        var k = keys_1_1.value;
+                        if (typeof map[k] === 'string')
+                            StyleNamesMap.push(k);
+                    }
+                }
+                catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                finally {
+                    try {
+                        if (keys_1_1 && !keys_1_1.done && (_a = keys_1.return)) _a.call(keys_1);
+                    }
+                    finally { if (e_1) throw e_1.error; }
+                }
             }
             return StyleNamesMap;
         },
@@ -1013,23 +1204,29 @@ var JElementStyle = /** @class */ (function (_super) {
     });
     // 把样式应用到元素或当前对象
     JElementStyle.prototype.apply = function (data, target) {
-        var e_1, _a;
+        var e_2, _a;
         if (target === void 0) { target = this; }
         try {
             for (var _b = __values(this.names), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var name_1 = _c.value;
                 if (typeof name_1 !== 'string')
                     continue;
-                if (typeof data[name_1] === 'string')
-                    target[name_1] = data[name_1];
+                if (typeof data[name_1] === 'string') {
+                    if (target instanceof JElementStyle) {
+                        target.setStyle(name_1, data[name_1]);
+                    }
+                    else {
+                        target[name_1] = data[name_1];
+                    }
+                }
             }
         }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_1) throw e_1.error; }
+            finally { if (e_2) throw e_2.error; }
         }
         return target;
     };
@@ -1037,43 +1234,45 @@ var JElementStyle = /** @class */ (function (_super) {
     JElementStyle.prototype.applyTo = function (element) {
         this.apply(this, element.style);
     };
-    return JElementStyle;
-}(JElementStyleMap));
-
-var util = {
-    // 是否是数字
-    isNumber: function (v) {
-        return typeof v === 'number' || /\s*[\d\.]+\s*/.test(v);
-    },
-    // 是否是带像素单位的字符串
-    isPXNumber: function (v) {
-        return /^\s*[\d\.]+\s*px\s*/i.test(v);
-    }
-};
-
-var JElement = /** @class */ (function (_super) {
-    __extends(JElement, _super);
-    function JElement(option) {
-        var _this = _super.call(this) || this;
-        _this.id = '';
-        // 类型名称
-        _this.type = '';
-        // 子元素
-        _this.children = [];
-        // 控件最外层的容器
-        _this.container = document.createElement('div');
-        // 是否可以编辑
-        _this.editable = true;
-        _this.id = option.id || v4().replace(/-/g, '');
-        _this.type = option.type || '';
-        var numberStyleMap = ['left', 'top', 'right', 'bottom', 'width', 'height'];
-        var style = new JElementStyle(option.style);
+    // 设置样式
+    JElementStyle.prototype.setStyle = function (name, value) {
+        this[name] = value;
+        this.emit('change', {
+            name: name,
+            value: value
+        });
+    };
+    // 转为json
+    JElementStyle.prototype.toJSON = function () {
+        var e_3, _a;
+        var obj = {};
+        try {
+            for (var _b = __values(this.names), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var name_2 = _c.value;
+                if (typeof this[name_2] === 'undefined')
+                    continue;
+                obj[name_2] = this[name_2];
+            }
+        }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_3) throw e_3.error; }
+        }
+        return obj;
+    };
+    // 生成样式代理
+    JElementStyle.createProxy = function (style) {
+        if (style === void 0) { style = {}; }
+        var jstyle = new JElementStyle(style);
         // 样式代理处理
-        _this.style = new Proxy(style, {
+        var proxy = new Proxy(jstyle, {
             get: function (target, p, receiver) {
                 var v = target[p];
                 // 数字样式，处理px问题
-                if (typeof p === 'string' && numberStyleMap.includes(p)) {
+                if (typeof p === 'string' && NumberStyleMap.includes(p)) {
                     if (v === '0')
                         return 0;
                     if (util.isPXNumber(v))
@@ -1083,22 +1282,67 @@ var JElement = /** @class */ (function (_super) {
             },
             set: function (target, p, value, receiver) {
                 // 非白名单样式不支持设置
-                if (typeof p !== 'string' || !style.names.includes(p))
-                    return false;
-                // 数字样式，处理px问题
-                if (numberStyleMap.includes(p)) {
-                    target[p] = typeof value === 'number' || util.isNumber(value) ? "".concat(value, "px") : value;
-                }
-                else {
+                if (typeof p !== 'string' || !target.names.includes(p)) {
                     target[p] = value;
+                    return true;
                 }
+                // 数字样式，处理px问题
+                if (NumberStyleMap.includes(p)) {
+                    value = typeof value === 'number' || util.isNumber(value) ? "".concat(value, "px") : value;
+                }
+                target.setStyle(p, value); // 应用到元素和类
                 return true;
             }
         });
+        return proxy;
+    };
+    return JElementStyle;
+}(JElementStyleMap));
+
+var JElement = /** @class */ (function (_super) {
+    __extends(JElement, _super);
+    function JElement(option) {
+        var _this = _super.call(this) || this;
+        _this.id = '';
+        // 类型名称
+        _this.type = '';
+        // 子元素
+        _this._children = [];
+        // 复制属性
+        for (var k in option) {
+            var v = option[k];
+            if (typeof k !== 'string' || (typeof v !== 'string' || typeof v !== 'number'))
+                continue;
+            _this[k] = v;
+        }
+        _this.id = _this.id || option.id || v4().replace(/-/g, '');
+        _this.type = _this.type || option.type || '';
+        var nodeType = option.nodeType || 'div';
+        _this.dom = document.createElement(nodeType);
+        // 样式代理处理
+        _this.style = JElementStyle.createProxy();
+        _this.style.on('change', function (s) {
+            _this.setDomStyle(s.name, s.value);
+        });
+        if (option.style)
+            _this.style.apply(option.style);
+        _this.initOption(option);
         return _this;
     }
-    JElement.prototype.init = function (option) {
+    // 初始化一些基础属性
+    JElement.prototype.initOption = function (option) {
+        this.x = option.x || option.left || 0;
+        this.y = option.y || option.top || 0;
+        this.width = option.width || option.width || 1;
+        this.height = option.height || option.height || 1;
     };
+    Object.defineProperty(JElement.prototype, "children", {
+        get: function () {
+            return this._children;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(JElement.prototype, "x", {
         // 坐标X
         get: function () {
@@ -1190,10 +1434,10 @@ var JElement = /** @class */ (function (_super) {
     Object.defineProperty(JElement.prototype, "rotation", {
         get: function () {
             var v = this.style.rotate;
-            if (/^\s*[\d\.]+\s*deg\s*/i.test(v))
+            if (util.isDegNumber(v))
                 return parseFloat(v);
-            else if (/^\s*[\d\.]+\s*rad\s*/i.test(v)) {
-                return this.angle * (180 / Math.PI);
+            else if (util.isRadNumber(v)) {
+                return util.radToDeg(this.angle);
             }
             return Number(v);
         },
@@ -1207,10 +1451,10 @@ var JElement = /** @class */ (function (_super) {
     Object.defineProperty(JElement.prototype, "angle", {
         get: function () {
             var v = this.style.rotate;
-            if (/^\s*[\d\.]+\s*rad\s*/i.test(v))
+            if (util.isRadNumber(v))
                 return parseFloat(v);
-            else if (/^\s*[\d\.]+\s*deg\s*/i.test(v)) {
-                return this.rotation * (Math.PI / 180);
+            else if (util.isDegNumber(v)) {
+                return util.degToRad(this.rotation);
             }
             return Number(v);
         },
@@ -1232,18 +1476,6 @@ var JElement = /** @class */ (function (_super) {
         configurable: true
     });
     Object.defineProperty(JElement.prototype, "zIndex", {
-        /*
-        get skew() {
-            return {
-                x: this.style.skew.x,
-                y: this.container.skew.y
-            };
-        }
-        set skew(v) {
-            if(!v) return;
-            if(typeof v.x !== 'undefined') this.container.skew.x = v.x;
-            if(typeof v.y !== 'undefined') this.container.skew.y = v.y;
-        }*/
         get: function () {
             return Number(this.style.zIndex || '0');
         },
@@ -1253,6 +1485,49 @@ var JElement = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    // 设置css到dom
+    JElement.prototype.setDomStyle = function (name, value) {
+        if (name === 'backgroundImage') {
+            if (!/^\s*url\(/.test(value))
+                value = "url(".concat(value, ")");
+        }
+        this.dom.style[name] = value;
+    };
+    // 设置样式
+    JElement.prototype.css = function (name, value) {
+        var e_1, _a;
+        if (!name)
+            return;
+        if (typeof name === 'object') {
+            try {
+                for (var _b = __values(Object.getOwnPropertyNames(name)), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var n = _c.value;
+                    this.css(n, name[n]);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+        }
+        else {
+            this.style[name] = value;
+        }
+        return this;
+    };
+    // dom属性
+    JElement.prototype.attr = function (name, value) {
+        if (typeof value !== 'undefined') {
+            this.dom.setAttribute(name, value + '');
+            return value;
+        }
+        else {
+            return this.dom.getAttribute(name);
+        }
+    };
     /*
     // 被选中
     get selected() {
@@ -1287,47 +1562,45 @@ var JElement = /** @class */ (function (_super) {
     };
     // 移位
     JElement.prototype.move = function (dx, dy) {
-        this.x += dx;
-        this.y += dy;
+        this.left += dx;
+        this.top += dy;
     };
     // 重置大小
     JElement.prototype.resize = function (w, h) {
         if (typeof w === 'number') {
-            //const rw = w / this.sprite.texture.width;
-            //if(rw !== this.sprite.scale.x) this.sprite.scale.x = rw;
             this.width = w;
         }
         if (typeof h === 'number') {
-            //const rh = h / this.sprite.texture.height;
-            //if(rh !== this.sprite.scale.y) this.sprite.scale.y = rh;
             this.height = h;
         }
     };
     // 新增子元素
-    JElement.prototype.addChild = function (child) {
-        var e_1, _a;
+    JElement.prototype.addChild = function (child, parent) {
+        var e_2, _a;
+        if (parent === void 0) { parent = this; }
         if (Array.isArray(child)) {
             try {
                 for (var child_1 = __values(child), child_1_1 = child_1.next(); !child_1_1.done; child_1_1 = child_1.next()) {
                     var c = child_1_1.value;
-                    this.addChild(c);
+                    parent.addChild(c);
                 }
             }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            catch (e_2_1) { e_2 = { error: e_2_1 }; }
             finally {
                 try {
                     if (child_1_1 && !child_1_1.done && (_a = child_1.return)) _a.call(child_1);
                 }
-                finally { if (e_1) throw e_1.error; }
+                finally { if (e_2) throw e_2.error; }
             }
-            return this;
+            return parent;
         }
         if (child instanceof JElement) {
-            this.container.appendChild(child.container);
-            this.children.push(child);
+            child.parent = parent;
+            parent.dom.appendChild(child.dom);
+            parent.children.push(child);
         }
         else {
-            this.container.appendChild(child);
+            parent.dom.appendChild(child);
         }
     };
     // 移除自已
@@ -1337,15 +1610,18 @@ var JElement = /** @class */ (function (_super) {
     };
     // 移除子元素
     JElement.prototype.removeChild = function (el) {
-        this.container.removeChild(el.container);
+        // @ts-ignore
+        this.dom.removeChild(el.dom || el);
         for (var i = this.children.length - 1; i > -1; i--) {
             if (this.children[i] === el)
                 return this.children.splice(i, 1);
         }
+        // @ts-ignore
+        delete el.parent;
     };
     // 把渲染层坐标转为控制层
     JElement.prototype.toControlPosition = function (p) {
-        var e_2, _a;
+        var e_3, _a;
         if (Array.isArray(p)) {
             var res = [];
             try {
@@ -1354,12 +1630,12 @@ var JElement = /** @class */ (function (_super) {
                     res.push(this.toControlPosition(point));
                 }
             }
-            catch (e_2_1) { e_2 = { error: e_2_1 }; }
+            catch (e_3_1) { e_3 = { error: e_3_1 }; }
             finally {
                 try {
                     if (p_1_1 && !p_1_1.done && (_a = p_1.return)) _a.call(p_1);
                 }
-                finally { if (e_2) throw e_2.error; }
+                finally { if (e_3) throw e_3.error; }
             }
             return res;
         }
@@ -1367,7 +1643,7 @@ var JElement = /** @class */ (function (_super) {
     };
     // 把控制层坐标转为渲染层
     JElement.prototype.toRenderPosition = function (p) {
-        var e_3, _a;
+        var e_4, _a;
         if (Array.isArray(p)) {
             var res = [];
             try {
@@ -1376,12 +1652,12 @@ var JElement = /** @class */ (function (_super) {
                     res.push(this.toRenderPosition(point));
                 }
             }
-            catch (e_3_1) { e_3 = { error: e_3_1 }; }
+            catch (e_4_1) { e_4 = { error: e_4_1 }; }
             finally {
                 try {
                     if (p_2_1 && !p_2_1.done && (_a = p_2.return)) _a.call(p_2);
                 }
-                finally { if (e_3) throw e_3.error; }
+                finally { if (e_4) throw e_4.error; }
             }
             return res;
         }
@@ -1389,7 +1665,7 @@ var JElement = /** @class */ (function (_super) {
     };
     // 把原点转回0，0坐标
     JElement.prototype.toElementAnchorPosition = function (p) {
-        var e_4, _a;
+        var e_5, _a;
         if (Array.isArray(p)) {
             var res = [];
             try {
@@ -1398,19 +1674,19 @@ var JElement = /** @class */ (function (_super) {
                     res.push(this.toElementAnchorPosition(point));
                 }
             }
-            catch (e_4_1) { e_4 = { error: e_4_1 }; }
+            catch (e_5_1) { e_5 = { error: e_5_1 }; }
             finally {
                 try {
                     if (p_3_1 && !p_3_1.done && (_a = p_3.return)) _a.call(p_3);
                 }
-                finally { if (e_4) throw e_4.error; }
+                finally { if (e_5) throw e_5.error; }
             }
             return res;
         }
         return __assign(__assign({}, p), { x: p.x, y: p.y });
     };
     JElement.prototype.toJSON = function () {
-        var e_5, _a;
+        var e_6, _a;
         var fields = ['x', 'y', 'width', 'height', 'url', 'text', 'rotation', 'type', 'style', 'id', 'skew', 'points', 'isClosed'];
         var obj = {};
         try {
@@ -1421,12 +1697,12 @@ var JElement = /** @class */ (function (_super) {
                 }
             }
         }
-        catch (e_5_1) { e_5 = { error: e_5_1 }; }
+        catch (e_6_1) { e_6 = { error: e_6_1 }; }
         finally {
             try {
                 if (fields_1_1 && !fields_1_1.done && (_a = fields_1.return)) _a.call(fields_1);
             }
-            finally { if (e_5) throw e_5.error; }
+            finally { if (e_6) throw e_6.error; }
         }
         return obj;
     };
@@ -1437,9 +1713,312 @@ var JElement = /** @class */ (function (_super) {
     return JElement;
 }(EventEmitter));
 
-var element = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    'default': JElement
-});
+var JBaseComponent = /** @class */ (function (_super) {
+    __extends(JBaseComponent, _super);
+    function JBaseComponent(option) {
+        var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'div', style: __assign({}, ContainerDefaultStyle) })) || this;
+        option.target = option.target || {};
+        // 生成当前控制的元素
+        _this.target = new JElement(__assign(__assign({}, option), { style: {
+                width: '100%',
+                height: '100%',
+                display: 'block',
+            } }));
+        _this.addChild(_this.target);
+        // 刷新样式
+        if (option.style)
+            _this.style.apply(option.style);
+        // 变换控制的是核心元素
+        _this.transform = Transform.createProxy(option.transform, _this.target);
+        if (option.text)
+            _this.text = option.text;
+        if (option.html)
+            _this.html = option.html;
+        return _this;
+    }
+    Object.defineProperty(JBaseComponent.prototype, "text", {
+        get: function () {
+            return this.target.dom.innerText;
+        },
+        set: function (v) {
+            this.target.dom.innerText = v;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(JBaseComponent.prototype, "html", {
+        get: function () {
+            return this.target.dom.innerHTML;
+        },
+        set: function (v) {
+            this.target.dom.innerHTML = v;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    // 设置css到dom
+    JBaseComponent.prototype.setDomStyle = function (name, value) {
+        // 如果外层容器的样式，则加到container上
+        if (name in ContainerDefaultStyle) {
+            _super.prototype.setDomStyle.call(this, name, value);
+        }
+        else {
+            this.target && this.target.setDomStyle(name, value);
+        }
+    };
+    return JBaseComponent;
+}(JElement));
 
-export { element as JElement };
+var JText = /** @class */ (function (_super) {
+    __extends(JText, _super);
+    function JText(option) {
+        return _super.call(this, __assign(__assign({}, option), { nodeType: 'div' })) || this;
+    }
+    return JText;
+}(JBaseComponent));
+
+var JImage = /** @class */ (function (_super) {
+    __extends(JImage, _super);
+    function JImage(option) {
+        var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'img' })) || this;
+        _this.dom.onload = function (e) {
+            _this.emit('load', e);
+        };
+        _this.dom.onerror = function (e) {
+            _this.emit('error', e);
+        };
+        _this.src = option.url || option.src || '';
+        return _this;
+    }
+    Object.defineProperty(JImage.prototype, "src", {
+        get: function () {
+            return this.target.dom.src;
+        },
+        set: function (v) {
+            this.target.dom.src = v;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    return JImage;
+}(JBaseComponent));
+
+var JEditor = /** @class */ (function (_super) {
+    __extends(JEditor, _super);
+    function JEditor(container, option) {
+        if (option === void 0) { option = {}; }
+        var _this = _super.call(this, option) || this;
+        // 所有支持的类型
+        _this.shapes = {
+            'image': JImage,
+            'text': JText
+        };
+        if (typeof container === 'string')
+            container = document.getElementById(container);
+        container.appendChild(_this.dom);
+        container.style.position = 'relative';
+        _this.init(option);
+        return _this;
+    }
+    // 初始化整个编辑器
+    JEditor.prototype.init = function (option) {
+        this.dom.style.width = '100%';
+        this.dom.style.height = '100%';
+        if (option.style.containerBackgroundColor)
+            this.dom.style.backgroundColor = option.style.containerBackgroundColor;
+        this.target.css({
+            'boxShadow': '0 0 10px 10px #ccc',
+            'position': 'absolute',
+            'backgroundSize': '100% 100%',
+            'overflow': 'hidden'
+        });
+        if (option.width && option.height) {
+            this.resize(option.width, option.height);
+        }
+    };
+    Object.defineProperty(JEditor.prototype, "width", {
+        get: function () {
+            return this.target.width;
+        },
+        set: function (v) {
+            this.target && this.resize(v, this.height);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(JEditor.prototype, "height", {
+        get: function () {
+            return this.target.height;
+        },
+        set: function (v) {
+            this.target && this.resize(this.width, v);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(JEditor.prototype, "left", {
+        get: function () {
+            return this.target.left;
+        },
+        set: function (v) {
+            this.target && (this.target.left = v);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(JEditor.prototype, "top", {
+        get: function () {
+            return this.target.top;
+        },
+        set: function (v) {
+            this.target && (this.target.top = v);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(JEditor.prototype, "children", {
+        // 重写子集为target
+        get: function () {
+            return this.target.children;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    JEditor.prototype.resize = function (width, height) {
+        var _this = this;
+        if (width === void 0) { width = this.width; }
+        if (height === void 0) { height = this.height; }
+        this.target.attr('data-size', "".concat(width, "*").concat(height));
+        this.target.width = width;
+        this.target.height = height;
+        this.left = this.dom.clientWidth / 2 - parseFloat(width + '') / 2;
+        this.top = this.dom.clientHeight / 2 - parseFloat(height + '') / 2;
+        setTimeout(function () {
+            _this.emit('resize', {
+                width: width,
+                height: height
+            });
+        }, 10);
+    };
+    // 添加元素到画布
+    JEditor.prototype.addChild = function (child) {
+        if (child === this.target) {
+            return _super.prototype.addChild.call(this, child);
+        }
+        return this.target.addChild(child);
+    };
+    // 移除
+    // @ts-ignore
+    JEditor.prototype.removeChild = function (el) {
+        if (el === this.target) {
+            return _super.prototype.addChild.call(this, el);
+        }
+        return this.target.removeChild(el);
+    };
+    JEditor.prototype.clear = function () {
+        this.css({
+            'backgroundColor': '#fff',
+            'backgroundImage': ''
+        });
+        for (var i = this.children.length - 1; i >= 0; i--) {
+            var el = this.children[i];
+            this.removeChild(el);
+        }
+    };
+    // 缩放
+    JEditor.prototype.scale = function (x, y) {
+        if (y === void 0) { y = x; }
+        if (x < 0.1 || y < 0.1)
+            return;
+        this.transform.scaleX = x;
+        this.transform.scaleY = y;
+    };
+    JEditor.prototype.regShape = function (name, shape) {
+        if (this.shapes[name])
+            throw Error("\u5143\u7D20\u7C7B\u578B".concat(name, "\u5DF2\u7ECF\u5B58\u5728"));
+        this.shapes[name] = shape;
+    };
+    // 创建元素
+    JEditor.prototype.createShape = function (type, option) {
+        if (option === void 0) { option = {}; }
+        var shape = typeof type === 'string' ? this.shapes[type] : type;
+        if (!shape) {
+            throw Error("".concat(type, "\u4E0D\u5B58\u5728\u7684\u5143\u7D20\u7C7B\u578B"));
+        }
+        var el = new shape(__assign(__assign({}, option), { type: type }));
+        return el;
+    };
+    // 创建图片元素
+    JEditor.prototype.createImage = function (url, option) {
+        if (option === void 0) { option = {}; }
+        var img = this.createShape('image', __assign(__assign({}, option), { url: url }));
+        return img;
+    };
+    // 转为图片数据
+    JEditor.prototype.toImage = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/];
+            });
+        });
+    };
+    JEditor.prototype.toJSON = function () {
+        var e_1, _a;
+        var data = {
+            width: this.width,
+            height: this.height,
+            children: []
+        };
+        try {
+            for (var _b = __values(this.children), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var c = _c.value;
+                if (!c.type)
+                    continue;
+                if (c.toJSON) {
+                    data.children.push(c.toJSON());
+                }
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        return data;
+    };
+    JEditor.prototype.toString = function () {
+        var data = this.toJSON();
+        return JSON.stringify(data);
+    };
+    JEditor.prototype.fromJSON = function (data) {
+        var e_2, _a;
+        this.clear();
+        if (typeof data === 'string')
+            data = JSON.parse(data);
+        if (data.style) {
+            this.style.apply(data.style); // 应用样式
+        }
+        this.resize(data.width, data.height);
+        try {
+            for (var _b = __values(data.children), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var c = _c.value;
+                if (!c.type)
+                    continue;
+                var item = this.createShape(c.type, c);
+                this.addChild(item);
+            }
+        }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_2) throw e_2.error; }
+        }
+    };
+    return JEditor;
+}(JBaseComponent));
+
+export { JBaseComponent, JEditor, JElement, JImage, JText, JEditor as default };

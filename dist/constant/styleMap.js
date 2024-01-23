@@ -38,12 +38,15 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     }
     return to.concat(ar || Array.prototype.slice.call(from));
 };
+import EventEmiter from 'eventemitter3';
 // 支持的样式属性列表
-var JElementStyleMap = /** @class */ (function () {
+var JElementStyleMap = /** @class */ (function (_super) {
+    __extends(JElementStyleMap, _super);
     function JElementStyleMap() {
+        return _super !== null && _super.apply(this, arguments) || this;
     }
     return JElementStyleMap;
-}());
+}(EventEmiter));
 export default JElementStyleMap;
 // 样式属性集合
 var JElementStyleProperty = /** @class */ (function (_super) {
@@ -530,3 +533,15 @@ var JElementStyleProperty = /** @class */ (function (_super) {
     return JElementStyleProperty;
 }(JElementStyleMap));
 export { JElementStyleProperty };
+// 最外层容器默认样式
+export var ContainerDefaultStyle = {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: 10,
+    height: 10,
+    right: 'auto',
+    bottom: 'auto',
+    padding: '1px',
+    margin: '0'
+};

@@ -1,14 +1,15 @@
 import EventEmiter from 'eventemitter3';
-import JStyleMap from '../constant/styleMap';
-export default class JElement extends EventEmiter {
+import JStyle from './style';
+export default class JElement<T extends HTMLElement = HTMLElement> extends EventEmiter {
     constructor(option: any);
-    init(option: any): void;
+    initOption(option: any): void;
     id: string;
     type: string;
-    children: JElement[];
-    container: HTMLDivElement;
+    private _children;
+    get children(): JElement<HTMLElement>[];
+    dom: T;
     parent: JElement | undefined;
-    style: JStyleMap;
+    style: JStyle;
     get x(): number | string;
     set x(v: number | string);
     get y(): number | string;
@@ -33,13 +34,15 @@ export default class JElement extends EventEmiter {
     set visible(v: boolean);
     get zIndex(): number;
     set zIndex(v: number);
-    editable: boolean;
+    setDomStyle(name: string, value: string): void;
+    css(name: string | Object, value?: string): this;
+    attr(name: string, value: string | number | undefined): string | number;
     bindEvent(): void;
     move(dx: any, dy: any): void;
     resize(w: any, h: any): void;
-    addChild(child: JElement): this;
+    addChild(child: JElement | HTMLElement, parent?: JElement): JElement<HTMLElement>;
     remove(): void;
-    removeChild(el: JElement): JElement[];
+    removeChild(el: JElement | HTMLElement): JElement<HTMLElement>[];
     toControlPosition(p: any): any;
     toRenderPosition(p: any): any;
     toElementAnchorPosition(p: any): any;

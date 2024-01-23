@@ -38,7 +38,7 @@ var __values = (this && this.__values) || function(o) {
 import EventEmiter from 'eventemitter3';
 import { v4 as uuidv4 } from 'uuid';
 import JStyle from './style';
-import util from './util';
+import util from '../lib/util';
 var JElement = /** @class */ (function (_super) {
     __extends(JElement, _super);
     function JElement(option) {
@@ -47,46 +47,34 @@ var JElement = /** @class */ (function (_super) {
         // 类型名称
         _this.type = '';
         // 子元素
-        _this.children = [];
-        // 控件最外层的容器
-        _this.container = document.createElement('div');
-        // 是否可以编辑
-        _this.editable = true;
-        _this.id = option.id || uuidv4().replace(/-/g, '');
-        _this.type = option.type || '';
-        var numberStyleMap = ['left', 'top', 'right', 'bottom', 'width', 'height'];
-        var style = new JStyle(option.style);
+        _this._children = [];
+        // 复制属性
+        for (var k in option) {
+            var v = option[k];
+            if (typeof k !== 'string' || (typeof v !== 'string' || typeof v !== 'number'))
+                continue;
+            _this[k] = v;
+        }
+        _this.id = _this.id || option.id || uuidv4().replace(/-/g, '');
+        _this.type = _this.type || option.type || '';
+        var nodeType = option.nodeType || 'div';
+        _this.dom = document.createElement(nodeType);
         // 样式代理处理
-        _this.style = new Proxy(style, {
-            get: function (target, p, receiver) {
-                var v = target[p];
-                // 数字样式，处理px问题
-                if (typeof p === 'string' && numberStyleMap.includes(p)) {
-                    if (v === '0')
-                        return 0;
-                    if (util.isPXNumber(v))
-                        return parseFloat(v);
-                }
-                return v;
-            },
-            set: function (target, p, value, receiver) {
-                // 非白名单样式不支持设置
-                if (typeof p !== 'string' || !style.names.includes(p))
-                    return false;
-                // 数字样式，处理px问题
-                if (numberStyleMap.includes(p)) {
-                    target[p] = typeof value === 'number' || util.isNumber(value) ? "".concat(value, "px") : value;
-                }
-                else {
-                    target[p] = value;
-                }
-                return true;
-            }
+        _this.style = JStyle.createProxy();
+        _this.style.on('change', function (s) {
+            _this.setStyle(s.name, s.value);
         });
+        if (option.style)
+            _this.style.apply(option.style);
         return _this;
     }
-    JElement.prototype.init = function (option) {
-    };
+    Object.defineProperty(JElement.prototype, "children", {
+        get: function () {
+            return this._children;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(JElement.prototype, "x", {
         // 坐标X
         get: function () {
@@ -178,10 +166,10 @@ var JElement = /** @class */ (function (_super) {
     Object.defineProperty(JElement.prototype, "rotation", {
         get: function () {
             var v = this.style.rotate;
-            if (/^\s*[\d\.]+\s*deg\s*/i.test(v))
+            if (util.isDegNumber(v))
                 return parseFloat(v);
-            else if (/^\s*[\d\.]+\s*rad\s*/i.test(v)) {
-                return this.angle * (180 / Math.PI);
+            else if (util.isRadNumber(v)) {
+                return util.radToDeg(this.angle);
             }
             return Number(v);
         },
@@ -195,10 +183,10 @@ var JElement = /** @class */ (function (_super) {
     Object.defineProperty(JElement.prototype, "angle", {
         get: function () {
             var v = this.style.rotate;
-            if (/^\s*[\d\.]+\s*rad\s*/i.test(v))
+            if (util.isRadNumber(v))
                 return parseFloat(v);
-            else if (/^\s*[\d\.]+\s*deg\s*/i.test(v)) {
-                return this.rotation * (Math.PI / 180);
+            else if (util.isDegNumber(v)) {
+                return util.degToRad(this.rotation);
             }
             return Number(v);
         },
@@ -220,18 +208,6 @@ var JElement = /** @class */ (function (_super) {
         configurable: true
     });
     Object.defineProperty(JElement.prototype, "zIndex", {
-        /*
-        get skew() {
-            return {
-                x: this.style.skew.x,
-                y: this.container.skew.y
-            };
-        }
-        set skew(v) {
-            if(!v) return;
-            if(typeof v.x !== 'undefined') this.container.skew.x = v.x;
-            if(typeof v.y !== 'undefined') this.container.skew.y = v.y;
-        }*/
         get: function () {
             return Number(this.style.zIndex || '0');
         },
@@ -241,6 +217,45 @@ var JElement = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    // 设置css到dom
+    JElement.prototype.setStyle = function (name, value) {
+        this.dom.style[name] = value;
+    };
+    // 设置样式
+    JElement.prototype.css = function (name, value) {
+        var e_1, _a;
+        if (!name)
+            return;
+        if (typeof name === 'object') {
+            try {
+                for (var _b = __values(Object.getOwnPropertyNames(name)), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var n = _c.value;
+                    this.css(n, name[n]);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+        }
+        else {
+            this.style[name] = value;
+        }
+        return this;
+    };
+    // dom属性
+    JElement.prototype.attr = function (name, value) {
+        if (typeof value !== 'undefined') {
+            this.dom.setAttribute(name, value + '');
+            return value;
+        }
+        else {
+            return this.dom.getAttribute(name);
+        }
+    };
     /*
     // 被选中
     get selected() {
@@ -275,47 +290,45 @@ var JElement = /** @class */ (function (_super) {
     };
     // 移位
     JElement.prototype.move = function (dx, dy) {
-        this.x += dx;
-        this.y += dy;
+        this.left += dx;
+        this.top += dy;
     };
     // 重置大小
     JElement.prototype.resize = function (w, h) {
         if (typeof w === 'number') {
-            //const rw = w / this.sprite.texture.width;
-            //if(rw !== this.sprite.scale.x) this.sprite.scale.x = rw;
             this.width = w;
         }
         if (typeof h === 'number') {
-            //const rh = h / this.sprite.texture.height;
-            //if(rh !== this.sprite.scale.y) this.sprite.scale.y = rh;
             this.height = h;
         }
     };
     // 新增子元素
-    JElement.prototype.addChild = function (child) {
-        var e_1, _a;
+    JElement.prototype.addChild = function (child, parent) {
+        var e_2, _a;
+        if (parent === void 0) { parent = this; }
         if (Array.isArray(child)) {
             try {
                 for (var child_1 = __values(child), child_1_1 = child_1.next(); !child_1_1.done; child_1_1 = child_1.next()) {
                     var c = child_1_1.value;
-                    this.addChild(c);
+                    parent.addChild(c);
                 }
             }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            catch (e_2_1) { e_2 = { error: e_2_1 }; }
             finally {
                 try {
                     if (child_1_1 && !child_1_1.done && (_a = child_1.return)) _a.call(child_1);
                 }
-                finally { if (e_1) throw e_1.error; }
+                finally { if (e_2) throw e_2.error; }
             }
-            return this;
+            return parent;
         }
         if (child instanceof JElement) {
-            this.container.appendChild(child.container);
-            this.children.push(child);
+            child.parent = parent;
+            parent.dom.appendChild(child.dom);
+            parent.children.push(child);
         }
         else {
-            this.container.appendChild(child);
+            parent.dom.appendChild(child);
         }
     };
     // 移除自已
@@ -325,15 +338,16 @@ var JElement = /** @class */ (function (_super) {
     };
     // 移除子元素
     JElement.prototype.removeChild = function (el) {
-        this.container.removeChild(el.container);
+        this.dom.removeChild(el.dom);
         for (var i = this.children.length - 1; i > -1; i--) {
             if (this.children[i] === el)
                 return this.children.splice(i, 1);
         }
+        delete el.parent;
     };
     // 把渲染层坐标转为控制层
     JElement.prototype.toControlPosition = function (p) {
-        var e_2, _a;
+        var e_3, _a;
         if (Array.isArray(p)) {
             var res = [];
             try {
@@ -342,12 +356,12 @@ var JElement = /** @class */ (function (_super) {
                     res.push(this.toControlPosition(point));
                 }
             }
-            catch (e_2_1) { e_2 = { error: e_2_1 }; }
+            catch (e_3_1) { e_3 = { error: e_3_1 }; }
             finally {
                 try {
                     if (p_1_1 && !p_1_1.done && (_a = p_1.return)) _a.call(p_1);
                 }
-                finally { if (e_2) throw e_2.error; }
+                finally { if (e_3) throw e_3.error; }
             }
             return res;
         }
@@ -355,7 +369,7 @@ var JElement = /** @class */ (function (_super) {
     };
     // 把控制层坐标转为渲染层
     JElement.prototype.toRenderPosition = function (p) {
-        var e_3, _a;
+        var e_4, _a;
         if (Array.isArray(p)) {
             var res = [];
             try {
@@ -364,12 +378,12 @@ var JElement = /** @class */ (function (_super) {
                     res.push(this.toRenderPosition(point));
                 }
             }
-            catch (e_3_1) { e_3 = { error: e_3_1 }; }
+            catch (e_4_1) { e_4 = { error: e_4_1 }; }
             finally {
                 try {
                     if (p_2_1 && !p_2_1.done && (_a = p_2.return)) _a.call(p_2);
                 }
-                finally { if (e_3) throw e_3.error; }
+                finally { if (e_4) throw e_4.error; }
             }
             return res;
         }
@@ -377,7 +391,7 @@ var JElement = /** @class */ (function (_super) {
     };
     // 把原点转回0，0坐标
     JElement.prototype.toElementAnchorPosition = function (p) {
-        var e_4, _a;
+        var e_5, _a;
         if (Array.isArray(p)) {
             var res = [];
             try {
@@ -386,19 +400,19 @@ var JElement = /** @class */ (function (_super) {
                     res.push(this.toElementAnchorPosition(point));
                 }
             }
-            catch (e_4_1) { e_4 = { error: e_4_1 }; }
+            catch (e_5_1) { e_5 = { error: e_5_1 }; }
             finally {
                 try {
                     if (p_3_1 && !p_3_1.done && (_a = p_3.return)) _a.call(p_3);
                 }
-                finally { if (e_4) throw e_4.error; }
+                finally { if (e_5) throw e_5.error; }
             }
             return res;
         }
         return __assign(__assign({}, p), { x: p.x, y: p.y });
     };
     JElement.prototype.toJSON = function () {
-        var e_5, _a;
+        var e_6, _a;
         var fields = ['x', 'y', 'width', 'height', 'url', 'text', 'rotation', 'type', 'style', 'id', 'skew', 'points', 'isClosed'];
         var obj = {};
         try {
@@ -409,12 +423,12 @@ var JElement = /** @class */ (function (_super) {
                 }
             }
         }
-        catch (e_5_1) { e_5 = { error: e_5_1 }; }
+        catch (e_6_1) { e_6 = { error: e_6_1 }; }
         finally {
             try {
                 if (fields_1_1 && !fields_1_1.done && (_a = fields_1.return)) _a.call(fields_1);
             }
-            finally { if (e_5) throw e_5.error; }
+            finally { if (e_6) throw e_6.error; }
         }
         return obj;
     };
