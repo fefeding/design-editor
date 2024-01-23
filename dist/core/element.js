@@ -62,12 +62,20 @@ var JElement = /** @class */ (function (_super) {
         // 样式代理处理
         _this.style = JStyle.createProxy();
         _this.style.on('change', function (s) {
-            _this.setStyle(s.name, s.value);
+            _this.setDomStyle(s.name, s.value);
         });
         if (option.style)
             _this.style.apply(option.style);
+        _this.initOption(option);
         return _this;
     }
+    // 初始化一些基础属性
+    JElement.prototype.initOption = function (option) {
+        this.x = option.x || option.left || 0;
+        this.y = option.y || option.top || 0;
+        this.width = option.width || option.width || 1;
+        this.height = option.height || option.height || 1;
+    };
     Object.defineProperty(JElement.prototype, "children", {
         get: function () {
             return this._children;
@@ -218,7 +226,11 @@ var JElement = /** @class */ (function (_super) {
         configurable: true
     });
     // 设置css到dom
-    JElement.prototype.setStyle = function (name, value) {
+    JElement.prototype.setDomStyle = function (name, value) {
+        if (name === 'backgroundImage') {
+            if (!/^\s*url\(/.test(value))
+                value = "url(".concat(value, ")");
+        }
         this.dom.style[name] = value;
     };
     // 设置样式
@@ -338,11 +350,13 @@ var JElement = /** @class */ (function (_super) {
     };
     // 移除子元素
     JElement.prototype.removeChild = function (el) {
-        this.dom.removeChild(el.dom);
+        // @ts-ignore
+        this.dom.removeChild(el.dom || el);
         for (var i = this.children.length - 1; i > -1; i--) {
             if (this.children[i] === el)
                 return this.children.splice(i, 1);
         }
+        // @ts-ignore
         delete el.parent;
     };
     // 把渲染层坐标转为控制层

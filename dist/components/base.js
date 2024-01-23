@@ -30,13 +30,24 @@ import JElement from '../core/element';
 var JBaseComponent = /** @class */ (function (_super) {
     __extends(JBaseComponent, _super);
     function JBaseComponent(option) {
-        var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'div', style: __assign(__assign({}, option.style), ContainerDefaultStyle) })) || this;
+        var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'div', style: __assign({}, ContainerDefaultStyle) })) || this;
         option.target = option.target || {};
         // 生成当前控制的元素
-        _this.target = new JElement(__assign(__assign({}, option), { style: __assign({ width: '100%', height: '100%', display: 'block' }, option.style) }));
+        _this.target = new JElement(__assign(__assign({}, option), { style: {
+                width: '100%',
+                height: '100%',
+                display: 'block',
+            } }));
         _this.addChild(_this.target);
+        // 刷新样式
+        if (option.style)
+            _this.style.apply(option.style);
         // 变换控制的是核心元素
         _this.transform = JTransform.createProxy(option.transform, _this.target);
+        if (option.text)
+            _this.text = option.text;
+        if (option.html)
+            _this.html = option.html;
         return _this;
     }
     Object.defineProperty(JBaseComponent.prototype, "text", {
@@ -60,13 +71,13 @@ var JBaseComponent = /** @class */ (function (_super) {
         configurable: true
     });
     // 设置css到dom
-    JBaseComponent.prototype.setStyle = function (name, value) {
+    JBaseComponent.prototype.setDomStyle = function (name, value) {
         // 如果外层容器的样式，则加到container上
         if (name in ContainerDefaultStyle) {
-            _super.prototype.setStyle.call(this, name, value);
+            _super.prototype.setDomStyle.call(this, name, value);
         }
         else {
-            this.target.setStyle(name, value);
+            this.target && this.target.setDomStyle(name, value);
         }
     };
     return JBaseComponent;

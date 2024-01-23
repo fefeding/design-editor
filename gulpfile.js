@@ -2,7 +2,9 @@ const gulp = require('gulp');
 const ts = require('gulp-typescript');
 const browserify = require('browserify');
 const source = require('vinyl-source-stream');
-const tsProject = ts.createProject('tsconfig.json');
+const tsProject = ts.createProject('tsconfig.json', {
+    module: 'es2015'
+});
 
 
 function createDtsTask(cb) {
@@ -28,7 +30,9 @@ function buildESTask(cb) {
         ]
     })
     .transform("babelify", {
-        presets: ['@babel/preset-env'],
+        presets: [
+            ['@babel/preset-env', {modules: 'auto'}]
+        ],
         //plugins: ['transform-runtime'] 
     })  //使用babel转换es6代码.bundle()
     .bundle()  //合并打包
