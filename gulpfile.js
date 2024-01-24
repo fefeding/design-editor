@@ -3,7 +3,9 @@ const ts = require('gulp-typescript');
 const browserify = require('browserify');
 const tsify = require('tsify');
 const source = require('vinyl-source-stream');
-const tsProject = ts.createProject('tsconfig.json');
+const tsProject = ts.createProject('tsconfig.json', {
+    module: 'es2015'
+});
 
 
 function createDtsTask(cb) {
