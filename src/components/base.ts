@@ -1,6 +1,5 @@
 
 import { ContainerDefaultStyle } from '../constant/styleMap';
-import JTransform from '../constant/transform';
 import JElement from '../core/element';
 
 export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends JElement<T> {
@@ -23,6 +22,10 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
             }
         });
         this.addChild(this.target);
+        // 选中元素
+        this.target.on('click', ()=>{
+            this.selected = true;
+        });
         // 变换改为控制主元素
         this.transform.bind(this.target);
 
@@ -52,6 +55,16 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
     }
     set html(v: string) {
         this.target.dom.innerHTML = v;
+    }
+
+    // 选中
+    private _selected = false;
+    get selected() {
+        return this._selected;
+    }
+    set selected(v: boolean) {
+        this._selected = v;
+        this.emit('select', v);
     }
 
     // 设置css到dom

@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import JTransform from '../constant/transform';
 import JStyle from './style';
 import util from '../lib/util';
+import JEvent from '../core/event';
 
 export default class JElement<T extends HTMLElement = HTMLElement> extends EventEmiter {
 
@@ -21,6 +22,11 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
 
         const nodeType = option.nodeType || 'div';
         this.dom = document.createElement(nodeType);
+        // 事件托管
+        this.event = new JEvent(this.dom);
+        this.event.init((e: Event) => {
+            return this.emit(e.type, e);
+        });
 
         // 样式代理处理
         this.style = JStyle.createProxy();
@@ -36,11 +42,11 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     }
     // 初始化一些基础属性
     initOption(option) {
-        this.x = option.x || option.left || 0;
-        this.y = option.y || option.top || 0;
+        this.x = option.x || option.left || this.x || 0;
+        this.y = option.y || option.top || this.y || 0;
 
-        this.width = option.width || option.width || 1;
-        this.height = option.height || option.height || 1;
+        this.width = option.width || option.width || this.width || 1;
+        this.height = option.height || option.height || this.height || 1;
 
         if(typeof option.rotation !== 'undefined') this.rotation = option.rotation;
         if(typeof option.angle !== 'undefined') this.angle = option.angle;
@@ -61,6 +67,8 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     dom: T;
     // 父元素
     parent: JElement | undefined;
+    // 事件处理
+    event: JEvent;
 
     // 样式代理
     style: JStyle;

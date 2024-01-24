@@ -3,6 +3,7 @@ import JBase from './components/base';
 import JText from './components/text';
 import JImage from './components/image';
 import JElement from './core/element';
+import JController from './components/controller';
 
 export default class JEditor extends JBase {
 
@@ -28,6 +29,12 @@ export default class JEditor extends JBase {
             'overflow': 'hidden'
         });
 
+        // 生成控制器
+        this.ElementController = new JController({
+            editor: this
+        });
+        this.dom.appendChild(this.ElementController.dom);// 加到外层
+
         if(option.width && option.height) {
             this.resize(option.width, option.height);
         }
@@ -39,6 +46,9 @@ export default class JEditor extends JBase {
         'image': JImage,
         'text': JText
     } as  { [key: string]: typeof JBase};
+
+    // 元素控帛器
+    ElementController: JController;
 
     get width() {
         return this.target.width
@@ -91,10 +101,19 @@ export default class JEditor extends JBase {
     }
 
     // 添加元素到画布
-    addChild(child: JBase | HTMLElement) {
+    addChild(child: JBase) {
         if(child === this.target) {
             return super.addChild(child);
         }
+        const self = this;
+        child.on('select', function(v) {
+            if(v) {
+                self.ElementController.bind(this);
+            }
+            else {
+                self.ElementController.visible = false;
+            }
+        });
         return this.target.addChild(child);
     }
 

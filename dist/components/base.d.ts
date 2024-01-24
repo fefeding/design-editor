@@ -7,5 +7,8 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
     set text(v: string);
     get html(): string;
     set html(v: string);
+    private _selected;
+    get selected(): boolean;
+    set selected(v: boolean);
     setDomStyle(name: string, value: string): void;
 }

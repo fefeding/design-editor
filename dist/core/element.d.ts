@@ -1,6 +1,7 @@
 import EventEmiter from 'eventemitter3';
 import JTransform from '../constant/transform';
 import JStyle from './style';
+import JEvent from '../core/event';
 export default class JElement<T extends HTMLElement = HTMLElement> extends EventEmiter {
     constructor(option: any);
     initOption(option: any): void;
@@ -10,6 +11,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     get children(): JElement<HTMLElement>[];
     dom: T;
     parent: JElement | undefined;
+    event: JEvent;
     style: JStyle;
     get x(): number | string;
     set x(v: number | string);

@@ -1042,7 +1042,7 @@ function v4(options, buf, offset) {
 var util = {
     // 是否是数字
     isNumber: function (v) {
-        return typeof v === 'number' || /\s*[\d\.]+\s*/.test(v);
+        return typeof v === 'number' || /^\s*[\d\.]+\s*$/.test(v);
     },
     // 是否是带像素单位的字符串
     isPXNumber: function (v) {
@@ -1308,6 +1308,89 @@ var JElementStyle = /** @class */ (function (_super) {
     return JElementStyle;
 }(JElementStyleMap));
 
+var SupportEventNames = [
+    'mousedown', 'mouseup', 'mouseover', 'mousemove', 'mouseout', 'mousewheel', 'click', 'dblclick', 'keydown', 'keypress', 'keyup', 'blur', 'change', 'focus', 'drag', 'dragenter', 'dragleave', 'dragover', 'dragstart', 'drop'
+];
+var JEvent = /** @class */ (function () {
+    function JEvent(target) {
+        this.target = target;
+    }
+    // 初始化所有支持的事件
+    JEvent.prototype.init = function (handler) {
+        this.bindEvent(SupportEventNames, handler);
+    };
+    /**
+     * 绑定事件到html对象
+     *
+     * @method bindEvent
+     * @static
+     * @param {element} html元素对象
+     * @param {string} name 事件名称
+     * @param {function} fun 事件委托
+     * @returns {name, fun, target} 返回当前绑定
+     */
+    JEvent.prototype.bindEvent = function (name, fun, opt, target) {
+        var e_1, _a;
+        if (opt === void 0) { opt = false; }
+        if (target === void 0) { target = this.target; }
+        if (Array.isArray(name)) {
+            try {
+                for (var name_1 = __values(name), name_1_1 = name_1.next(); !name_1_1.done; name_1_1 = name_1.next()) {
+                    var n = name_1_1.value;
+                    this.bindEvent(n, fun, opt, target);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (name_1_1 && !name_1_1.done && (_a = name_1.return)) _a.call(name_1);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+            return this;
+        }
+        if (name && name.indexOf && name.indexOf(' ') != -1) {
+            var ns = name.split(' ');
+            return this.bindEvent(ns, fun, opt, target);
+        }
+        /*// @ts-ignore
+        if(target.attachEvent) {
+            // @ts-ignore
+            target.attachEvent("on"+name, fun, opt);
+        } */
+        if (target.addEventListener) {
+            target.addEventListener(name, fun, opt);
+        }
+        return this;
+    };
+    /**
+     * 从对象中移除事件到
+     *
+     * @method removeEvent
+     * @static
+     * @param {element} html元素对象
+     * @param {string} name 事件名称
+     * @param {function} fun 事件委托
+     */
+    JEvent.prototype.removeEvent = function (name, fun, opt, target) {
+        if (opt === void 0) { opt = false; }
+        if (target === void 0) { target = this.target; }
+        if (target.removeEventListener) {
+            target.removeEventListener(name, fun, opt);
+        }
+        // @ts-ignore  
+        else if (target.detachEvent) {
+            // @ts-ignore
+            target.detachEvent('on' + name, fun, opt);
+        }
+        else {
+            target['on' + name] = null;
+        }
+        return this;
+    };
+    return JEvent;
+}());
+
 var JElement = /** @class */ (function (_super) {
     __extends(JElement, _super);
     function JElement(option) {
@@ -1328,6 +1411,11 @@ var JElement = /** @class */ (function (_super) {
         _this.type = _this.type || option.type || '';
         var nodeType = option.nodeType || 'div';
         _this.dom = document.createElement(nodeType);
+        // 事件托管
+        _this.event = new JEvent(_this.dom);
+        _this.event.init(function (e) {
+            return _this.emit(e.type, e);
+        });
         // 样式代理处理
         _this.style = JElementStyle.createProxy();
         _this.style.on('change', function (s) {
@@ -1342,10 +1430,10 @@ var JElement = /** @class */ (function (_super) {
     }
     // 初始化一些基础属性
     JElement.prototype.initOption = function (option) {
-        this.x = option.x || option.left || 0;
-        this.y = option.y || option.top || 0;
-        this.width = option.width || option.width || 1;
-        this.height = option.height || option.height || 1;
+        this.x = option.x || option.left || this.x || 0;
+        this.y = option.y || option.top || this.y || 0;
+        this.width = option.width || option.width || this.width || 1;
+        this.height = option.height || option.height || this.height || 1;
         if (typeof option.rotation !== 'undefined')
             this.rotation = option.rotation;
         if (typeof option.angle !== 'undefined')
@@ -1659,6 +1747,8 @@ var JBaseComponent = /** @class */ (function (_super) {
     __extends(JBaseComponent, _super);
     function JBaseComponent(option) {
         var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'div', style: __assign({}, ContainerDefaultStyle) })) || this;
+        // 选中
+        _this._selected = false;
         option.target = option.target || {};
         // 生成当前控制的元素
         _this.target = new JElement(__assign(__assign({}, option), { style: {
@@ -1667,6 +1757,10 @@ var JBaseComponent = /** @class */ (function (_super) {
                 display: 'block',
             } }));
         _this.addChild(_this.target);
+        // 选中元素
+        _this.target.on('click', function () {
+            _this.selected = true;
+        });
         // 变换改为控制主元素
         _this.transform.bind(_this.target);
         _this.init(option);
@@ -1697,6 +1791,17 @@ var JBaseComponent = /** @class */ (function (_super) {
         },
         set: function (v) {
             this.target.dom.innerHTML = v;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(JBaseComponent.prototype, "selected", {
+        get: function () {
+            return this._selected;
+        },
+        set: function (v) {
+            this._selected = v;
+            this.emit('select', v);
         },
         enumerable: false,
         configurable: true
@@ -1748,6 +1853,176 @@ var JImage = /** @class */ (function (_super) {
     return JImage;
 }(JBaseComponent));
 
+// 鼠标指针
+var GCursors = {
+    'l': 'w-resize',
+    'lt': 'nw-resize',
+    't': 'n-resize',
+    'tr': 'ne-resize',
+    'r': 'e-resize',
+    'rb': 'se-resize',
+    'b': 's-resize',
+    'lb': 'sw-resize',
+    'rotate': 'cell',
+    'skew': 'crosshair'
+};
+var JControllerItem = /** @class */ (function (_super) {
+    __extends(JControllerItem, _super);
+    function JControllerItem(option) {
+        var _this = this;
+        option.style = option.style || {};
+        option.style.backgroundColor = option.style.backgroundColor || '#fff';
+        option.style.border = option.style.border || '1px solid rgba(6,155,181,1)';
+        option.style.position = 'absolute';
+        _this = _super.call(this, option) || this;
+        _this.dir = '';
+        _this.size = 8;
+        _this.dir = option.dir || '';
+        _this.size = option.size || 8;
+        _this.style.cursor = GCursors[_this.dir];
+        _this.width = _this.height = _this.size;
+        _this.editor = option.editor;
+        _this.transform.bind(_this);
+        return _this;
+    }
+    return JControllerItem;
+}(JElement));
+// 元素大小位置控制器
+var JControllerComponent = /** @class */ (function (_super) {
+    __extends(JControllerComponent, _super);
+    function JControllerComponent(option) {
+        var _this = this;
+        option.zIndex = 100000;
+        option.style = option.style || {};
+        option.style.backgroundColor = option.style.backgroundColor || 'rgba(0,0,0,0.01)';
+        _this = _super.call(this, option) || this;
+        _this.items = [];
+        // 拖放位置
+        _this.dragStartPosition = {
+            x: 0,
+            y: 0,
+        };
+        _this.init(option);
+        return _this;
+    }
+    JControllerComponent.prototype.init = function (option) {
+        this.createItem('l', {
+            shape: 'rect',
+            style: __assign(__assign({}, option.itemStyle), { left: 0, top: '50%' }),
+            transform: {
+                translateX: '-50%',
+                translateY: '-50%'
+            }
+        });
+        this.createItem('lt', {
+            shape: 'rect',
+            style: __assign(__assign({}, option.itemStyle), { left: 0, top: 0, margin: '-50% 0 0 -50%' })
+        });
+        this.createItem('t', {
+            shape: 'rect',
+            style: __assign(__assign({}, option.itemStyle), { left: '50%', top: 0, margin: '-50% 0 0 -50%' })
+        });
+        this.createItem('tr', {
+            shape: 'rect',
+            style: __assign(__assign({}, option.itemStyle), { left: '100%', top: 0, margin: '-50% -50% 0 0' })
+        });
+        this.createItem('r', {
+            shape: 'rect',
+            style: __assign(__assign({}, option.itemStyle), { left: 0, top: '50%', marginTop: '-50%' })
+        });
+        this.createItem('rb', {
+            shape: 'rect',
+            style: __assign(__assign({}, option.itemStyle), { left: 0, top: '50%', marginTop: '-50%' })
+        });
+        this.createItem('b', {
+            shape: 'rect',
+            style: __assign(__assign({}, option.itemStyle), { left: 0, top: '50%', marginTop: '-50%' })
+        });
+        this.createItem('lb', {
+            shape: 'rect',
+            style: __assign(__assign({}, option.itemStyle), { left: 0, top: '50%', marginTop: '-50%' })
+        });
+        // 旋转块
+        this.rotateItem = this.createItem('rotate', {
+            shape: 'circle',
+            style: __assign(__assign({}, option.itemStyle), { backgroundImage: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAgVBMVEUAAAAiK9MjKdUfKNYjKdUiKNYiKdUeHuAjKNYjKNYiKNYyMswiKNYiKNYiKNYiKNYhKNYiKdUiKNYiKNYjKdUjKNYgJ9cjJdYiKNYiKNYiKdUhJ9cjKNYiKdUdLNMrK9MiKNYiKNYiKdUiKNYjKNYjKdUjKdUjKNYjKdUjKdUjKdaUW7eVAAAAKnRSTlMAFdMY1/v4CPXo4wXuyLh6RfKRjWpAJxykb1tSTjARC8OslYVgOivQrqey7caqAAABM0lEQVRIx+2U6W6DMBCEDdSE+2wg950e3/s/YGOBQI0hMf+qKvODHYsZe9derXjh32C2PsU+BIcyCw3kVhnRIUj3z/TvEcTp1RGizs42BJvH+kqSbPtlFkP52LFc353oshCTMM8pJzpchuuwrLEs8fdDes9zRhwH0gG9DbY1khR+OKQfd9hkuv4Nbp/hrFIKXe+ANebIiHW9gJbod2fhN7zTq+Shpb/3UusQ2fGeuMw6rtBv1vxraX9UgNNwPV1l0NONmbdMd7jUenkFqRhzyKEr3/DZENNHDSOuKpq3zZlEBfPG3EVcVDRv/RX5VkzCAv9jkiFMyO+GwHb1eOgt4Kvq104hverJIMshea/CG61X3y6yeDb7nJMHyChwVTia1LS7HAMJ+MmyNp/gO2cmXvjD+AHprhpoJKiYYAAAAABJRU5ErkJggg==' })
+        });
+        this.skewItem = this.createItem('skew', {
+            shape: 'circle',
+            style: __assign(__assign({}, option.itemStyle), { backgroundImage: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAdVBMVEUAAABlY/97e/9kYv9kY/9nZ/9lY/9kYv9kY/9kYv9kY/9lY/9kYv9kY/9pYP9oYP9kYv9kYv9kY/9kYv9iYv9nY/9kYv9lYv9kYv9lYv9lY/9kYv9lYv9kY/9kYv9lZf9lY/9kYv9kYv9lYv9kYv9lY/9lY/+ktQNRAAAAJnRSTlMA/ATv3xHmW/V0TtO3khcNy8XBUh8U6ti+ppt5bksnGTqygmNEZ0ctpdUAAAEmSURBVEjH7VPbloIwDKSloAUqF6kgd123//+Ja+jSSpGqD74xbynJycxkcDZs+BIOAa2ygrgIuaQoKxocbN03FooFQnZ73u1RIlZQUG/ZvzsJC9zGaOeZkEAJa9ou9zD28q5tWIKERDZb0kvu+3MQm5vj4LyXWh7k42Rce/VW1F1d+J5g9fILddmv29eX0PGj6vReRdhmOI7uLakqgWTnWNGBRFWBo7l9IAeRqgKGFzulCzirjyZAxGRb6/tHM2GREq1VC7eWtvpCoN3M1nq0NX3gwAt9OBiACfNwZKaSRyoaVST0xJBN0UjNMzVG+NCog0zho0tP4noebwKP/2zq+Ll5AwuNAYpEyIZXv+hJU3I4d17iiKToN6Fs/WDgg34djQ0bvo4/naYvgs8xmvwAAAAASUVORK5CYII=' })
+        }); // 旋转块 
+        this.hoverItem = this.createItem('hover', {
+            shape: 'rect',
+            style: __assign(__assign({}, option.itemStyle), { borderStyle: 'dotted', backgroundColor: 'transparent' })
+        });
+        this.hoverItem.visible = false;
+    };
+    // 生成控制点
+    JControllerComponent.prototype.createItem = function (id, option) {
+        var item = new JControllerItem(__assign({ dir: id }, option));
+        this.addChild(item);
+        this.items.push(item);
+        /*
+                const self = this;
+                item.on('mousedown', function(event) {
+                    if(event.button === 2) {
+                        return;
+                    }
+                    self.onDragStart(event, this);
+                });
+        
+                item.on('change', ({x, y, width, height, rotation, skew} = event) => {
+                    const w = this.width + width;
+                    const h = this.height + height;
+        
+                    // 大小最少要有1
+                    if(w < 1) {
+                        x = 0;
+                    }
+                    else if(width !== 0) {
+                        this.width = w;
+                    }
+                    if(h < 1) {
+                        y = 0;
+                    }
+                    else if(height !== 0) {
+                        this.height = h;
+                    }
+                    
+                    if(x !== 0 || y !== 0 || width !== 0 || height !== 0) {
+                        this.move(x, y);
+                        //this.initShapes();
+                    }
+                    
+                    if(rotation) {
+                        this.rotation += rotation;
+                    }
+        
+                    if(skew && (skew.x !== 0 || skew.y !== 0)) {
+                        //this.skew.x += skew.x;
+                        //this.skew.y += skew.y;
+                    }
+                });*/
+        return item;
+    };
+    // 绑定到操作的对象
+    JControllerComponent.prototype.bind = function (target) {
+        this.left = Number(target.left) + Number(this.editor.left);
+        this.top = Number(target.top) + Number(this.editor.top);
+        this.width = target.width;
+        this.height = target.height;
+        this.transform.from({
+            rotateX: target.transform.rotateX,
+            rotateY: target.transform.rotateY,
+            rotateZ: target.transform.rotateZ,
+            scaleX: target.transform.scaleX,
+            scaleY: target.transform.scaleY,
+            scaleZ: target.transform.scaleZ,
+        });
+    };
+    return JControllerComponent;
+}(JControllerItem));
+
 var JEditor = /** @class */ (function (_super) {
     __extends(JEditor, _super);
     function JEditor(container, option) {
@@ -1777,6 +2052,11 @@ var JEditor = /** @class */ (function (_super) {
             'backgroundSize': '100% 100%',
             'overflow': 'hidden'
         });
+        // 生成控制器
+        this.ElementController = new JControllerComponent({
+            editor: this
+        });
+        this.dom.appendChild(this.ElementController.dom); // 加到外层
         if (option.width && option.height) {
             this.resize(option.width, option.height);
         }
@@ -1850,6 +2130,15 @@ var JEditor = /** @class */ (function (_super) {
         if (child === this.target) {
             return _super.prototype.addChild.call(this, child);
         }
+        var self = this;
+        child.on('select', function (v) {
+            if (v) {
+                self.ElementController.bind(this);
+            }
+            else {
+                self.ElementController.visible = false;
+            }
+        });
         return this.target.addChild(child);
     };
     // 移除
