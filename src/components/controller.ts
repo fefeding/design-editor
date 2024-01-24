@@ -11,8 +11,8 @@ const GCursors = {
     'rb': 'se-resize',
     'b': 's-resize',
     'lb': 'sw-resize',
-    'rotate': 'cell',
-    'skew': 'crosshair'
+    'rotate': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAgVBMVEUAAAAiK9MjKdUfKNYjKdUiKNYiKdUeHuAjKNYjKNYiKNYyMswiKNYiKNYiKNYiKNYhKNYiKdUiKNYiKNYjKdUjKNYgJ9cjJdYiKNYiKNYiKdUhJ9cjKNYiKdUdLNMrK9MiKNYiKNYiKdUiKNYjKNYjKdUjKdUjKNYjKdUjKdUjKdaUW7eVAAAAKnRSTlMAFdMY1/v4CPXo4wXuyLh6RfKRjWpAJxykb1tSTjARC8OslYVgOivQrqey7caqAAABM0lEQVRIx+2U6W6DMBCEDdSE+2wg950e3/s/YGOBQI0hMf+qKvODHYsZe9derXjh32C2PsU+BIcyCw3kVhnRIUj3z/TvEcTp1RGizs42BJvH+kqSbPtlFkP52LFc353oshCTMM8pJzpchuuwrLEs8fdDes9zRhwH0gG9DbY1khR+OKQfd9hkuv4Nbp/hrFIKXe+ANebIiHW9gJbod2fhN7zTq+Shpb/3UusQ2fGeuMw6rtBv1vxraX9UgNNwPV1l0NONmbdMd7jUenkFqRhzyKEr3/DZENNHDSOuKpq3zZlEBfPG3EVcVDRv/RX5VkzCAv9jkiFMyO+GwHb1eOgt4Kvq104hverJIMshea/CG61X3y6yeDb7nJMHyChwVTia1LS7HAMJ+MmyNp/gO2cmXvjD+AHprhpoJKiYYAAAAABJRU5ErkJggg==',
+    'skew': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAdVBMVEUAAABlY/97e/9kYv9kY/9nZ/9lY/9kYv9kY/9kYv9kY/9lY/9kYv9kY/9pYP9oYP9kYv9kYv9kY/9kYv9iYv9nY/9kYv9lYv9kYv9lYv9lY/9kYv9lYv9kY/9kYv9lZf9lY/9kYv9kYv9lYv9kYv9lY/9lY/+ktQNRAAAAJnRSTlMA/ATv3xHmW/V0TtO3khcNy8XBUh8U6ti+ppt5bksnGTqygmNEZ0ctpdUAAAEmSURBVEjH7VPbloIwDKSloAUqF6kgd123//+Ja+jSSpGqD74xbynJycxkcDZs+BIOAa2ygrgIuaQoKxocbN03FooFQnZ73u1RIlZQUG/ZvzsJC9zGaOeZkEAJa9ou9zD28q5tWIKERDZb0kvu+3MQm5vj4LyXWh7k42Rce/VW1F1d+J5g9fILddmv29eX0PGj6vReRdhmOI7uLakqgWTnWNGBRFWBo7l9IAeRqgKGFzulCzirjyZAxGRb6/tHM2GREq1VC7eWtvpCoN3M1nq0NX3gwAt9OBiACfNwZKaSRyoaVST0xJBN0UjNMzVG+NCog0zho0tP4noebwKP/2zq+Ll5AwuNAYpEyIZXv+hJU3I4d17iiKToN6Fs/WDgg34djQ0bvo4/naYvgs8xmvwAAAAASUVORK5CYII='
 };
 
 export class JControllerItem extends JElement<HTMLDivElement> {
@@ -27,7 +27,7 @@ export class JControllerItem extends JElement<HTMLDivElement> {
 
         this.dir = option.dir || '';
         this.size = option.size || 8;
-        this.style.cursor = GCursors[this.dir];
+        this.style.cursor = this.style.cursor || GCursors[this.dir];
         this.width = this.height = this.size;
 
         this.editor = option.editor;
@@ -46,6 +46,7 @@ export default class JControllerComponent extends JControllerItem {
     constructor(option) {
         option.zIndex = 100000;
         option.style = option.style || {};
+        option.style.cursor = option.style.cursor || 'move';
         option.style.backgroundColor = option.style.backgroundColor || 'rgba(0,0,0,0.01)';
         super(option);
         this.init(option);
@@ -71,7 +72,10 @@ export default class JControllerComponent extends JControllerItem {
                 ...option.itemStyle,
                 left: 0,
                 top: 0,
-                margin: '-50% 0 0 -50%',
+            },
+            transform: {
+                translateX: '-50%',
+                translateY: '-50%'
             }
         });
         this.createItem('t', {
@@ -80,7 +84,10 @@ export default class JControllerComponent extends JControllerItem {
                 ...option.itemStyle,
                 left: '50%',
                 top: 0,
-                margin: '-50% 0 0 -50%',
+            },
+            transform: {
+                translateX: '-50%',
+                translateY: '-50%'
             }
         });
         this.createItem('tr', {
@@ -89,34 +96,46 @@ export default class JControllerComponent extends JControllerItem {
                 ...option.itemStyle,
                 left: '100%',
                 top: 0,
-                margin: '-50% -50% 0 0',
+            },
+            transform: {
+                translateX: '-50%',
+                translateY: '-50%'
             }
         });
         this.createItem('r', {
             shape: 'rect', 
             style: {
                 ...option.itemStyle,
-                left: 0,
+                left: '100%',
                 top: '50%',
-                marginTop: '-50%',
+            },
+            transform: {
+                translateX: '-50%',
+                translateY: '-50%'
             }
         });
         this.createItem('rb', {
             shape: 'rect', 
             style: {
                 ...option.itemStyle,
-                left: 0,
-                top: '50%',
-                marginTop: '-50%',
+                left: '100%',
+                top: '100%',
+            },
+            transform: {
+                translateX: '-50%',
+                translateY: '-50%'
             }
         });
         this.createItem('b', {
             shape: 'rect', 
             style: {
                 ...option.itemStyle,
-                left: 0,
-                top: '50%',
-                marginTop: '-50%',
+                left: '50%',
+                top: '100%',
+            },
+            transform: {
+                translateX: '-50%',
+                translateY: '-50%'
             }
         });
         this.createItem('lb', {
@@ -124,24 +143,51 @@ export default class JControllerComponent extends JControllerItem {
             style: {
                 ...option.itemStyle,
                 left: 0,
-                top: '50%',
-                marginTop: '-50%',
+                top: '100%',
+            },
+            transform: {
+                translateX: '-50%',
+                translateY: '-50%'
             }
         });
 
         // 旋转块
         this.rotateItem = this.createItem('rotate', {
             shape: 'circle', 
+            size: 24,
             style: {
+                left: '50%',
+                top: '-40px',
+                //backgroundColor: 'transparent',
+                border: 'none',
+                boxShadow: '0 0 2px 2px #ccc',
+                borderRadius: '50%',
+                cursor: `pointer`,
                 ...option.itemStyle,
-                backgroundImage: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAgVBMVEUAAAAiK9MjKdUfKNYjKdUiKNYiKdUeHuAjKNYjKNYiKNYyMswiKNYiKNYiKNYiKNYhKNYiKdUiKNYiKNYjKdUjKNYgJ9cjJdYiKNYiKNYiKdUhJ9cjKNYiKdUdLNMrK9MiKNYiKNYiKdUiKNYjKNYjKdUjKdUjKNYjKdUjKdUjKdaUW7eVAAAAKnRSTlMAFdMY1/v4CPXo4wXuyLh6RfKRjWpAJxykb1tSTjARC8OslYVgOivQrqey7caqAAABM0lEQVRIx+2U6W6DMBCEDdSE+2wg950e3/s/YGOBQI0hMf+qKvODHYsZe9derXjh32C2PsU+BIcyCw3kVhnRIUj3z/TvEcTp1RGizs42BJvH+kqSbPtlFkP52LFc353oshCTMM8pJzpchuuwrLEs8fdDes9zRhwH0gG9DbY1khR+OKQfd9hkuv4Nbp/hrFIKXe+ANebIiHW9gJbod2fhN7zTq+Shpb/3UusQ2fGeuMw6rtBv1vxraX9UgNNwPV1l0NONmbdMd7jUenkFqRhzyKEr3/DZENNHDSOuKpq3zZlEBfPG3EVcVDRv/RX5VkzCAv9jkiFMyO+GwHb1eOgt4Kvq104hverJIMshea/CG61X3y6yeDb7nJMHyChwVTia1LS7HAMJ+MmyNp/gO2cmXvjD+AHprhpoJKiYYAAAAABJRU5ErkJggg=='
+                'backgroundSize': '100%',
+                backgroundImage: GCursors.rotate
+            },
+            transform: {
+                translateX: '-50%',
             }
         });
         this.skewItem = this.createItem('skew', {
             shape: 'circle', 
+            size: 24,
             style: {
+                left: '50%',
+                top: '50%',
+                border: 'none',
+                boxShadow: '0 0 2px 2px #ccc',
+                borderRadius: '50%',
+                cursor: `pointer`,
                 ...option.itemStyle,
-                backgroundImage: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAdVBMVEUAAABlY/97e/9kYv9kY/9nZ/9lY/9kYv9kY/9kYv9kY/9lY/9kYv9kY/9pYP9oYP9kYv9kYv9kY/9kYv9iYv9nY/9kYv9lYv9kYv9lYv9lY/9kYv9lYv9kY/9kYv9lZf9lY/9kYv9kYv9lYv9kYv9lY/9lY/+ktQNRAAAAJnRSTlMA/ATv3xHmW/V0TtO3khcNy8XBUh8U6ti+ppt5bksnGTqygmNEZ0ctpdUAAAEmSURBVEjH7VPbloIwDKSloAUqF6kgd123//+Ja+jSSpGqD74xbynJycxkcDZs+BIOAa2ygrgIuaQoKxocbN03FooFQnZ73u1RIlZQUG/ZvzsJC9zGaOeZkEAJa9ou9zD28q5tWIKERDZb0kvu+3MQm5vj4LyXWh7k42Rce/VW1F1d+J5g9fILddmv29eX0PGj6vReRdhmOI7uLakqgWTnWNGBRFWBo7l9IAeRqgKGFzulCzirjyZAxGRb6/tHM2GREq1VC7eWtvpCoN3M1nq0NX3gwAt9OBiACfNwZKaSRyoaVST0xJBN0UjNMzVG+NCog0zho0tP4noebwKP/2zq+Ll5AwuNAYpEyIZXv+hJU3I4d17iiKToN6Fs/WDgg34djQ0bvo4/naYvgs8xmvwAAAAASUVORK5CYII='
+                'backgroundSize': '100%',
+                backgroundImage: GCursors.skew
+            },
+            transform: {
+                translateX: '-50%',
+                translateY: '-50%'
             }
         });// 旋转块 
         

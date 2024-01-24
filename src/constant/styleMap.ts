@@ -902,6 +902,6 @@ export const ContainerDefaultStyle = {
     height: 10,
     right: 'auto',
     bottom: 'auto',
-    padding: '1px',
+    padding: '0',
     margin: '0'
 }

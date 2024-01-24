@@ -970,7 +970,7 @@ var ContainerDefaultStyle = {
     height: 10,
     right: 'auto',
     bottom: 'auto',
-    padding: '1px',
+    padding: '0',
     margin: '0'
 };
 
@@ -1763,18 +1763,15 @@ var JBaseComponent = /** @class */ (function (_super) {
         });
         // 变换改为控制主元素
         _this.transform.bind(_this.target);
-        _this.init(option);
-        return _this;
-    }
-    JBaseComponent.prototype.init = function (option) {
         // 刷新样式
         if (option.style)
-            this.style.apply(option.style);
+            _this.style.apply(option.style);
         if (option.text)
-            this.text = option.text;
+            _this.text = option.text;
         if (option.html)
-            this.html = option.html;
-    };
+            _this.html = option.html;
+        return _this;
+    }
     Object.defineProperty(JBaseComponent.prototype, "text", {
         get: function () {
             return this.target.dom.innerText;
@@ -1863,8 +1860,8 @@ var GCursors = {
     'rb': 'se-resize',
     'b': 's-resize',
     'lb': 'sw-resize',
-    'rotate': 'cell',
-    'skew': 'crosshair'
+    'rotate': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAgVBMVEUAAAAiK9MjKdUfKNYjKdUiKNYiKdUeHuAjKNYjKNYiKNYyMswiKNYiKNYiKNYiKNYhKNYiKdUiKNYiKNYjKdUjKNYgJ9cjJdYiKNYiKNYiKdUhJ9cjKNYiKdUdLNMrK9MiKNYiKNYiKdUiKNYjKNYjKdUjKdUjKNYjKdUjKdUjKdaUW7eVAAAAKnRSTlMAFdMY1/v4CPXo4wXuyLh6RfKRjWpAJxykb1tSTjARC8OslYVgOivQrqey7caqAAABM0lEQVRIx+2U6W6DMBCEDdSE+2wg950e3/s/YGOBQI0hMf+qKvODHYsZe9derXjh32C2PsU+BIcyCw3kVhnRIUj3z/TvEcTp1RGizs42BJvH+kqSbPtlFkP52LFc353oshCTMM8pJzpchuuwrLEs8fdDes9zRhwH0gG9DbY1khR+OKQfd9hkuv4Nbp/hrFIKXe+ANebIiHW9gJbod2fhN7zTq+Shpb/3UusQ2fGeuMw6rtBv1vxraX9UgNNwPV1l0NONmbdMd7jUenkFqRhzyKEr3/DZENNHDSOuKpq3zZlEBfPG3EVcVDRv/RX5VkzCAv9jkiFMyO+GwHb1eOgt4Kvq104hverJIMshea/CG61X3y6yeDb7nJMHyChwVTia1LS7HAMJ+MmyNp/gO2cmXvjD+AHprhpoJKiYYAAAAABJRU5ErkJggg==',
+    'skew': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAdVBMVEUAAABlY/97e/9kYv9kY/9nZ/9lY/9kYv9kY/9kYv9kY/9lY/9kYv9kY/9pYP9oYP9kYv9kYv9kY/9kYv9iYv9nY/9kYv9lYv9kYv9lYv9lY/9kYv9lYv9kY/9kYv9lZf9lY/9kYv9kYv9lYv9kYv9lY/9lY/+ktQNRAAAAJnRSTlMA/ATv3xHmW/V0TtO3khcNy8XBUh8U6ti+ppt5bksnGTqygmNEZ0ctpdUAAAEmSURBVEjH7VPbloIwDKSloAUqF6kgd123//+Ja+jSSpGqD74xbynJycxkcDZs+BIOAa2ygrgIuaQoKxocbN03FooFQnZ73u1RIlZQUG/ZvzsJC9zGaOeZkEAJa9ou9zD28q5tWIKERDZb0kvu+3MQm5vj4LyXWh7k42Rce/VW1F1d+J5g9fILddmv29eX0PGj6vReRdhmOI7uLakqgWTnWNGBRFWBo7l9IAeRqgKGFzulCzirjyZAxGRb6/tHM2GREq1VC7eWtvpCoN3M1nq0NX3gwAt9OBiACfNwZKaSRyoaVST0xJBN0UjNMzVG+NCog0zho0tP4noebwKP/2zq+Ll5AwuNAYpEyIZXv+hJU3I4d17iiKToN6Fs/WDgg34djQ0bvo4/naYvgs8xmvwAAAAASUVORK5CYII='
 };
 var JControllerItem = /** @class */ (function (_super) {
     __extends(JControllerItem, _super);
@@ -1879,7 +1876,7 @@ var JControllerItem = /** @class */ (function (_super) {
         _this.size = 8;
         _this.dir = option.dir || '';
         _this.size = option.size || 8;
-        _this.style.cursor = GCursors[_this.dir];
+        _this.style.cursor = _this.style.cursor || GCursors[_this.dir];
         _this.width = _this.height = _this.size;
         _this.editor = option.editor;
         _this.transform.bind(_this);
@@ -1894,6 +1891,7 @@ var JControllerComponent = /** @class */ (function (_super) {
         var _this = this;
         option.zIndex = 100000;
         option.style = option.style || {};
+        option.style.cursor = option.style.cursor || 'move';
         option.style.backgroundColor = option.style.backgroundColor || 'rgba(0,0,0,0.01)';
         _this = _super.call(this, option) || this;
         _this.items = [];
@@ -1916,40 +1914,79 @@ var JControllerComponent = /** @class */ (function (_super) {
         });
         this.createItem('lt', {
             shape: 'rect',
-            style: __assign(__assign({}, option.itemStyle), { left: 0, top: 0, margin: '-50% 0 0 -50%' })
+            style: __assign(__assign({}, option.itemStyle), { left: 0, top: 0 }),
+            transform: {
+                translateX: '-50%',
+                translateY: '-50%'
+            }
         });
         this.createItem('t', {
             shape: 'rect',
-            style: __assign(__assign({}, option.itemStyle), { left: '50%', top: 0, margin: '-50% 0 0 -50%' })
+            style: __assign(__assign({}, option.itemStyle), { left: '50%', top: 0 }),
+            transform: {
+                translateX: '-50%',
+                translateY: '-50%'
+            }
         });
         this.createItem('tr', {
             shape: 'rect',
-            style: __assign(__assign({}, option.itemStyle), { left: '100%', top: 0, margin: '-50% -50% 0 0' })
+            style: __assign(__assign({}, option.itemStyle), { left: '100%', top: 0 }),
+            transform: {
+                translateX: '-50%',
+                translateY: '-50%'
+            }
         });
         this.createItem('r', {
             shape: 'rect',
-            style: __assign(__assign({}, option.itemStyle), { left: 0, top: '50%', marginTop: '-50%' })
+            style: __assign(__assign({}, option.itemStyle), { left: '100%', top: '50%' }),
+            transform: {
+                translateX: '-50%',
+                translateY: '-50%'
+            }
         });
         this.createItem('rb', {
             shape: 'rect',
-            style: __assign(__assign({}, option.itemStyle), { left: 0, top: '50%', marginTop: '-50%' })
+            style: __assign(__assign({}, option.itemStyle), { left: '100%', top: '100%' }),
+            transform: {
+                translateX: '-50%',
+                translateY: '-50%'
+            }
         });
         this.createItem('b', {
             shape: 'rect',
-            style: __assign(__assign({}, option.itemStyle), { left: 0, top: '50%', marginTop: '-50%' })
+            style: __assign(__assign({}, option.itemStyle), { left: '50%', top: '100%' }),
+            transform: {
+                translateX: '-50%',
+                translateY: '-50%'
+            }
         });
         this.createItem('lb', {
             shape: 'rect',
-            style: __assign(__assign({}, option.itemStyle), { left: 0, top: '50%', marginTop: '-50%' })
+            style: __assign(__assign({}, option.itemStyle), { left: 0, top: '100%' }),
+            transform: {
+                translateX: '-50%',
+                translateY: '-50%'
+            }
         });
         // 旋转块
         this.rotateItem = this.createItem('rotate', {
             shape: 'circle',
-            style: __assign(__assign({}, option.itemStyle), { backgroundImage: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAgVBMVEUAAAAiK9MjKdUfKNYjKdUiKNYiKdUeHuAjKNYjKNYiKNYyMswiKNYiKNYiKNYiKNYhKNYiKdUiKNYiKNYjKdUjKNYgJ9cjJdYiKNYiKNYiKdUhJ9cjKNYiKdUdLNMrK9MiKNYiKNYiKdUiKNYjKNYjKdUjKdUjKNYjKdUjKdUjKdaUW7eVAAAAKnRSTlMAFdMY1/v4CPXo4wXuyLh6RfKRjWpAJxykb1tSTjARC8OslYVgOivQrqey7caqAAABM0lEQVRIx+2U6W6DMBCEDdSE+2wg950e3/s/YGOBQI0hMf+qKvODHYsZe9derXjh32C2PsU+BIcyCw3kVhnRIUj3z/TvEcTp1RGizs42BJvH+kqSbPtlFkP52LFc353oshCTMM8pJzpchuuwrLEs8fdDes9zRhwH0gG9DbY1khR+OKQfd9hkuv4Nbp/hrFIKXe+ANebIiHW9gJbod2fhN7zTq+Shpb/3UusQ2fGeuMw6rtBv1vxraX9UgNNwPV1l0NONmbdMd7jUenkFqRhzyKEr3/DZENNHDSOuKpq3zZlEBfPG3EVcVDRv/RX5VkzCAv9jkiFMyO+GwHb1eOgt4Kvq104hverJIMshea/CG61X3y6yeDb7nJMHyChwVTia1LS7HAMJ+MmyNp/gO2cmXvjD+AHprhpoJKiYYAAAAABJRU5ErkJggg==' })
+            size: 24,
+            style: __assign(__assign({ left: '50%', top: '-40px', 
+                //backgroundColor: 'transparent',
+                border: 'none', boxShadow: '0 0 2px 2px #ccc', borderRadius: '50%', cursor: "pointer" }, option.itemStyle), { 'backgroundSize': '100%', backgroundImage: GCursors.rotate }),
+            transform: {
+                translateX: '-50%',
+            }
         });
         this.skewItem = this.createItem('skew', {
             shape: 'circle',
-            style: __assign(__assign({}, option.itemStyle), { backgroundImage: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAdVBMVEUAAABlY/97e/9kYv9kY/9nZ/9lY/9kYv9kY/9kYv9kY/9lY/9kYv9kY/9pYP9oYP9kYv9kYv9kY/9kYv9iYv9nY/9kYv9lYv9kYv9lYv9lY/9kYv9lYv9kY/9kYv9lZf9lY/9kYv9kYv9lYv9kYv9lY/9lY/+ktQNRAAAAJnRSTlMA/ATv3xHmW/V0TtO3khcNy8XBUh8U6ti+ppt5bksnGTqygmNEZ0ctpdUAAAEmSURBVEjH7VPbloIwDKSloAUqF6kgd123//+Ja+jSSpGqD74xbynJycxkcDZs+BIOAa2ygrgIuaQoKxocbN03FooFQnZ73u1RIlZQUG/ZvzsJC9zGaOeZkEAJa9ou9zD28q5tWIKERDZb0kvu+3MQm5vj4LyXWh7k42Rce/VW1F1d+J5g9fILddmv29eX0PGj6vReRdhmOI7uLakqgWTnWNGBRFWBo7l9IAeRqgKGFzulCzirjyZAxGRb6/tHM2GREq1VC7eWtvpCoN3M1nq0NX3gwAt9OBiACfNwZKaSRyoaVST0xJBN0UjNMzVG+NCog0zho0tP4noebwKP/2zq+Ll5AwuNAYpEyIZXv+hJU3I4d17iiKToN6Fs/WDgg34djQ0bvo4/naYvgs8xmvwAAAAASUVORK5CYII=' })
+            size: 24,
+            style: __assign(__assign({ left: '50%', top: '50%', border: 'none', boxShadow: '0 0 2px 2px #ccc', borderRadius: '50%', cursor: "pointer" }, option.itemStyle), { 'backgroundSize': '100%', backgroundImage: GCursors.skew }),
+            transform: {
+                translateX: '-50%',
+                translateY: '-50%'
+            }
         }); // 旋转块 
         this.hoverItem = this.createItem('hover', {
             shape: 'rect',

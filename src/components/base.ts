@@ -28,11 +28,7 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
         });
         // 变换改为控制主元素
         this.transform.bind(this.target);
-
-        this.init(option);
-    }
-
-    init(option) {
+        
         // 刷新样式
         if(option.style) this.style.apply(option.style);
 
