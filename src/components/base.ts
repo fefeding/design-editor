@@ -23,8 +23,10 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
         });
         this.addChild(this.target);
         // 选中元素
-        this.target.on('click', ()=>{
+        this.target.on('click', (e: MouseEvent)=>{
             this.selected = true;
+            e.stopPropagation();
+            e.preventDefault();
         });
         // 变换改为控制主元素
         this.transform.bind(this.target);

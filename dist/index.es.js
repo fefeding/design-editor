@@ -1758,8 +1758,10 @@ var JBaseComponent = /** @class */ (function (_super) {
             } }));
         _this.addChild(_this.target);
         // 选中元素
-        _this.target.on('click', function () {
+        _this.target.on('click', function (e) {
             _this.selected = true;
+            e.stopPropagation();
+            e.preventDefault();
         });
         // 变换改为控制主元素
         _this.transform.bind(_this.target);
@@ -1874,14 +1876,57 @@ var JControllerItem = /** @class */ (function (_super) {
         _this = _super.call(this, option) || this;
         _this.dir = '';
         _this.size = 8;
+        _this.isMoving = false;
+        // 拖放位置
+        _this.dragStartPosition = {
+            x: 0,
+            y: 0,
+        };
         _this.dir = option.dir || '';
         _this.size = option.size || 8;
         _this.style.cursor = _this.style.cursor || GCursors[_this.dir];
         _this.width = _this.height = _this.size;
         _this.editor = option.editor;
         _this.transform.bind(_this);
+        if (_this.editor) {
+            _this.editor.on('mouseup', function (e) {
+                _this.onDragEnd(e);
+            });
+            _this.editor.on('mouseout', function (e) {
+                _this.onDragEnd(e);
+            });
+            _this.editor.on('mousemove', function (e) {
+                _this.onDragMove(e);
+            });
+        }
+        _this.on('mousedown', function (e) {
+            _this.onDragStart(e);
+        });
         return _this;
     }
+    JControllerItem.prototype.onDragMove = function (event) {
+        if (!this.isMoving)
+            return;
+        var offX = (event.x - this.dragStartPosition.x);
+        var offY = (event.y - this.dragStartPosition.y);
+        this.move(offX, offY);
+        // 选中的是渲染层的坐标，转为控制层的
+        this.dragStartPosition.x = event.x;
+        this.dragStartPosition.y = event.y;
+        event.stopPropagation();
+        event.preventDefault();
+    };
+    JControllerItem.prototype.onDragStart = function (event) {
+        // 选中的是渲染层的坐标，转为控制层的
+        this.dragStartPosition = {
+            x: event.x,
+            y: event.y,
+        };
+        this.isMoving = true;
+    };
+    JControllerItem.prototype.onDragEnd = function (event) {
+        this.isMoving = false;
+    };
     return JControllerItem;
 }(JElement));
 // 元素大小位置控制器
@@ -1892,14 +1937,9 @@ var JControllerComponent = /** @class */ (function (_super) {
         option.zIndex = 100000;
         option.style = option.style || {};
         option.style.cursor = option.style.cursor || 'move';
-        option.style.backgroundColor = option.style.backgroundColor || 'rgba(0,0,0,0.01)';
+        option.style.backgroundColor = option.style.backgroundColor || 'transparent';
         _this = _super.call(this, option) || this;
         _this.items = [];
-        // 拖放位置
-        _this.dragStartPosition = {
-            x: 0,
-            y: 0,
-        };
         _this.init(option);
         return _this;
     }
@@ -2056,6 +2096,15 @@ var JControllerComponent = /** @class */ (function (_super) {
             scaleY: target.transform.scaleY,
             scaleZ: target.transform.scaleZ,
         });
+        this.target = target;
+        this.visible = true;
+    };
+    // 解除绑定
+    JControllerComponent.prototype.unbind = function (target) {
+        if (this.target === target) {
+            delete this.target;
+            this.visible = false;
+        }
     };
     return JControllerComponent;
 }(JControllerItem));
@@ -2079,6 +2128,7 @@ var JEditor = /** @class */ (function (_super) {
     }
     // 初始化整个编辑器
     JEditor.prototype.init = function (option) {
+        var _this = this;
         this.dom.style.width = '100%';
         this.dom.style.height = '100%';
         if (option.style.containerBackgroundColor)
@@ -2091,12 +2141,16 @@ var JEditor = /** @class */ (function (_super) {
         });
         // 生成控制器
         this.ElementController = new JControllerComponent({
-            editor: this
+            editor: this,
+            visible: false
         });
         this.dom.appendChild(this.ElementController.dom); // 加到外层
         if (option.width && option.height) {
             this.resize(option.width, option.height);
         }
+        this.on('select', function (e) {
+            _this.select(_this); // 选中自已
+        });
     };
     Object.defineProperty(JEditor.prototype, "width", {
         get: function () {
@@ -2146,6 +2200,37 @@ var JEditor = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(JEditor.prototype, "selectedElements", {
+        // 被选中的元素
+        get: function () {
+            var e_1, _a;
+            var res = [];
+            try {
+                for (var _b = __values(this.children), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var el = _c.value;
+                    if (el instanceof JBaseComponent && el.selected) {
+                        res.push(el);
+                    }
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+            return res;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    // 选中某个元素
+    JEditor.prototype.select = function (el) {
+        // 选把所有已选择的取消
+        this.selectedElements.every(function (p) { return p.selected = false; });
+        this.ElementController.bind(el);
+    };
     JEditor.prototype.resize = function (width, height) {
         var _this = this;
         if (width === void 0) { width = this.width; }
@@ -2170,19 +2255,19 @@ var JEditor = /** @class */ (function (_super) {
         var self = this;
         child.on('select', function (v) {
             if (v) {
-                self.ElementController.bind(this);
+                self.select(this);
             }
             else {
-                self.ElementController.visible = false;
+                self.ElementController.unbind(this);
             }
         });
         return this.target.addChild(child);
     };
     // 移除
-    // @ts-ignore
     JEditor.prototype.removeChild = function (el) {
         if (el === this.target) {
-            return _super.prototype.addChild.call(this, el);
+            console.warn('不能移除自已');
+            return;
         }
         return this.target.removeChild(el);
     };
@@ -2234,7 +2319,7 @@ var JEditor = /** @class */ (function (_super) {
         });
     };
     JEditor.prototype.toJSON = function () {
-        var e_1, _a;
+        var e_2, _a;
         var data = {
             width: this.width,
             height: this.height,
@@ -2250,12 +2335,12 @@ var JEditor = /** @class */ (function (_super) {
                 }
             }
         }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_1) throw e_1.error; }
+            finally { if (e_2) throw e_2.error; }
         }
         return data;
     };
@@ -2264,7 +2349,7 @@ var JEditor = /** @class */ (function (_super) {
         return JSON.stringify(data);
     };
     JEditor.prototype.fromJSON = function (data) {
-        var e_2, _a;
+        var e_3, _a;
         this.clear();
         if (typeof data === 'string')
             data = JSON.parse(data);
@@ -2281,12 +2366,12 @@ var JEditor = /** @class */ (function (_super) {
                 this.addChild(item);
             }
         }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_2) throw e_2.error; }
+            finally { if (e_3) throw e_3.error; }
         }
     };
     return JEditor;

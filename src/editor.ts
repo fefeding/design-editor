@@ -31,14 +31,17 @@ export default class JEditor extends JBase {
 
         // 生成控制器
         this.ElementController = new JController({
-            editor: this
+            editor: this,
+            visible: false
         });
         this.dom.appendChild(this.ElementController.dom);// 加到外层
 
         if(option.width && option.height) {
             this.resize(option.width, option.height);
         }
-
+        this.on('select', (e) => {
+            this.select(this);// 选中自已
+        })
     }
 
     // 所有支持的类型
@@ -81,6 +84,23 @@ export default class JEditor extends JBase {
     get children() {
         return this.target.children;
     }
+    // 被选中的元素
+    get selectedElements(): Array<JBase> {
+        const res = [];
+        for(const el of this.children) {
+            if(el instanceof JBase && el.selected) {
+                res.push(el);
+            }
+        }
+        return res;
+    }
+
+    // 选中某个元素
+    select(el: JBase) {
+        // 选把所有已选择的取消
+        this.selectedElements.every(p=>p.selected = false);
+        this.ElementController.bind(el);
+    }
 
     resize(width=this.width, height=this.height) {
 
@@ -108,20 +128,20 @@ export default class JEditor extends JBase {
         const self = this;
         child.on('select', function(v) {
             if(v) {
-                self.ElementController.bind(this);
+                self.select(this);
             }
             else {
-                self.ElementController.visible = false;
+                self.ElementController.unbind(this);
             }
         });
         return this.target.addChild(child);
     }
 
     // 移除
-    // @ts-ignore
     removeChild(el: JElement|HTMLElement) {
         if(el === this.target) {
-            return super.addChild(el);
+            console.warn('不能移除自已');
+            return;
         }
         return this.target.removeChild(el);
     }

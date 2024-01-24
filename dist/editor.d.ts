@@ -19,9 +19,11 @@ export default class JEditor extends JBase {
     get top(): string | number;
     set top(v: string | number);
     get children(): JElement<HTMLElement>[];
+    get selectedElements(): Array<JBase>;
+    select(el: JBase): void;
     resize(width?: string | number, height?: string | number): void;
     addChild(child: JBase): JElement<HTMLElement>;
-    removeChild(el: JElement | HTMLElement): JElement<HTMLElement> | JElement<HTMLElement>[];
+    removeChild(el: JElement | HTMLElement): JElement<HTMLElement>[];
     clear(): void;
     scale(x: any, y?: any): void;
     regShape(name: any, shape: any): void;

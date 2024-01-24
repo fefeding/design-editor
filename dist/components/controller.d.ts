@@ -4,6 +4,14 @@ export declare class JControllerItem extends JElement<HTMLDivElement> {
     dir: string;
     size: number;
     editor: JElement;
+    isMoving: boolean;
+    dragStartPosition: {
+        x: number;
+        y: number;
+    };
+    onDragMove(event: MouseEvent): void;
+    onDragStart(event: MouseEvent): void;
+    onDragEnd(event: MouseEvent): void;
 }
 export default class JControllerComponent extends JControllerItem {
     constructor(option: any);
@@ -12,10 +20,8 @@ export default class JControllerComponent extends JControllerItem {
     rotateItem: JControllerItem;
     skewItem: JControllerItem;
     hoverItem: JControllerItem;
-    dragStartPosition: {
-        x: number;
-        y: number;
-    };
+    target: JElement;
     createItem(id: any, option: any): JControllerItem;
     bind(target: JElement): void;
+    unbind(target: JElement): void;
 }

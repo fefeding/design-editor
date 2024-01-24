@@ -32,12 +32,66 @@ export class JControllerItem extends JElement<HTMLDivElement> {
 
         this.editor = option.editor;
         this.transform.bind(this);
+
+        if(this.editor) {
+            this.editor.on('mouseup', (e) => {
+                this.onDragEnd(e);
+            });
+            this.editor.on('mouseout', (e) => {
+                this.onDragEnd(e);
+            });
+            this.editor.on('mousemove', (e) => {
+                this.onDragMove(e);
+            });
+        }
+        this.on('mousedown', (e) => {
+            this.onDragStart(e);
+        });
     }
 
     dir: string = '';
     size: number = 8;
     // 当前编辑器
     editor: JElement;
+
+    isMoving = false;
+
+    // 拖放位置
+    dragStartPosition = {
+        x: 0,
+        y: 0,
+    };
+
+    onDragMove(event: MouseEvent) {
+        if(!this.isMoving) return;
+        
+        const offX = (event.x - this.dragStartPosition.x);
+        const offY = (event.y - this.dragStartPosition.y);
+
+        this.move(offX, offY);
+        
+        // 选中的是渲染层的坐标，转为控制层的
+        this.dragStartPosition.x = event.x;
+        this.dragStartPosition.y = event.y;
+
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    
+    onDragStart(event: MouseEvent)   {
+        
+        // 选中的是渲染层的坐标，转为控制层的
+        this.dragStartPosition = {
+            x: event.x,
+            y: event.y,
+        };
+
+        this.isMoving = true;
+    }
+    
+    onDragEnd(event: MouseEvent)  {
+        this.isMoving = false;
+    }
 
 }
 
@@ -47,7 +101,7 @@ export default class JControllerComponent extends JControllerItem {
         option.zIndex = 100000;
         option.style = option.style || {};
         option.style.cursor = option.style.cursor || 'move';
-        option.style.backgroundColor = option.style.backgroundColor || 'rgba(0,0,0,0.01)';
+        option.style.backgroundColor = option.style.backgroundColor || 'transparent';
         super(option);
         this.init(option);
     }
@@ -208,11 +262,7 @@ export default class JControllerComponent extends JControllerItem {
     skewItem: JControllerItem;
     hoverItem: JControllerItem;
 
-    // 拖放位置
-    dragStartPosition = {
-        x: 0,
-        y: 0,
-    };
+    target: JElement;
 
     // 生成控制点
     createItem(id, option) {
@@ -282,5 +332,14 @@ export default class JControllerComponent extends JControllerItem {
             scaleY: target.transform.scaleY,
             scaleZ: target.transform.scaleZ,
         });
+        this.target = target;
+        this.visible = true;
+    }
+    // 解除绑定
+    unbind(target: JElement) {
+        if(this.target === target) {
+            delete this.target;
+            this.visible = false;
+        }
     }
 }
