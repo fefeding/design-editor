@@ -28,7 +28,15 @@ import Base from './base';
 var JImage = /** @class */ (function (_super) {
     __extends(JImage, _super);
     function JImage(option) {
-        return _super.call(this, __assign(__assign({}, option), { nodeType: 'img' })) || this;
+        var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'img' })) || this;
+        _this.dom.onload = function (e) {
+            _this.emit('load', e);
+        };
+        _this.dom.onerror = function (e) {
+            _this.emit('error', e);
+        };
+        _this.src = option.url || option.src || '';
+        return _this;
     }
     Object.defineProperty(JImage.prototype, "src", {
         get: function () {

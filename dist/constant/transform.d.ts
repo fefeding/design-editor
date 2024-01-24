@@ -27,6 +27,7 @@ export default class Transform implements StyleTransform {
     skewY: number;
     from(data: StyleTransform): void;
     apply(el?: any): void;
+    bind(target: any): void;
     static createProxy(obj?: StyleTransform, el?: any): Transform;
     toString(): string;
     toJSON(): {

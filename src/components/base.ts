@@ -23,19 +23,22 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
             }
         });
         this.addChild(this.target);
+        // 变换改为控制主元素
+        this.transform.bind(this.target);
+
+        this.init(option);
+    }
+
+    init(option) {
         // 刷新样式
         if(option.style) this.style.apply(option.style);
-
-        // 变换控制的是核心元素
-        this.transform = JTransform.createProxy(option.transform, this.target);
 
         if(option.text) this.text = option.text;
         if(option.html) this.html = option.html;
     }
+
     // 当前控件的核心元素
     target: JElement<T>;
-    // 变换
-    transform: JTransform;
 
     get text() {
         return this.target.dom.innerText;
@@ -53,12 +56,12 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
 
     // 设置css到dom
     setDomStyle(name: string, value: string) {
-        // 如果外层容器的样式，则加到container上
-        if(name in ContainerDefaultStyle) {
+       // 如果外层容器的样式，则加到container上
+       if(name in ContainerDefaultStyle) {
             super.setDomStyle(name, value);
         }
         else {
-            this.target && this.target.setDomStyle(name, value);
+            this.target && this.target.css(name, value);
         }
     }
 }

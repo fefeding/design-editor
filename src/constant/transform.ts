@@ -21,7 +21,7 @@ export interface StyleTransform {
 export default class Transform implements StyleTransform {
     constructor(option?: StyleTransform, el?: any) {
         if(option) Object.assign(this, option);
-        this.target = el;
+        if(el) this.bind(el);
     }
     target?: any;
     // x偏移量
@@ -47,10 +47,14 @@ export default class Transform implements StyleTransform {
     }
     // 生效
     apply(el: any = this.target) {
-        if(el && el.setStyle) {
-            el.setStyle('transform', this.toString());
-        }
-        else if(el && el.style) el.style.transform = this.toString(); 
+        if(el && el.css) el.css('transform', this.toString()); 
+        else if(el) el.style.transform = this.toString();
+    }
+
+    // 绑定并刷新到目标上
+    bind(target: any) {
+        this.target = target;
+        this.apply();
     }
 
     // 生成transform代理
@@ -77,7 +81,7 @@ export default class Transform implements StyleTransform {
         const scale = `scaleX(${this.scaleX}) scaleY(${this.scaleY}) scaleZ(${this.scaleZ})`;
         const skew = `skewX(${util.toDeg(this.skewX)}) skewY(${util.toDeg(this.skewY)})`;
 
-        return `transform: ${translate} ${rotate} ${scale} ${skew}`;
+        return `${translate} ${rotate} ${scale} ${skew}`;
     }
 
     toJSON() {

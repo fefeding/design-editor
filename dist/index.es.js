@@ -974,6 +974,71 @@ var ContainerDefaultStyle = {
     margin: '0'
 };
 
+// Unique ID creation requires a high quality random # generator. In the browser we therefore
+// require the crypto API and do not support built-in fallback to lower quality random number
+// generators (like Math.random()).
+let getRandomValues;
+const rnds8 = new Uint8Array(16);
+function rng() {
+  // lazy load so that environments that need to polyfill have a chance to do so
+  if (!getRandomValues) {
+    // getRandomValues needs to be invoked in a context where "this" is a Crypto implementation.
+    getRandomValues = typeof crypto !== 'undefined' && crypto.getRandomValues && crypto.getRandomValues.bind(crypto);
+
+    if (!getRandomValues) {
+      throw new Error('crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported');
+    }
+  }
+
+  return getRandomValues(rnds8);
+}
+
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+
+const byteToHex = [];
+
+for (let i = 0; i < 256; ++i) {
+  byteToHex.push((i + 0x100).toString(16).slice(1));
+}
+
+function unsafeStringify(arr, offset = 0) {
+  // Note: Be careful editing this code!  It's been tuned for performance
+  // and works in ways you may not expect. See https://github.com/uuidjs/uuid/pull/434
+  return byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + '-' + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + '-' + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + '-' + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + '-' + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]];
+}
+
+const randomUUID = typeof crypto !== 'undefined' && crypto.randomUUID && crypto.randomUUID.bind(crypto);
+var native = {
+  randomUUID
+};
+
+function v4(options, buf, offset) {
+  if (native.randomUUID && !buf && !options) {
+    return native.randomUUID();
+  }
+
+  options = options || {};
+  const rnds = options.random || (options.rng || rng)(); // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+
+  rnds[6] = rnds[6] & 0x0f | 0x40;
+  rnds[8] = rnds[8] & 0x3f | 0x80; // Copy bytes to buffer, if provided
+
+  if (buf) {
+    offset = offset || 0;
+
+    for (let i = 0; i < 16; ++i) {
+      buf[offset + i] = rnds[i];
+    }
+
+    return buf;
+  }
+
+  return unsafeStringify(rnds);
+}
+
 var util = {
     // 是否是数字
     isNumber: function (v) {
@@ -1041,7 +1106,8 @@ var Transform = /** @class */ (function () {
         this.skewY = 0;
         if (option)
             Object.assign(this, option);
-        this.target = el;
+        if (el)
+            this.bind(el);
     }
     Transform.prototype.from = function (data) {
         if (data)
@@ -1050,11 +1116,15 @@ var Transform = /** @class */ (function () {
     // 生效
     Transform.prototype.apply = function (el) {
         if (el === void 0) { el = this.target; }
-        if (el && el.setStyle) {
-            el.setStyle('transform', this.toString());
-        }
-        else if (el && el.style)
+        if (el && el.css)
+            el.css('transform', this.toString());
+        else if (el)
             el.style.transform = this.toString();
+    };
+    // 绑定并刷新到目标上
+    Transform.prototype.bind = function (target) {
+        this.target = target;
+        this.apply();
     };
     // 生成transform代理
     Transform.createProxy = function (obj, el) {
@@ -1079,7 +1149,7 @@ var Transform = /** @class */ (function () {
         var rotate = "rotateX(".concat(util.toDeg(this.rotateX), ") rotateY(").concat(util.toDeg(this.rotateY), ") rotateZ(").concat(util.toDeg(this.rotateZ), ")");
         var scale = "scaleX(".concat(this.scaleX, ") scaleY(").concat(this.scaleY, ") scaleZ(").concat(this.scaleZ, ")");
         var skew = "skewX(".concat(util.toDeg(this.skewX), ") skewY(").concat(util.toDeg(this.skewY), ")");
-        return "transform: ".concat(translate, " ").concat(rotate, " ").concat(scale, " ").concat(skew);
+        return "".concat(translate, " ").concat(rotate, " ").concat(scale, " ").concat(skew);
     };
     Transform.prototype.toJSON = function () {
         return {
@@ -1098,71 +1168,6 @@ var Transform = /** @class */ (function () {
     };
     return Transform;
 }());
-
-// Unique ID creation requires a high quality random # generator. In the browser we therefore
-// require the crypto API and do not support built-in fallback to lower quality random number
-// generators (like Math.random()).
-let getRandomValues;
-const rnds8 = new Uint8Array(16);
-function rng() {
-  // lazy load so that environments that need to polyfill have a chance to do so
-  if (!getRandomValues) {
-    // getRandomValues needs to be invoked in a context where "this" is a Crypto implementation.
-    getRandomValues = typeof crypto !== 'undefined' && crypto.getRandomValues && crypto.getRandomValues.bind(crypto);
-
-    if (!getRandomValues) {
-      throw new Error('crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported');
-    }
-  }
-
-  return getRandomValues(rnds8);
-}
-
-/**
- * Convert array of 16 byte values to UUID string format of the form:
- * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
- */
-
-const byteToHex = [];
-
-for (let i = 0; i < 256; ++i) {
-  byteToHex.push((i + 0x100).toString(16).slice(1));
-}
-
-function unsafeStringify(arr, offset = 0) {
-  // Note: Be careful editing this code!  It's been tuned for performance
-  // and works in ways you may not expect. See https://github.com/uuidjs/uuid/pull/434
-  return byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + '-' + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + '-' + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + '-' + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + '-' + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]];
-}
-
-const randomUUID = typeof crypto !== 'undefined' && crypto.randomUUID && crypto.randomUUID.bind(crypto);
-var native = {
-  randomUUID
-};
-
-function v4(options, buf, offset) {
-  if (native.randomUUID && !buf && !options) {
-    return native.randomUUID();
-  }
-
-  options = options || {};
-  const rnds = options.random || (options.rng || rng)(); // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
-
-  rnds[6] = rnds[6] & 0x0f | 0x40;
-  rnds[8] = rnds[8] & 0x3f | 0x80; // Copy bytes to buffer, if provided
-
-  if (buf) {
-    offset = offset || 0;
-
-    for (let i = 0; i < 16; ++i) {
-      buf[offset + i] = rnds[i];
-    }
-
-    return buf;
-  }
-
-  return unsafeStringify(rnds);
-}
 
 var StyleNamesMap = [];
 var NumberStyleMap = ['left', 'top', 'right', 'bottom', 'width', 'height'];
@@ -1241,6 +1246,10 @@ var JElementStyle = /** @class */ (function (_super) {
             name: name,
             value: value
         });
+    };
+    // 触发所有更新到dom
+    JElementStyle.prototype.refresh = function () {
+        this.apply(this);
     };
     // 转为json
     JElementStyle.prototype.toJSON = function () {
@@ -1326,6 +1335,8 @@ var JElement = /** @class */ (function (_super) {
         });
         if (option.style)
             _this.style.apply(option.style);
+        // 变换控制的是核心元素
+        _this.transform = Transform.createProxy(option.transform);
         _this.initOption(option);
         return _this;
     }
@@ -1335,6 +1346,14 @@ var JElement = /** @class */ (function (_super) {
         this.y = option.y || option.top || 0;
         this.width = option.width || option.width || 1;
         this.height = option.height || option.height || 1;
+        if (typeof option.rotation !== 'undefined')
+            this.rotation = option.rotation;
+        if (typeof option.angle !== 'undefined')
+            this.angle = option.angle;
+        if (typeof option.zIndex !== 'undefined')
+            this.zIndex = option.zIndex;
+        if (typeof option.visible !== 'undefined')
+            this.visible = !!option.visible;
     };
     Object.defineProperty(JElement.prototype, "children", {
         get: function () {
@@ -1433,34 +1452,23 @@ var JElement = /** @class */ (function (_super) {
     });
     Object.defineProperty(JElement.prototype, "rotation", {
         get: function () {
-            var v = this.style.rotate;
-            if (util.isDegNumber(v))
-                return parseFloat(v);
-            else if (util.isRadNumber(v)) {
-                return util.radToDeg(this.angle);
-            }
-            return Number(v);
+            var v = this.transform.rotateZ;
+            return util.degToRad(v);
         },
-        // 旋转角度
+        // 旋转弧度
         set: function (v) {
-            this.style.rotate = "".concat(v, "deg");
+            this.transform.rotateZ = util.radToDeg(v);
         },
         enumerable: false,
         configurable: true
     });
     Object.defineProperty(JElement.prototype, "angle", {
         get: function () {
-            var v = this.style.rotate;
-            if (util.isRadNumber(v))
-                return parseFloat(v);
-            else if (util.isDegNumber(v)) {
-                return util.degToRad(this.rotation);
-            }
-            return Number(v);
+            return this.transform.rotateZ;
         },
-        // 旋转弧度
+        // 旋转角度
         set: function (v) {
-            this.style.rotate = "".concat(v, "rad");
+            this.transform.rotateZ = v;
         },
         enumerable: false,
         configurable: true
@@ -1619,74 +1627,8 @@ var JElement = /** @class */ (function (_super) {
         // @ts-ignore
         delete el.parent;
     };
-    // 把渲染层坐标转为控制层
-    JElement.prototype.toControlPosition = function (p) {
-        var e_3, _a;
-        if (Array.isArray(p)) {
-            var res = [];
-            try {
-                for (var p_1 = __values(p), p_1_1 = p_1.next(); !p_1_1.done; p_1_1 = p_1.next()) {
-                    var point = p_1_1.value;
-                    res.push(this.toControlPosition(point));
-                }
-            }
-            catch (e_3_1) { e_3 = { error: e_3_1 }; }
-            finally {
-                try {
-                    if (p_1_1 && !p_1_1.done && (_a = p_1.return)) _a.call(p_1);
-                }
-                finally { if (e_3) throw e_3.error; }
-            }
-            return res;
-        }
-        return __assign(__assign({}, p), { x: p.x + this.left, y: p.y + this.top });
-    };
-    // 把控制层坐标转为渲染层
-    JElement.prototype.toRenderPosition = function (p) {
-        var e_4, _a;
-        if (Array.isArray(p)) {
-            var res = [];
-            try {
-                for (var p_2 = __values(p), p_2_1 = p_2.next(); !p_2_1.done; p_2_1 = p_2.next()) {
-                    var point = p_2_1.value;
-                    res.push(this.toRenderPosition(point));
-                }
-            }
-            catch (e_4_1) { e_4 = { error: e_4_1 }; }
-            finally {
-                try {
-                    if (p_2_1 && !p_2_1.done && (_a = p_2.return)) _a.call(p_2);
-                }
-                finally { if (e_4) throw e_4.error; }
-            }
-            return res;
-        }
-        return __assign(__assign({}, p), { x: p.x, y: p.y });
-    };
-    // 把原点转回0，0坐标
-    JElement.prototype.toElementAnchorPosition = function (p) {
-        var e_5, _a;
-        if (Array.isArray(p)) {
-            var res = [];
-            try {
-                for (var p_3 = __values(p), p_3_1 = p_3.next(); !p_3_1.done; p_3_1 = p_3.next()) {
-                    var point = p_3_1.value;
-                    res.push(this.toElementAnchorPosition(point));
-                }
-            }
-            catch (e_5_1) { e_5 = { error: e_5_1 }; }
-            finally {
-                try {
-                    if (p_3_1 && !p_3_1.done && (_a = p_3.return)) _a.call(p_3);
-                }
-                finally { if (e_5) throw e_5.error; }
-            }
-            return res;
-        }
-        return __assign(__assign({}, p), { x: p.x, y: p.y });
-    };
     JElement.prototype.toJSON = function () {
-        var e_6, _a;
+        var e_3, _a;
         var fields = ['x', 'y', 'width', 'height', 'url', 'text', 'rotation', 'type', 'style', 'id', 'skew', 'points', 'isClosed'];
         var obj = {};
         try {
@@ -1697,12 +1639,12 @@ var JElement = /** @class */ (function (_super) {
                 }
             }
         }
-        catch (e_6_1) { e_6 = { error: e_6_1 }; }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
         finally {
             try {
                 if (fields_1_1 && !fields_1_1.done && (_a = fields_1.return)) _a.call(fields_1);
             }
-            finally { if (e_6) throw e_6.error; }
+            finally { if (e_3) throw e_3.error; }
         }
         return obj;
     };
@@ -1725,17 +1667,20 @@ var JBaseComponent = /** @class */ (function (_super) {
                 display: 'block',
             } }));
         _this.addChild(_this.target);
-        // 刷新样式
-        if (option.style)
-            _this.style.apply(option.style);
-        // 变换控制的是核心元素
-        _this.transform = Transform.createProxy(option.transform, _this.target);
-        if (option.text)
-            _this.text = option.text;
-        if (option.html)
-            _this.html = option.html;
+        // 变换改为控制主元素
+        _this.transform.bind(_this.target);
+        _this.init(option);
         return _this;
     }
+    JBaseComponent.prototype.init = function (option) {
+        // 刷新样式
+        if (option.style)
+            this.style.apply(option.style);
+        if (option.text)
+            this.text = option.text;
+        if (option.html)
+            this.html = option.html;
+    };
     Object.defineProperty(JBaseComponent.prototype, "text", {
         get: function () {
             return this.target.dom.innerText;
@@ -1763,7 +1708,7 @@ var JBaseComponent = /** @class */ (function (_super) {
             _super.prototype.setDomStyle.call(this, name, value);
         }
         else {
-            this.target && this.target.setDomStyle(name, value);
+            this.target && this.target.css(name, value);
         }
     };
     return JBaseComponent;

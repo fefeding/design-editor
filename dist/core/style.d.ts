@@ -5,6 +5,7 @@ export default class JElementStyle extends JElementStyleMap {
     apply(data: JElementStyleMap, target?: CSSStyleDeclaration | JElementStyle): JElementStyle | CSSStyleDeclaration;
     applyTo(element: HTMLElement): void;
     setStyle(name: any, value: any): void;
+    refresh(): void;
     toJSON(): JElementStyleMap;
     static createProxy(style?: any): JElementStyle;
 }

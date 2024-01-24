@@ -1,4 +1,5 @@
 import EventEmiter from 'eventemitter3';
+import JTransform from '../constant/transform';
 import JStyle from './style';
 export default class JElement<T extends HTMLElement = HTMLElement> extends EventEmiter {
     constructor(option: any);
@@ -34,6 +35,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     set visible(v: boolean);
     get zIndex(): number;
     set zIndex(v: number);
+    transform: JTransform;
     setDomStyle(name: string, value: string): void;
     css(name: string | Object, value?: string): this;
     attr(name: string, value: string | number | undefined): string | number;
@@ -43,9 +45,6 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     addChild(child: JElement | HTMLElement, parent?: JElement): JElement<HTMLElement>;
     remove(): void;
     removeChild(el: JElement | HTMLElement): JElement<HTMLElement>[];
-    toControlPosition(p: any): any;
-    toRenderPosition(p: any): any;
-    toElementAnchorPosition(p: any): any;
     toJSON(): {};
     toString(): string;
 }

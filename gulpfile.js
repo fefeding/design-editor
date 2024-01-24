@@ -1,6 +1,7 @@
 const gulp = require('gulp');
 const ts = require('gulp-typescript');
 const browserify = require('browserify');
+const tsify = require('tsify');
 const source = require('vinyl-source-stream');
 const tsProject = ts.createProject('tsconfig.json');
 
@@ -23,17 +24,23 @@ function buildTSTask() {
 
 function buildESTask(cb) {
     return browserify({
-        entries: [
-            './dist/index.js'
-        ]
+        basedir: '.',
+        debug: true,
+        entries: ['./src/index.ts'],        
+        cache: {},
+        packageCache: {}
     })
+    //.plugin('@babel/plugin-proposal-function-bind')
     .transform("babelify", {
-        presets: ['@babel/preset-env'],
+        presets: [
+            ['@babel/preset-typescript', { module: 'commonjs'}],
+            ['@babel/env', {modules: false,}],
+        ],        
         //plugins: ['transform-runtime'] 
-    })  //使用babel转换es6代码.bundle()
+    })  //使用babel转换es6代码.bundle()*/
     .bundle()  //合并打包
     .on('error', function(err) {
-        console.log(err);
+        console.log('bundle', err);
     })
     .pipe(source('index.es.js'))
     .pipe(gulp.dest('dist'));

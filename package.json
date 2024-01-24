@@ -12,10 +12,13 @@
   "devDependencies": {
     "@babel/core": "^7.23.7",
     "@babel/plugin-proposal-class-properties": "^7.10.1",
+    "@babel/plugin-proposal-function-bind": "^7.23.3",
     "@babel/preset-env": "^7.23.8",
+    "@babel/preset-stage-0": "^7.8.3",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
     "babelify": "^10.0.0",
     "browserify": "^17.0.0",
     "express": "^4.18.2",
@@ -27,6 +30,7 @@
     "rollup": "^4.9.6",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-typescript2": "^0.36.0",
+    "tsify": "^5.0.4",
     "tslib": "^2.6.2",
     "typescript": "^5.3.3",
     "vinyl-source-stream": "^2.0.0"

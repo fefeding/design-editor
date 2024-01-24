@@ -1,8 +1,7 @@
 import EventEmiter from 'eventemitter3';
 import { v4 as uuidv4 } from 'uuid';
-import JStyleMap from '../constant/styleMap';
-import JStyle from './style';
 import JTransform from '../constant/transform';
+import JStyle from './style';
 import util from '../lib/util';
 
 export default class JElement<T extends HTMLElement = HTMLElement> extends EventEmiter {
@@ -22,12 +21,16 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
 
         const nodeType = option.nodeType || 'div';
         this.dom = document.createElement(nodeType);
+
         // 样式代理处理
         this.style = JStyle.createProxy();
         this.style.on('change', (s) => {
             this.setDomStyle(s.name, s.value);
         });
         if(option.style) this.style.apply(option.style);
+
+        // 变换控制的是核心元素
+        this.transform = JTransform.createProxy(option.transform);
 
         this.initOption(option);        
     }
@@ -38,6 +41,12 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
 
         this.width = option.width || option.width || 1;
         this.height = option.height || option.height || 1;
+
+        if(typeof option.rotation !== 'undefined') this.rotation = option.rotation;
+        if(typeof option.angle !== 'undefined') this.angle = option.angle;
+        if(typeof option.zIndex !== 'undefined') this.zIndex = option.zIndex;
+        if(typeof option.visible !== 'undefined') this.visible = !!option.visible;
+
     }
 
     id = '';
@@ -115,29 +124,20 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         this.style.height = v;
     }
 
-    // 旋转角度
-    set rotation(v: number) {        
-        this.style.rotate = `${v}deg`;
+    // 旋转弧度
+    set rotation(v: number) {    
+        this.transform.rotateZ = util.radToDeg(v);
     }
     get rotation() {
-        const v = this.style.rotate;
-        if(util.isDegNumber(v)) return parseFloat(v);
-        else if(util.isRadNumber(v))  {
-            return  util.radToDeg(this.angle);
-        }
-        return Number(v);
+        const v = this.transform.rotateZ;
+        return util.degToRad(v);
     }
-    // 旋转弧度
-    set angle(v) {
-        this.style.rotate = `${v}rad`;
+    // 旋转角度
+    set angle(v) {    
+        this.transform.rotateZ = v;
     }
     get angle() {
-        const v = this.style.rotate;
-        if(util.isRadNumber(v)) return parseFloat(v);
-        else if(util.isDegNumber(v))  {
-            return util.degToRad(this.rotation);
-        }
-        return Number(v);
+        return this.transform.rotateZ;
     }
     
     get visible() {
@@ -152,7 +152,9 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     }
     set zIndex(v: number) {
         this.style.zIndex = v + '';
-    }
+    }    
+    // 变换
+    transform: JTransform;
 
     // 设置css到dom
     setDomStyle(name: string, value: string) {
@@ -160,7 +162,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
             if(!/^\s*url\(/.test(value)) value = `url(${value})`;
         }
         this.dom.style[name] = value;
-    }
+    }   
 
     // 设置样式
     css(name: string|Object, value?: string) {
@@ -268,53 +270,6 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         }
         // @ts-ignore
         delete el.parent;
-    }
-
-    // 把渲染层坐标转为控制层
-    toControlPosition(p) {
-        if(Array.isArray(p)) {
-            const res = [];
-            for(const point of p) {
-                res.push(this.toControlPosition(point));
-            }
-            return res;
-        }
-        return {
-            ...p,
-            x: p.x + this.left,
-            y: p.y + this.top
-        };
-    }
-    // 把控制层坐标转为渲染层
-    toRenderPosition(p) {
-        if(Array.isArray(p)) {
-            const res = [];
-            for(const point of p) {
-                res.push(this.toRenderPosition(point));
-            }
-            return res;
-        }
-        return {
-            ...p,
-            x: p.x,
-            y: p.y
-        };
-    }
-
-    // 把原点转回0，0坐标
-    toElementAnchorPosition(p) {
-        if(Array.isArray(p)) {
-            const res = [];
-            for(const point of p) {
-                res.push(this.toElementAnchorPosition(point));
-            }
-            return res;
-        }
-        return {
-            ...p,
-            x: p.x,
-            y: p.y
-        };
     }
 
     toJSON() {

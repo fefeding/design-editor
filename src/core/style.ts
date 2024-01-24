@@ -55,6 +55,11 @@ export default class JElementStyle extends JElementStyleMap {
         });
     }
 
+    // 触发所有更新到dom
+    refresh() {
+        this.apply(this);
+    }
+
     // 转为json
     toJSON() {
         const obj = {} as JElementStyleMap;

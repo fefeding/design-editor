@@ -87,11 +87,22 @@ var JEditor = /** @class */ (function (_super) {
         if (typeof container === 'string')
             container = document.getElementById(container);
         container.appendChild(_this.dom);
+        container.style.position = 'relative';
         _this.init(option);
         return _this;
     }
     // 初始化整个编辑器
     JEditor.prototype.init = function (option) {
+        this.dom.style.width = '100%';
+        this.dom.style.height = '100%';
+        if (option.style.containerBackgroundColor)
+            this.dom.style.backgroundColor = option.style.containerBackgroundColor;
+        this.target.css({
+            'boxShadow': '0 0 10px 10px #ccc',
+            'position': 'absolute',
+            'backgroundSize': '100% 100%',
+            'overflow': 'hidden'
+        });
         if (option.width && option.height) {
             this.resize(option.width, option.height);
         }
@@ -101,7 +112,7 @@ var JEditor = /** @class */ (function (_super) {
             return this.target.width;
         },
         set: function (v) {
-            this.resize(v, this.height);
+            this.target && this.resize(v, this.height);
         },
         enumerable: false,
         configurable: true
@@ -111,7 +122,7 @@ var JEditor = /** @class */ (function (_super) {
             return this.target.height;
         },
         set: function (v) {
-            this.resize(this.width, v);
+            this.target && this.resize(this.width, v);
         },
         enumerable: false,
         configurable: true
@@ -121,7 +132,7 @@ var JEditor = /** @class */ (function (_super) {
             return this.target.left;
         },
         set: function (v) {
-            this.target.left = v;
+            this.target && (this.target.left = v);
         },
         enumerable: false,
         configurable: true
@@ -131,7 +142,7 @@ var JEditor = /** @class */ (function (_super) {
             return this.target.top;
         },
         set: function (v) {
-            this.target.top = v;
+            this.target && (this.target.top = v);
         },
         enumerable: false,
         configurable: true
@@ -149,6 +160,10 @@ var JEditor = /** @class */ (function (_super) {
         if (width === void 0) { width = this.width; }
         if (height === void 0) { height = this.height; }
         this.target.attr('data-size', "".concat(width, "*").concat(height));
+        this.target.width = width;
+        this.target.height = height;
+        this.left = this.dom.clientWidth / 2 - parseFloat(width + '') / 2;
+        this.top = this.dom.clientHeight / 2 - parseFloat(height + '') / 2;
         setTimeout(function () {
             _this.emit('resize', {
                 width: width,
@@ -158,10 +173,17 @@ var JEditor = /** @class */ (function (_super) {
     };
     // 添加元素到画布
     JEditor.prototype.addChild = function (child) {
+        if (child === this.target) {
+            return _super.prototype.addChild.call(this, child);
+        }
         return this.target.addChild(child);
     };
     // 移除
+    // @ts-ignore
     JEditor.prototype.removeChild = function (el) {
+        if (el === this.target) {
+            return _super.prototype.addChild.call(this, el);
+        }
         return this.target.removeChild(el);
     };
     JEditor.prototype.clear = function () {
@@ -246,6 +268,9 @@ var JEditor = /** @class */ (function (_super) {
         this.clear();
         if (typeof data === 'string')
             data = JSON.parse(data);
+        if (data.style) {
+            this.style.apply(data.style); // 应用样式
+        }
         this.resize(data.width, data.height);
         try {
             for (var _b = __values(data.children), _c = _b.next(); !_c.done; _c = _b.next()) {

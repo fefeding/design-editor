@@ -14,6 +14,7 @@
     "noUnusedLocals": false,
     "strictNullChecks": false,
     "strictFunctionTypes": false,
+    "forceConsistentCasingInFileNames": false,
     "preserveConstEnums": true,
     "skipLibCheck": true,
     "sourceMap": false,
