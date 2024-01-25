@@ -106,8 +106,8 @@ export class JControllerItem extends JElement<HTMLDivElement> {
 
         this.isMoving = true;
 
-        event.stopPropagation();
-        event.preventDefault();
+        event.stopPropagation && event.stopPropagation();
+        event.preventDefault && event.preventDefault();
     }
     
     onDragEnd(event: MouseEvent, pos: {x: number, y: number} = event)  {
@@ -495,16 +495,20 @@ export default class JControllerComponent extends JControllerItem {
 
         if(!this.target) return;
 
-        this.target.left = util.toNumber(this.left) - (this.target === this.editor? 0 : util.toNumber(this.editor.left)) + this.paddingSize;
-        this.target.top = util.toNumber(this.top) - (this.target === this.editor? 0 : util.toNumber(this.editor.top)) + this.paddingSize;
+        this.target.left = util.toNumber(this.left) - (this.isEditor? 0 : util.toNumber(this.editor.left)) + this.paddingSize;
+        this.target.top = util.toNumber(this.top) - (this.isEditor? 0 : util.toNumber(this.editor.top)) + this.paddingSize;
+
         this.target.transform.from({
             //skewX: this.transform.skewX,
             //skewY: this.transform.skewY,
             rotateZ: this.transform.rotateZ,
         });
 
-        this.target.width = util.toNumber(this.width) - this.paddingSize * 2;
-        this.target.height = util.toNumber(this.height) - this.paddingSize * 2;
+        const width = util.toNumber(this.width) - this.paddingSize * 2;
+        const height = util.toNumber(this.height) - this.paddingSize * 2;
+        if(this.target.width !== width) this.target.width = width;
+        if(this.target.height !== height) this.target.height = height;
+
     }
 
     // 重置

@@ -51,7 +51,11 @@ export default class JEditor extends JBase {
         }
         this.on('select', (e) => {
             this.select(this);// 选中自已
-        })
+        });
+        this.on('mousedown', function(e) {
+            this.selected = true;
+            this.ElementController.onDragStart(e);
+        });
     }
 
     // 所有支持的类型
@@ -108,8 +112,9 @@ export default class JEditor extends JBase {
     // 选中某个元素
     select(el: JBase) {
         // 选把所有已选择的取消
-        this.selectedElements.every(p=>p.selected = false);
-        this.ElementController.bind(el);
+        this.selectedElements.every(p=> p !== el && p.selected && (p.selected = false));
+        if(el.selected) this.ElementController.bind(el);
+        else this.ElementController.unbind(el);
     }
 
     resize(width=this.width, height=this.height) {
@@ -137,19 +142,12 @@ export default class JEditor extends JBase {
         }
         const self = this;
         child.on('select', function(v) {
-            if(v) {
-                self.select(this);
-            }
-            else {
-                self.ElementController.unbind(this);
-            }
+            self.select(this);
         });
-        /*child.on('mouseover', function(e) {
-            self.ElementController.hover(this);
+        child.on('mousedown', function(e) {
+            this.selected = true;
+            self.ElementController.onDragStart(e);
         });
-        child.on('mouseout', function(e) {
-            self.ElementController.leave(this);
-        });*/
         return this.target.addChild(child);
     }
 

@@ -2011,12 +2011,6 @@ var JBaseComponent = /** @class */ (function (_super) {
                 cursor: 'pointer'
             } }));
         _this.addChild(_this.target);
-        // 选中元素
-        _this.target.on('click', function (e) {
-            _this.selected = true;
-            e.stopPropagation();
-            e.preventDefault();
-        });
         // 变换改为控制主元素
         _this.transform.bind({
             target: _this.target,
@@ -2206,8 +2200,8 @@ var JControllerItem = /** @class */ (function (_super) {
             y: pos.y,
         };
         this.isMoving = true;
-        event.stopPropagation();
-        event.preventDefault();
+        event.stopPropagation && event.stopPropagation();
+        event.preventDefault && event.preventDefault();
     };
     JControllerItem.prototype.onDragEnd = function (event, pos) {
         if (this.isMoving) {
@@ -2518,15 +2512,19 @@ var JControllerComponent = /** @class */ (function (_super) {
     JControllerComponent.prototype.applyToTarget = function () {
         if (!this.target)
             return;
-        this.target.left = util.toNumber(this.left) - (this.target === this.editor ? 0 : util.toNumber(this.editor.left)) + this.paddingSize;
-        this.target.top = util.toNumber(this.top) - (this.target === this.editor ? 0 : util.toNumber(this.editor.top)) + this.paddingSize;
+        this.target.left = util.toNumber(this.left) - (this.isEditor ? 0 : util.toNumber(this.editor.left)) + this.paddingSize;
+        this.target.top = util.toNumber(this.top) - (this.isEditor ? 0 : util.toNumber(this.editor.top)) + this.paddingSize;
         this.target.transform.from({
             //skewX: this.transform.skewX,
             //skewY: this.transform.skewY,
             rotateZ: this.transform.rotateZ,
         });
-        this.target.width = util.toNumber(this.width) - this.paddingSize * 2;
-        this.target.height = util.toNumber(this.height) - this.paddingSize * 2;
+        var width = util.toNumber(this.width) - this.paddingSize * 2;
+        var height = util.toNumber(this.height) - this.paddingSize * 2;
+        if (this.target.width !== width)
+            this.target.width = width;
+        if (this.target.height !== height)
+            this.target.height = height;
     };
     // 重置
     JControllerComponent.prototype.reset = function (isEditor) {
@@ -2630,6 +2628,10 @@ var JEditor = /** @class */ (function (_super) {
         this.on('select', function (e) {
             _this.select(_this); // 选中自已
         });
+        this.on('mousedown', function (e) {
+            this.selected = true;
+            this.ElementController.onDragStart(e);
+        });
     };
     Object.defineProperty(JEditor.prototype, "width", {
         get: function () {
@@ -2707,8 +2709,11 @@ var JEditor = /** @class */ (function (_super) {
     // 选中某个元素
     JEditor.prototype.select = function (el) {
         // 选把所有已选择的取消
-        this.selectedElements.every(function (p) { return p.selected = false; });
-        this.ElementController.bind(el);
+        this.selectedElements.every(function (p) { return p !== el && p.selected && (p.selected = false); });
+        if (el.selected)
+            this.ElementController.bind(el);
+        else
+            this.ElementController.unbind(el);
     };
     JEditor.prototype.resize = function (width, height) {
         var _this = this;
@@ -2733,19 +2738,12 @@ var JEditor = /** @class */ (function (_super) {
         }
         var self = this;
         child.on('select', function (v) {
-            if (v) {
-                self.select(this);
-            }
-            else {
-                self.ElementController.unbind(this);
-            }
+            self.select(this);
         });
-        /*child.on('mouseover', function(e) {
-            self.ElementController.hover(this);
+        child.on('mousedown', function (e) {
+            this.selected = true;
+            self.ElementController.onDragStart(e);
         });
-        child.on('mouseout', function(e) {
-            self.ElementController.leave(this);
-        });*/
         return this.target.addChild(child);
     };
     // 移除
