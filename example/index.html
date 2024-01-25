@@ -32,7 +32,7 @@
 				  </ul>
 			  </div>
 			  <div class="col-8" style="height:100%; overflow: hidden;">
-				<div id="myeditor_container" style="height:100%; overflow:auto;">
+				<div id="myeditor_container" style="height:100%; overflow:auto;background-color: #eee;">
 					<img id="btn_zoomin" src="images/zoom_in.png" style="position: fixed; left: 60%; bottom: 60px; z-index:100; transform:scale(0.6)" />
 					<img id="btn_zoomout" src="images/zoom_out.png" style="position: fixed; left: 65%; bottom: 60px; z-index:100; transform:scale(0.6)" />
 				</div>
@@ -137,10 +137,10 @@
 
 		// 放大缩小
 		document.getElementById('btn_zoomin').onclick = function(){
-			editor.scale(editor.scaleSize.x + 0.1);
+			editor.scale(editor.transform.scaleX + 0.1);
 		}
 		document.getElementById('btn_zoomout').onclick = function(){			
-			editor.scale(editor.scaleSize.x - 0.1);
+			editor.scale(editor.transform.scaleX - 0.1);
 		}
 
 		// 调整大小

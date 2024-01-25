@@ -7,9 +7,10 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
         super({
             ...option,
             nodeType: 'div',
+            className: 'j-design-editor-container',
             // 外层只响应Z轴旋转
             transformWatchProps: [
-                'rotateZ',
+                'rotateZ','scaleX','scaleY'
             ],
             style: {
                 ...ContainerDefaultStyle,      
@@ -21,10 +22,11 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
             ...option,
             // 不响应本身的变换，只响应父级的
             transformWatchProps: [],
+            width: '100%',
+            height: '100%',
             style: {
-                width: '100%',
-                height: '100%',
-                display: 'block',           
+                display: 'block',   
+                cursor: 'pointer'        
             }
         });
         this.addChild(this.target);
@@ -34,11 +36,12 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
             e.stopPropagation();
             e.preventDefault();
         });
+        
         // 变换改为控制主元素
         this.transform.bind({
             target: this.target,
             watchProps: [
-                'rotateX', 'rotateY', 'translateX', 'translateY'
+                'rotateX', 'rotateY', 'translateX', 'translateY', 'skewX', 'skewY'
             ]
         });
         

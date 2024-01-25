@@ -37,6 +37,8 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     set visible(v: boolean);
     get zIndex(): number;
     set zIndex(v: number);
+    get className(): string;
+    set className(v: string);
     transform: JTransform;
     setDomStyle(name: string, value: string): void;
     css(name: string | Object, value?: string): this;

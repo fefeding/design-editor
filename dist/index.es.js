@@ -1062,6 +1062,13 @@ var util = {
             return v + 'px';
         return v;
     },
+    // 带像素或其它单位的转换为数字
+    toNumber: function (v) {
+        if (this.isNumber(v))
+            return Number(v);
+        else if (typeof v === 'string')
+            return parseFloat(v);
+    },
     // 弧度转角度
     radToDeg: function (v) {
         return v * (180 / Math.PI);
@@ -1085,6 +1092,69 @@ var util = {
         if (typeof v === 'string' && this.isDegNumber(v))
             return this.toRad(this.degToRad(parseFloat(v)));
         return v;
+    },
+    /**
+     * 获取元素的绝对定位
+     *
+     * @method getElementPosition
+     * @static
+     * @param {element} el 目标元素对象
+     * @return {position} 位置对象(top,left)
+     */
+    getElementPosition: function (el) {
+        var pos = { "y": 0, "x": 0 };
+        if (!el)
+            return pos;
+        if (el.offsetParent) {
+            while (el.offsetParent) {
+                pos.y += el.offsetTop;
+                pos.x += el.offsetLeft;
+                el = el.offsetParent;
+            }
+        }
+        // @ts-ignore
+        else if (el.x) {
+            // @ts-ignore
+            pos.x += el.x;
+        }
+        // @ts-ignore
+        else if (el.y) {
+            // @ts-ignore
+            pos.y += el.y;
+        }
+        return pos;
+    },
+    /**
+     * 把一个或多个点绕某个点旋转一定角度
+     * 先把坐标原点移到旋转中心点，计算后移回
+     * @method rotatePoints
+     * @static
+     * @param {Array/object} p 一个或多个点
+     * @param {x: number, y: number} rp 旋转中心点
+     * @param {*} r 旋转角度
+     */
+    rotatePoints: function (p, center, r) {
+        if (!r || !p)
+            return p;
+        var cos = Math.cos(r);
+        var sin = Math.sin(r);
+        if (Array.isArray(p)) {
+            for (var i = 0; i < p.length; i++) {
+                if (!p[i])
+                    continue;
+                var x1 = p[i].x - center.x;
+                var y1 = p[i].y - center.y;
+                p[i].x = x1 * cos - y1 * sin + center.x;
+                p[i].y = x1 * sin + y1 * cos + center.y;
+            }
+        }
+        else {
+            var x1 = p.x - center.x;
+            var y1 = p.y - center.y;
+            p.x = x1 * cos - y1 * sin + center.x;
+            p.y = x1 * sin + y1 * cos + center.y;
+        }
+        return p;
     }
 };
 
@@ -1137,21 +1207,21 @@ var Transform = /** @class */ (function (_super) {
     });
     Object.defineProperty(Transform.prototype, "rotateXString", {
         get: function () {
-            return "rotateX(".concat(util.toDeg(this.rotateX), ")");
+            return "rotateX(".concat(util.toRad(this.rotateX), ")");
         },
         enumerable: false,
         configurable: true
     });
     Object.defineProperty(Transform.prototype, "rotateYString", {
         get: function () {
-            return "rotateY(".concat(util.toDeg(this.rotateY), ")");
+            return "rotateY(".concat(util.toRad(this.rotateY), ")");
         },
         enumerable: false,
         configurable: true
     });
     Object.defineProperty(Transform.prototype, "rotateZString", {
         get: function () {
-            return "rotateZ(".concat(util.toDeg(this.rotateZ), ")");
+            return "rotateZ(".concat(util.toRad(this.rotateZ), ")");
         },
         enumerable: false,
         configurable: true
@@ -1179,14 +1249,14 @@ var Transform = /** @class */ (function (_super) {
     });
     Object.defineProperty(Transform.prototype, "skewXString", {
         get: function () {
-            return "skewX(".concat(util.toDeg(this.skewX), ")");
+            return "skewX(".concat(util.toRad(this.skewX), ")");
         },
         enumerable: false,
         configurable: true
     });
     Object.defineProperty(Transform.prototype, "skewYString", {
         get: function () {
-            return "skewY(".concat(util.toDeg(this.skewY), ")");
+            return "skewY(".concat(util.toRad(this.skewY), ")");
         },
         enumerable: false,
         configurable: true
@@ -1513,6 +1583,43 @@ var JEvent = /** @class */ (function () {
         }
         return this;
     };
+    /**
+     * 获取元素事件触发的位置
+     *
+     * @method getEventPosition
+     * @static
+     * @param {eventArg} evt 当前触发事件的参数
+     * @return {point} 事件触发的位置
+     */
+    JEvent.prototype.getEventPosition = function (evt, target) {
+        var isTouch = false;
+        if (evt instanceof TouchEvent) {
+            var touches = evt.changedTouches || evt.targetTouches || evt.touches;
+            // @ts-ignore
+            evt = touches[0]; //兼容touch事件
+            isTouch = true;
+        }
+        var px = evt.pageX || evt.x;
+        if (typeof px == 'undefined')
+            px = evt.clientX + (document.documentElement.scrollLeft || document.body.scrollLeft);
+        var py = evt.pageY || evt.y;
+        if (typeof py == 'undefined')
+            py = evt.clientY + (document.documentElement.scrollTop || document.body.scrollTop);
+        var ox = evt.offsetX;
+        var oy = evt.offsetY;
+        if ((typeof ox === 'undefined' && typeof oy === 'undefined') || target) {
+            var p = util.getElementPosition((target || evt.target));
+            ox = px - p.x;
+            oy = py - p.y;
+        }
+        return {
+            x: ox,
+            y: oy,
+            pageX: px,
+            pageY: py,
+            isTouch: isTouch,
+        };
+    };
     return JEvent;
 }());
 
@@ -1539,7 +1646,7 @@ var JElement = /** @class */ (function (_super) {
         // 事件托管
         _this.event = new JEvent(_this.dom);
         _this.event.init(function (e) {
-            return _this.emit(e.type, e);
+            _this.emit(e.type, e);
         });
         // 样式代理处理
         _this.style = JElementStyle.createProxy();
@@ -1571,6 +1678,8 @@ var JElement = /** @class */ (function (_super) {
             this.zIndex = option.zIndex;
         if (typeof option.visible !== 'undefined')
             this.visible = !!option.visible;
+        if (option.className)
+            this.className = option.className;
     };
     Object.defineProperty(JElement.prototype, "children", {
         get: function () {
@@ -1670,22 +1779,22 @@ var JElement = /** @class */ (function (_super) {
     Object.defineProperty(JElement.prototype, "rotation", {
         get: function () {
             var v = this.transform.rotateZ;
-            return util.degToRad(v);
+            return v;
         },
         // 旋转弧度
         set: function (v) {
-            this.transform.rotateZ = util.radToDeg(v);
+            this.transform.rotateZ = v;
         },
         enumerable: false,
         configurable: true
     });
     Object.defineProperty(JElement.prototype, "angle", {
         get: function () {
-            return this.transform.rotateZ;
+            return util.radToDeg(this.transform.rotateZ);
         },
         // 旋转角度
         set: function (v) {
-            this.transform.rotateZ = v;
+            this.transform.rotateZ = util.degToRad(v);
         },
         enumerable: false,
         configurable: true
@@ -1706,6 +1815,16 @@ var JElement = /** @class */ (function (_super) {
         },
         set: function (v) {
             this.style.zIndex = v + '';
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(JElement.prototype, "className", {
+        get: function () {
+            return this.dom.className;
+        },
+        set: function (v) {
+            this.dom.className = v;
         },
         enumerable: false,
         configurable: true
@@ -1787,8 +1906,8 @@ var JElement = /** @class */ (function (_super) {
     };
     // 移位
     JElement.prototype.move = function (dx, dy) {
-        this.left += dx;
-        this.top += dy;
+        this.left = util.toNumber(this.left) + dx;
+        this.top = util.toNumber(this.top) + dy;
         this.emit('move', { dx: dx, dy: dy });
     };
     // 重置大小
@@ -1876,10 +1995,10 @@ var JElement = /** @class */ (function (_super) {
 var JBaseComponent = /** @class */ (function (_super) {
     __extends(JBaseComponent, _super);
     function JBaseComponent(option) {
-        var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'div', 
+        var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'div', className: 'j-design-editor-container', 
             // 外层只响应Z轴旋转
             transformWatchProps: [
-                'rotateZ',
+                'rotateZ', 'scaleX', 'scaleY'
             ], style: __assign({}, ContainerDefaultStyle) })) || this;
         // 选中
         _this._selected = false;
@@ -1887,10 +2006,9 @@ var JBaseComponent = /** @class */ (function (_super) {
         // 生成当前控制的元素
         _this.target = new JElement(__assign(__assign({}, option), { 
             // 不响应本身的变换，只响应父级的
-            transformWatchProps: [], style: {
-                width: '100%',
-                height: '100%',
+            transformWatchProps: [], width: '100%', height: '100%', style: {
                 display: 'block',
+                cursor: 'pointer'
             } }));
         _this.addChild(_this.target);
         // 选中元素
@@ -1903,7 +2021,7 @@ var JBaseComponent = /** @class */ (function (_super) {
         _this.transform.bind({
             target: _this.target,
             watchProps: [
-                'rotateX', 'rotateY', 'translateX', 'translateY'
+                'rotateX', 'rotateY', 'translateX', 'translateY', 'skewX', 'skewY'
             ]
         });
         // 刷新样式
@@ -2018,7 +2136,7 @@ var JControllerItem = /** @class */ (function (_super) {
         _this = _super.call(this, option) || this;
         _this.dir = '';
         _this.size = 8;
-        _this.isMoving = false;
+        _this._isMoving = false;
         // 拖放位置
         _this.dragStartPosition = {
             x: 0,
@@ -2034,6 +2152,8 @@ var JControllerItem = /** @class */ (function (_super) {
                 _this.onDragEnd(e);
             });
             _this.editor.on('mouseout', function (e) {
+                if (e.target !== _this.editor.dom)
+                    return; // 不是out编辑器，不处理
                 _this.onDragEnd(e);
             });
             _this.editor.on('mousemove', function (e) {
@@ -2045,28 +2165,64 @@ var JControllerItem = /** @class */ (function (_super) {
         });
         return _this;
     }
-    JControllerItem.prototype.onDragMove = function (event) {
+    Object.defineProperty(JControllerItem.prototype, "isMoving", {
+        get: function () {
+            return this._isMoving;
+        },
+        set: function (v) {
+            this._isMoving = v;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    JControllerItem.prototype.onDragMove = function (event, pos) {
+        if (pos === void 0) { pos = event; }
         if (!this.isMoving)
             return;
-        var offX = (event.x - this.dragStartPosition.x);
-        var offY = (event.y - this.dragStartPosition.y);
-        this.move(offX, offY);
+        var offX = (pos.x - this.dragStartPosition.x);
+        var offY = (pos.y - this.dragStartPosition.y);
+        this.emit('change', {
+            dir: this.dir,
+            offX: offX,
+            offY: offY,
+            oldPosition: this.dragStartPosition,
+            newPosition: {
+                x: pos.x,
+                y: pos.y
+            },
+            event: event
+        });
         // 选中的是渲染层的坐标，转为控制层的
-        this.dragStartPosition.x = event.x;
-        this.dragStartPosition.y = event.y;
+        this.dragStartPosition.x = pos.x;
+        this.dragStartPosition.y = pos.y;
         event.stopPropagation();
         event.preventDefault();
     };
-    JControllerItem.prototype.onDragStart = function (event) {
+    JControllerItem.prototype.onDragStart = function (event, pos) {
+        if (pos === void 0) { pos = event; }
         // 选中的是渲染层的坐标，转为控制层的
         this.dragStartPosition = {
-            x: event.x,
-            y: event.y,
+            x: pos.x,
+            y: pos.y,
         };
         this.isMoving = true;
+        event.stopPropagation();
+        event.preventDefault();
     };
-    JControllerItem.prototype.onDragEnd = function (event) {
-        this.isMoving = false;
+    JControllerItem.prototype.onDragEnd = function (event, pos) {
+        if (this.isMoving) {
+            this.isMoving = false;
+        }
+    };
+    // 计算指针
+    JControllerItem.prototype.resetCursor = function (rotation) {
+        // 先简单处理
+        if (!rotation || (rotation > -Math.PI / 6 && rotation < Math.PI / 6)) {
+            this.style.cursor = GCursors[this.dir];
+        }
+        else {
+            this.style.cursor = 'move';
+        }
     };
     return JControllerItem;
 }(JElement));
@@ -2078,9 +2234,14 @@ var JControllerComponent = /** @class */ (function (_super) {
         option.zIndex = 100000;
         option.style = option.style || {};
         option.style.cursor = option.style.cursor || 'move';
+        option.dir = 'element';
         option.style.backgroundColor = option.style.backgroundColor || 'transparent';
+        //option.style.boxShadow = '0 0 2px 2px #ccc';
         _this = _super.call(this, option) || this;
         _this.items = [];
+        // 选择框边距
+        _this.paddingSize = 2;
+        _this.isEditor = false; // 当前关联是否是编辑器
         _this.init(option);
         return _this;
     }
@@ -2170,92 +2331,255 @@ var JControllerComponent = /** @class */ (function (_super) {
                 translateY: '-50%'
             }
         }); // 旋转块 
-        this.hoverItem = this.createItem('hover', {
-            shape: 'rect',
-            style: __assign(__assign({}, option.itemStyle), { borderStyle: 'dotted', backgroundColor: 'transparent' })
-        });
-        this.hoverItem.visible = false;
-        this.on('move', function (opt) {
-            _this.applyToTarget();
+        if (this.editor) {
+            this.editor.on('mousedown', function (e) {
+                if (!_this.isEditor)
+                    return; // 不是编辑器，不处理
+                _this.onDragStart(e);
+            });
+        }
+        this.on('change', function (e) {
+            _this.change(e);
         });
     };
     // 生成控制点
     JControllerComponent.prototype.createItem = function (id, option) {
-        var item = new JControllerItem(__assign({ dir: id }, option));
+        var item = new JControllerItem(__assign({ dir: id, editor: this.editor }, option));
         this.addChild(item);
         this.items.push(item);
-        /*
-                const self = this;
-                item.on('mousedown', function(event) {
-                    if(event.button === 2) {
-                        return;
-                    }
-                    self.onDragStart(event, this);
-                });
-        
-                item.on('change', ({x, y, width, height, rotation, skew} = event) => {
-                    const w = this.width + width;
-                    const h = this.height + height;
-        
-                    // 大小最少要有1
-                    if(w < 1) {
-                        x = 0;
-                    }
-                    else if(width !== 0) {
-                        this.width = w;
-                    }
-                    if(h < 1) {
-                        y = 0;
-                    }
-                    else if(height !== 0) {
-                        this.height = h;
-                    }
-                    
-                    if(x !== 0 || y !== 0 || width !== 0 || height !== 0) {
-                        this.move(x, y);
-                        //this.initShapes();
-                    }
-                    
-                    if(rotation) {
-                        this.rotation += rotation;
-                    }
-        
-                    if(skew && (skew.x !== 0 || skew.y !== 0)) {
-                        //this.skew.x += skew.x;
-                        //this.skew.y += skew.y;
-                    }
-                });*/
+        var self = this;
+        item.on('change', function (e) {
+            self.change(e);
+            // 重置指针
+            this.resetCursor(self.transform.rotateZ);
+        });
         return item;
+    };
+    // 发生改变响应
+    JControllerComponent.prototype.change = function (e) {
+        if (!this.target)
+            return;
+        var dir = e.dir, offX = e.offX, offY = e.offY;
+        // 当前移动对原对象的改变
+        var args = {
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0,
+            rotation: 0,
+            skew: {
+                x: 0,
+                y: 0
+            }
+        };
+        if (dir === 'rotate') {
+            this.rotateChange(e, args);
+        }
+        else if (dir === 'element') {
+            // 元素位置控制器
+            args.x = offX;
+            args.y = offY;
+        }
+        else {
+            // 先回原坐标，再主算偏移量，这样保证操作更容易理解
+            if (this.transform.rotateZ) {
+                var pos = this.getRotateEventPosition(e);
+                offX = pos.offX;
+                offY = pos.offY;
+            }
+            switch (dir) {
+                case 'l': {
+                    args.x = offX;
+                    args.width = -offX;
+                    break;
+                }
+                case 't': {
+                    args.y = offY;
+                    args.height = -offY;
+                    break;
+                }
+                case 'r': {
+                    args.width = offX;
+                    break;
+                }
+                case 'b': {
+                    args.height = offY;
+                    break;
+                }
+                case 'lt': {
+                    args.x = offX;
+                    args.width = -offX;
+                    args.y = offY;
+                    args.height = -offY;
+                    break;
+                }
+                case 'tr': {
+                    args.width = offX;
+                    args.y = offY;
+                    args.height = -offY;
+                    break;
+                }
+                case 'rb': {
+                    args.width = offX;
+                    args.height = offY;
+                    break;
+                }
+                case 'lb': {
+                    args.x = offX;
+                    args.width = -offX;
+                    args.height = offY;
+                    break;
+                }
+                case 'skew': {
+                    var rx = offX / util.toNumber(this.width) * Math.PI;
+                    var ry = offY / util.toNumber(this.height) * Math.PI;
+                    args.skew.x = ry;
+                    args.skew.y = rx;
+                    break;
+                }
+            }
+        }
+        // 位移
+        if (args.x || args.y) {
+            this.move(args.x, args.y);
+        }
+        if (args.width) {
+            this.width = Math.max(util.toNumber(this.width) + args.width, 1);
+        }
+        if (args.height) {
+            this.height = Math.max(util.toNumber(this.height) + args.height, 1);
+        }
+        // x,y旋转
+        if (args.skew.x || args.skew.y) {
+            this.target.transform.rotateX += args.skew.x;
+            this.target.transform.rotateY += args.skew.y;
+            this.target.transform.apply();
+        }
+        this.applyToTarget();
+    };
+    // 因为旋转后坐标要回原才好计算操作，
+    JControllerComponent.prototype.getRotateEventPosition = function (e) {
+        var offX = e.offX, offY = e.offY, oldPosition = e.oldPosition, newPosition = e.newPosition;
+        // 先回原坐标，再主算偏移量，这样保证操作更容易理解
+        if (this.transform.rotateZ) {
+            var center = {
+                x: util.toNumber(this.left) + util.toNumber(this.width) / 2,
+                y: util.toNumber(this.top) + util.toNumber(this.height) / 2,
+            };
+            var _a = __read(util.rotatePoints([oldPosition, newPosition], center, -this.transform.rotateZ), 2), pos1 = _a[0], pos2 = _a[1];
+            offX = pos2.x - pos1.x;
+            offY = pos2.y - pos1.y;
+        }
+        return {
+            offX: offX,
+            offY: offY
+        };
+    };
+    // 发生旋转
+    JControllerComponent.prototype.rotateChange = function (e, args) {
+        var oldPosition = e.oldPosition, newPosition = e.newPosition;
+        var center = {
+            x: util.toNumber(this.left) + util.toNumber(this.width) / 2,
+            y: util.toNumber(this.top) + util.toNumber(this.height) / 2,
+        };
+        // 编辑器坐标
+        // @ts-ignore
+        var pos1 = this.editor.toEditorPosition(oldPosition);
+        // @ts-ignore
+        var pos2 = this.editor.toEditorPosition(newPosition);
+        // 因为center是相对于编辑器的，所以事件坐标也需要转到编辑器
+        var cx1 = pos1.x - center.x;
+        var cy1 = pos1.y - center.y;
+        var angle1 = Math.atan(cy1 / cx1);
+        var cx2 = pos2.x - center.x;
+        var cy2 = pos2.y - center.y;
+        var angle2 = Math.atan(cy2 / cx2);
+        if (angle1 >= 0 && angle2 < 0) {
+            if (cx1 >= 0 && cy1 >= 0 && cx2 <= 0 && cy2 >= 0)
+                angle2 = Math.PI + angle2;
+            else if (cx1 <= 0 && cy1 <= 0 && cx2 >= 0 && cy2 <= 0)
+                angle2 = Math.PI + angle2;
+            //else if(cx1 <= 0 && cy1 <=0 && cx2 >= 0 && cy2 >= 0) angle2 = Math.PI + angle2;
+        }
+        else if (angle1 <= 0 && angle2 >= 0) {
+            if (cx1 >= 0 && cy1 <= 0 && cx2 < 0)
+                angle2 = angle2 - Math.PI;
+            else
+                angle2 = -angle2;
+        }
+        else ;
+        args.rotation = angle2 - angle1;
+        if (args.rotation) {
+            this.transform.rotateZ += args.rotation;
+            this.transform.apply();
+        }
     };
     // 把变换应用到目标元素
     JControllerComponent.prototype.applyToTarget = function () {
         if (!this.target)
             return;
-        this.target.left = Number(this.left) - Number(this.editor.left);
-        this.target.top = Number(this.top) - Number(this.editor.top);
+        this.target.left = util.toNumber(this.left) - (this.target === this.editor ? 0 : util.toNumber(this.editor.left)) + this.paddingSize;
+        this.target.top = util.toNumber(this.top) - (this.target === this.editor ? 0 : util.toNumber(this.editor.top)) + this.paddingSize;
+        this.target.transform.from({
+            //skewX: this.transform.skewX,
+            //skewY: this.transform.skewY,
+            rotateZ: this.transform.rotateZ,
+        });
+        this.target.width = util.toNumber(this.width) - this.paddingSize * 2;
+        this.target.height = util.toNumber(this.height) - this.paddingSize * 2;
+    };
+    // 重置
+    JControllerComponent.prototype.reset = function (isEditor) {
+        var e_1, _a;
+        if (isEditor === void 0) { isEditor = this.isEditor; }
+        this.isMoving = false;
+        delete this.target;
+        try {
+            // 编辑器不让旋转和skew
+            for (var _b = __values(this.items), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var item = _c.value;
+                item.isMoving = false;
+                item.visible = !isEditor;
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        this.transform.from({
+            rotateZ: 0,
+        });
     };
     // 绑定到操作的对象
     JControllerComponent.prototype.bind = function (target) {
-        this.left = Number(target.left) + Number(this.editor.left);
-        this.top = Number(target.top) + Number(this.editor.top);
-        this.width = target.width;
-        this.height = target.height;
+        this.isEditor = target === this.editor;
+        this.reset(this.isEditor);
+        this.left = util.toNumber(target.left) + (this.isEditor ? 0 : util.toNumber(this.editor.left)) - this.paddingSize;
+        this.top = util.toNumber(target.top) + (this.isEditor ? 0 : util.toNumber(this.editor.top)) - this.paddingSize;
+        this.width = util.toNumber(target.width) + this.paddingSize * 2;
+        this.height = util.toNumber(target.height) + this.paddingSize * 2;
         this.transform.from({
-            rotateX: target.transform.rotateX,
-            rotateY: target.transform.rotateY,
+            // rotateX: target.transform.rotateX,
+            // rotateY: target.transform.rotateY,
             rotateZ: target.transform.rotateZ,
-            scaleX: target.transform.scaleX,
-            scaleY: target.transform.scaleY,
-            scaleZ: target.transform.scaleZ,
+            //scaleX: target.transform.scaleX,
+            //scaleY: target.transform.scaleY,
+            //scaleZ: target.transform.scaleZ,
         });
         this.target = target;
         this.visible = true;
+        // 如果是编辑器，则不能捕获事件
+        this.css({
+            pointerEvents: this.isEditor ? 'none' : 'auto'
+        });
     };
     // 解除绑定
     JControllerComponent.prototype.unbind = function (target) {
         if (this.target === target) {
-            delete this.target;
-            this.visible = false;
+            this.reset(false);
         }
     };
     return JControllerComponent;
@@ -2275,11 +2599,11 @@ var JEditor = /** @class */ (function (_super) {
             container = document.getElementById(container);
         container.appendChild(_this.dom);
         container.style.position = 'relative';
-        _this.init(option);
+        _this.init(option, container);
         return _this;
     }
     // 初始化整个编辑器
-    JEditor.prototype.init = function (option) {
+    JEditor.prototype.init = function (option, container) {
         var _this = this;
         this.dom.style.width = '100%';
         this.dom.style.height = '100%';
@@ -2297,6 +2621,9 @@ var JEditor = /** @class */ (function (_super) {
             visible: false
         });
         this.dom.appendChild(this.ElementController.dom); // 加到外层
+        var styleNode = document.createElement('style');
+        styleNode.innerHTML = ".j-design-editor-container {\n                                    border: 0;\n                                }\n                                .j-design-editor-container:hover {\n                                    box-shadow: 0 0 1px 1px rgba(255,255,255,0.5);\n                                }";
+        container.appendChild(styleNode);
         if (option.width && option.height) {
             this.resize(option.width, option.height);
         }
@@ -2413,6 +2740,12 @@ var JEditor = /** @class */ (function (_super) {
                 self.ElementController.unbind(this);
             }
         });
+        /*child.on('mouseover', function(e) {
+            self.ElementController.hover(this);
+        });
+        child.on('mouseout', function(e) {
+            self.ElementController.leave(this);
+        });*/
         return this.target.addChild(child);
     };
     // 移除
@@ -2421,7 +2754,21 @@ var JEditor = /** @class */ (function (_super) {
             console.warn('不能移除自已');
             return;
         }
+        if (el instanceof JElement) {
+            el.off('select');
+            el.off('mousehover');
+            el.off('mousehout');
+        }
         return this.target.removeChild(el);
+    };
+    // 把domcument坐标转为编辑器相对坐标
+    JEditor.prototype.toEditorPosition = function (pos) {
+        // 编辑器坐标
+        var editorPos = util.getElementPosition(this.dom);
+        return {
+            x: pos.x - editorPos.x,
+            y: pos.y - editorPos.y
+        };
     };
     JEditor.prototype.clear = function () {
         this.css({

@@ -4,6 +4,7 @@ import JText from './components/text';
 import JImage from './components/image';
 import JElement from './core/element';
 import JController from './components/controller';
+import util from './lib/util';
 
 export default class JEditor extends JBase {
 
@@ -11,14 +12,15 @@ export default class JEditor extends JBase {
         super(option);
 
         if(typeof container === 'string') container = document.getElementById(container);
+        
         container.appendChild(this.dom); 
         container.style.position = 'relative';  
 
-        this.init(option);        
+        this.init(option, container);        
     }
 
     // 初始化整个编辑器
-    init(option) {
+    init(option, container: HTMLDivElement) {
         this.dom.style.width = '100%';
         this.dom.style.height = '100%';
         if(option.style.containerBackgroundColor) this.dom.style.backgroundColor = option.style.containerBackgroundColor;
@@ -35,6 +37,14 @@ export default class JEditor extends JBase {
             visible: false
         });
         this.dom.appendChild(this.ElementController.dom);// 加到外层
+        const styleNode = document.createElement('style');
+        styleNode.innerHTML = `.j-design-editor-container {
+                                    border: 0;
+                                }
+                                .j-design-editor-container:hover {
+                                    box-shadow: 0 0 1px 1px rgba(255,255,255,0.5);
+                                }`;
+        container.appendChild(styleNode);
 
         if(option.width && option.height) {
             this.resize(option.width, option.height);
@@ -134,6 +144,12 @@ export default class JEditor extends JBase {
                 self.ElementController.unbind(this);
             }
         });
+        /*child.on('mouseover', function(e) {
+            self.ElementController.hover(this);
+        });
+        child.on('mouseout', function(e) {
+            self.ElementController.leave(this);
+        });*/
         return this.target.addChild(child);
     }
 
@@ -143,7 +159,22 @@ export default class JEditor extends JBase {
             console.warn('不能移除自已');
             return;
         }
+        if(el instanceof JElement) {
+            el.off('select');
+            el.off('mousehover');
+            el.off('mousehout');
+        }
         return this.target.removeChild(el);
+    }
+
+    // 把domcument坐标转为编辑器相对坐标
+    toEditorPosition(pos: {x: number, y: number}) {
+        // 编辑器坐标
+        const editorPos = util.getElementPosition(this.dom);
+        return {
+            x: pos.x - editorPos.x,
+            y: pos.y - editorPos.y
+        };
     }
 
     clear() {

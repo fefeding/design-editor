@@ -1,4 +1,5 @@
 
+import util from 'src/lib/util';
 import JElement from '../core/element';
 
 // 鼠标指针
@@ -38,6 +39,7 @@ export class JControllerItem extends JElement<HTMLDivElement> {
                 this.onDragEnd(e);
             });
             this.editor.on('mouseout', (e) => {
+                if(e.target !== this.editor.dom) return;// 不是out编辑器，不处理
                 this.onDragEnd(e);
             });
             this.editor.on('mousemove', (e) => {
@@ -54,7 +56,13 @@ export class JControllerItem extends JElement<HTMLDivElement> {
     // 当前编辑器
     editor: JElement;
 
-    isMoving = false;
+    protected _isMoving = false;
+    get isMoving() {
+        return this._isMoving;
+    }
+    set isMoving(v) {
+        this._isMoving = v;
+    }
 
     // 拖放位置
     dragStartPosition = {
@@ -62,35 +70,62 @@ export class JControllerItem extends JElement<HTMLDivElement> {
         y: 0,
     };
 
-    onDragMove(event: MouseEvent) {
+    onDragMove(event: MouseEvent, pos: {x: number, y: number} = event) {
         if(!this.isMoving) return;
         
-        const offX = (event.x - this.dragStartPosition.x);
-        const offY = (event.y - this.dragStartPosition.y);
-
-        this.move(offX, offY);
+        const offX = (pos.x - this.dragStartPosition.x);
+        const offY = (pos.y - this.dragStartPosition.y);
+        
+        this.emit('change', {
+            dir: this.dir,
+            offX,
+            offY,
+            oldPosition: this.dragStartPosition,
+            newPosition: {
+                x: pos.x,
+                y: pos.y
+            },
+            event
+        });
         
         // 选中的是渲染层的坐标，转为控制层的
-        this.dragStartPosition.x = event.x;
-        this.dragStartPosition.y = event.y;
+        this.dragStartPosition.x = pos.x;
+        this.dragStartPosition.y = pos.y;
 
         event.stopPropagation();
         event.preventDefault();
     }
     
-    onDragStart(event: MouseEvent)   {
+    onDragStart(event: MouseEvent, pos: {x: number, y: number} = event)   {
         
         // 选中的是渲染层的坐标，转为控制层的
         this.dragStartPosition = {
-            x: event.x,
-            y: event.y,
+            x: pos.x,
+            y: pos.y,
         };
 
         this.isMoving = true;
+
+        event.stopPropagation();
+        event.preventDefault();
     }
     
-    onDragEnd(event: MouseEvent)  {
-        this.isMoving = false;
+    onDragEnd(event: MouseEvent, pos: {x: number, y: number} = event)  {
+        if(this.isMoving) {
+            this.isMoving = false;
+        }
+    }
+
+    // 计算指针
+    resetCursor(rotation: number) {
+        
+        // 先简单处理
+        if(!rotation || (rotation > -Math.PI/6 && rotation< Math.PI/6)) {
+            this.style.cursor = GCursors[this.dir];
+        }
+        else {
+            this.style.cursor = 'move';
+        }
     }
 
 }
@@ -101,7 +136,9 @@ export default class JControllerComponent extends JControllerItem {
         option.zIndex = 100000;
         option.style = option.style || {};
         option.style.cursor = option.style.cursor || 'move';
+        option.dir = 'element';
         option.style.backgroundColor = option.style.backgroundColor || 'transparent';
+        //option.style.boxShadow = '0 0 2px 2px #ccc';
         super(option);
         this.init(option);
     }
@@ -245,18 +282,16 @@ export default class JControllerComponent extends JControllerItem {
             }
         });// 旋转块 
         
-        this.hoverItem = this.createItem('hover', {
-            shape: 'rect',  
-            style: {
-                ...option.itemStyle,
-                borderStyle: 'dotted',// 虚线
-                backgroundColor: 'transparent'
-            }
-        });
-        this.hoverItem.visible = false;     
         
-        this.on('move', (opt) => {
-            this.applyToTarget();
+        if(this.editor) {
+            this.editor.on('mousedown', (e) => {
+                if(!this.isEditor) return;// 不是编辑器，不处理
+                this.onDragStart(e);
+            });
+        }
+        
+        this.on('change', (e)=> {
+            this.change(e);
         });
     }
 
@@ -264,95 +299,259 @@ export default class JControllerComponent extends JControllerItem {
 
     rotateItem: JControllerItem;
     skewItem: JControllerItem;
-    hoverItem: JControllerItem;
 
     target: JElement;
+    // 选择框边距
+    paddingSize = 2;
+
+    isEditor = false;// 当前关联是否是编辑器
 
     // 生成控制点
     createItem(id, option) {
         const item = new JControllerItem({
             dir: id,
+            editor: this.editor,
             ...option
         });
         this.addChild(item);
         this.items.push(item);
-/*
+
         const self = this;
-        item.on('mousedown', function(event) {
-            if(event.button === 2) {
-                return;
-            }
-            self.onDragStart(event, this);
+        item.on('change', function(e) {
+            self.change(e);
+            // 重置指针
+            this.resetCursor(self.transform.rotateZ);
         });
-
-        item.on('change', ({x, y, width, height, rotation, skew} = event) => {
-            const w = this.width + width;
-            const h = this.height + height;
-
-            // 大小最少要有1
-            if(w < 1) {
-                x = 0;
-            }
-            else if(width !== 0) {
-                this.width = w;
-            }
-            if(h < 1) {
-                y = 0;
-            }
-            else if(height !== 0) {
-                this.height = h;
-            }
-            
-            if(x !== 0 || y !== 0 || width !== 0 || height !== 0) {
-                this.move(x, y);
-                //this.initShapes();  
-            }   
-            
-            if(rotation) {
-                this.rotation += rotation;
-            }
-
-            if(skew && (skew.x !== 0 || skew.y !== 0)) {
-                //this.skew.x += skew.x;
-                //this.skew.y += skew.y;
-            }
-        });*/
         return item;
     }
-    
+
+    // 发生改变响应
+    change(e) {
+        if(!this.target) return;
+        let {dir, offX, offY, } = e;
+        // 当前移动对原对象的改变
+        const args = {
+            x: 0, 
+            y: 0, 
+            width: 0, 
+            height: 0,
+            rotation: 0,
+            skew: {
+                x: 0,
+                y: 0
+            }
+        };
+        if(dir === 'rotate') {
+            this.rotateChange(e, args);
+        }
+        else if(dir === 'element') {
+            // 元素位置控制器
+            args.x = offX;
+            args.y = offY;
+        }
+        else {
+            // 先回原坐标，再主算偏移量，这样保证操作更容易理解
+            if(this.transform.rotateZ) {
+                const pos = this.getRotateEventPosition(e);
+                offX = pos.offX;
+                offY = pos.offY;
+            }
+
+            switch(dir) {                
+                case 'l': {
+                    args.x = offX;
+                    args.width = -offX;
+                    break;
+                }
+                case 't': {
+                    args.y = offY;
+                    args.height = -offY;
+                    break;
+                }
+                case 'r': {
+                    args.width = offX;
+                    break;
+                }
+                case 'b': {
+                    args.height = offY;
+                    break;
+                }
+                case 'lt':{   
+                    args.x = offX;
+                    args.width = -offX; 
+                    args.y = offY;
+                    args.height = -offY;
+                    break;
+                }
+                case 'tr':{   
+                    args.width = offX; 
+                    args.y = offY;
+                    args.height = -offY;
+                    break;
+                }
+                case 'rb':{   
+                    args.width = offX; 
+                    args.height = offY;
+                    break;
+                }
+                case 'lb':{   
+                    args.x = offX;
+                    args.width = -offX; 
+                    args.height = offY;
+                    break;
+                }
+                case 'skew': {                    
+                    const rx = offX / util.toNumber(this.width) * Math.PI;
+                    const ry = offY / util.toNumber(this.height) * Math.PI;
+                    args.skew.x = ry;
+                    args.skew.y = rx;
+                    break;
+                }            
+            }
+        }
+        // 位移
+        if(args.x || args.y) {
+            this.move(args.x, args.y);
+        }
+        if(args.width) {
+            this.width = Math.max(util.toNumber(this.width) + args.width, 1);
+        }
+        if(args.height) {
+            this.height = Math.max(util.toNumber(this.height) + args.height, 1);
+        }
+        // x,y旋转
+        if(args.skew.x || args.skew.y) {
+            this.target.transform.rotateX += args.skew.x;
+            this.target.transform.rotateY += args.skew.y;
+            this.target.transform.apply();
+        }
+
+        this.applyToTarget();
+    }
+
+    // 因为旋转后坐标要回原才好计算操作，
+    getRotateEventPosition(e) {
+        let {offX, offY, oldPosition, newPosition} = e;
+        // 先回原坐标，再主算偏移量，这样保证操作更容易理解
+        if(this.transform.rotateZ) {
+            const center = {
+                x: util.toNumber(this.left) + util.toNumber(this.width)/2,
+                y: util.toNumber(this.top) + util.toNumber(this.height)/2,
+            };
+            const [pos1, pos2] = util.rotatePoints([oldPosition, newPosition], center, -this.transform.rotateZ);
+            offX = pos2.x - pos1.x;
+            offY = pos2.y - pos1.y;
+        }
+        return {
+            offX,
+            offY
+        }
+    }
+
+    // 发生旋转
+    rotateChange(e, args) {
+        const {oldPosition, newPosition} = e;
+        const center = {
+            x: util.toNumber(this.left) + util.toNumber(this.width)/2,
+            y: util.toNumber(this.top) + util.toNumber(this.height)/2,
+        };
+        // 编辑器坐标
+        // @ts-ignore
+        const pos1 = this.editor.toEditorPosition(oldPosition);
+        // @ts-ignore
+        const pos2 = this.editor.toEditorPosition(newPosition);
+
+        // 因为center是相对于编辑器的，所以事件坐标也需要转到编辑器
+        const cx1 = pos1.x - center.x;
+        const cy1 = pos1.y - center.y;
+        let angle1 = Math.atan(cy1 / cx1);
+        const cx2 = pos2.x - center.x;
+        const cy2 = pos2.y - center.y;
+        let angle2 = Math.atan(cy2 / cx2);
+
+
+        if(angle1 >= 0 && angle2 < 0) {
+            if(cx1 >= 0 && cy1 >= 0 && cx2 <= 0 && cy2 >= 0) angle2 = Math.PI + angle2;
+            else if(cx1 <= 0 && cy1 <=0 && cx2 >= 0 && cy2 <= 0) angle2 = Math.PI + angle2;
+            //else if(cx1 <= 0 && cy1 <=0 && cx2 >= 0 && cy2 >= 0) angle2 = Math.PI + angle2;
+        }
+        else if(angle1 <= 0 && angle2 >= 0) {
+            if(cx1 >= 0 && cy1 <= 0 && cx2 < 0) angle2 = angle2 - Math.PI;
+            else angle2 = -angle2;
+        }
+        else if(angle1 >= 0 && angle2 > 0) {
+            //if(cy2 === 0) angle2 = 0;
+        }
+        args.rotation = angle2 - angle1;
+
+        if(args.rotation) {
+            this.transform.rotateZ += args.rotation;
+            this.transform.apply();
+        }
+    }
+
     // 把变换应用到目标元素
     applyToTarget() {
 
         if(!this.target) return;
 
-        this.target.left = Number(this.left) - Number(this.editor.left);
-        this.target.top = Number(this.top) - Number(this.editor.top);
+        this.target.left = util.toNumber(this.left) - (this.target === this.editor? 0 : util.toNumber(this.editor.left)) + this.paddingSize;
+        this.target.top = util.toNumber(this.top) - (this.target === this.editor? 0 : util.toNumber(this.editor.top)) + this.paddingSize;
+        this.target.transform.from({
+            //skewX: this.transform.skewX,
+            //skewY: this.transform.skewY,
+            rotateZ: this.transform.rotateZ,
+        });
+
+        this.target.width = util.toNumber(this.width) - this.paddingSize * 2;
+        this.target.height = util.toNumber(this.height) - this.paddingSize * 2;
+    }
+
+    // 重置
+    reset(isEditor = this.isEditor) {
+        this.isMoving = false;
+        delete this.target;
+        // 编辑器不让旋转和skew
+        for(const item of this.items) {
+            item.isMoving = false;
+            item.visible = !isEditor;
+        }
+        this.transform.from({
+             rotateZ: 0,
+         });
     }
 
     // 绑定到操作的对象
     bind(target: JElement) {
-        this.left = Number(target.left) + Number(this.editor.left);
-        this.top = Number(target.top) + Number(this.editor.top);
+        this.isEditor = target === this.editor;
+        this.reset(this.isEditor);
 
-        this.width = target.width;
-        this.height = target.height;
+        this.left = util.toNumber(target.left) + (this.isEditor? 0 : util.toNumber(this.editor.left)) - this.paddingSize;
+        this.top = util.toNumber(target.top) + (this.isEditor? 0 : util.toNumber(this.editor.top)) - this.paddingSize;
+
+        this.width = util.toNumber(target.width) + this.paddingSize * 2;
+        this.height = util.toNumber(target.height) + this.paddingSize * 2;
 
         this.transform.from({
-            rotateX: target.transform.rotateX,
-            rotateY: target.transform.rotateY,
+           // rotateX: target.transform.rotateX,
+           // rotateY: target.transform.rotateY,
             rotateZ: target.transform.rotateZ,
-            scaleX: target.transform.scaleX,
-            scaleY: target.transform.scaleY,
-            scaleZ: target.transform.scaleZ,
+            //scaleX: target.transform.scaleX,
+            //scaleY: target.transform.scaleY,
+            //scaleZ: target.transform.scaleZ,
         });
         this.target = target;
         this.visible = true;
+
+        // 如果是编辑器，则不能捕获事件
+        this.css({
+            pointerEvents: this.isEditor? 'none' : 'auto'
+        });
     }
     // 解除绑定
     unbind(target: JElement) {
         if(this.target === target) {
-            delete this.target;
-            this.visible = false;
+           this.reset(false);
         }
     }
 }

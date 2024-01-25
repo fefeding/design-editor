@@ -25,7 +25,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         // 事件托管
         this.event = new JEvent(this.dom);
         this.event.init((e: Event) => {
-            return this.emit(e.type, e);
+            this.emit(e.type, e);
         });
 
         // 样式代理处理
@@ -56,7 +56,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         if(typeof option.angle !== 'undefined') this.angle = option.angle;
         if(typeof option.zIndex !== 'undefined') this.zIndex = option.zIndex;
         if(typeof option.visible !== 'undefined') this.visible = !!option.visible;
-
+        if(option.className) this.className = option.className;
     }
 
     id = '';
@@ -138,18 +138,18 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
 
     // 旋转弧度
     set rotation(v: number) {    
-        this.transform.rotateZ = util.radToDeg(v);
+        this.transform.rotateZ = v;
     }
     get rotation() {
         const v = this.transform.rotateZ;
-        return util.degToRad(v);
+        return v;
     }
     // 旋转角度
     set angle(v) {    
-        this.transform.rotateZ = v;
+        this.transform.rotateZ = util.degToRad(v);
     }
     get angle() {
-        return this.transform.rotateZ;
+        return util.radToDeg(this.transform.rotateZ);
     }
     
     get visible() {
@@ -165,6 +165,12 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     set zIndex(v: number) {
         this.style.zIndex = v + '';
     }    
+    get className() {
+        return this.dom.className;
+    }
+    set className(v: string) {
+        this.dom.className = v;
+    }  
     // 变换
     transform: JTransform;
 
@@ -235,8 +241,8 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     }   
     // 移位
     move(dx, dy) {
-        this.left += dx;
-        this.top += dy;
+        this.left = util.toNumber(this.left) + dx;
+        this.top = util.toNumber(this.top) + dy;
 
         this.emit('move', {dx, dy});
     }

@@ -5,7 +5,7 @@ import JElement from './core/element';
 import JController from './components/controller';
 export default class JEditor extends JBase {
     constructor(container: any, option?: {});
-    init(option: any): void;
+    init(option: any, container: HTMLDivElement): void;
     shapes: {
         [key: string]: typeof JBase;
     };
@@ -24,6 +24,13 @@ export default class JEditor extends JBase {
     resize(width?: string | number, height?: string | number): void;
     addChild(child: JBase): JElement<HTMLElement>;
     removeChild(el: JElement | HTMLElement): JElement<HTMLElement>[];
+    toEditorPosition(pos: {
+        x: number;
+        y: number;
+    }): {
+        x: number;
+        y: number;
+    };
     clear(): void;
     scale(x: any, y?: any): void;
     regShape(name: any, shape: any): void;

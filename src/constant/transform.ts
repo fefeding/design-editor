@@ -52,15 +52,15 @@ export default class Transform extends EventEmiter implements StyleTransform {
 
     rotateX: number = 0;
     get rotateXString() {
-        return `rotateX(${util.toDeg(this.rotateX)})`;
+        return `rotateX(${util.toRad(this.rotateX)})`;
     }
     rotateY: number = 0;
     get rotateYString() {
-        return `rotateY(${util.toDeg(this.rotateY)})`;
+        return `rotateY(${util.toRad(this.rotateY)})`;
     }
     rotateZ: number = 0;
     get rotateZString() {
-        return `rotateZ(${util.toDeg(this.rotateZ)})`;
+        return `rotateZ(${util.toRad(this.rotateZ)})`;
     }
     
     scaleX: number = 1;
@@ -78,11 +78,11 @@ export default class Transform extends EventEmiter implements StyleTransform {
 
     skewX: number = 0;
     get skewXString() {
-        return `skewX(${util.toDeg(this.skewX)})`;
+        return `skewX(${util.toRad(this.skewX)})`;
     }
     skewY: number = 0;
     get skewYString() {
-        return `skewY(${util.toDeg(this.skewY)})`;
+        return `skewY(${util.toRad(this.skewY)})`;
     }
 
     from(data: StyleTransform) {

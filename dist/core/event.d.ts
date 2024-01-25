@@ -23,4 +23,19 @@ export default class JEvent {
      * @param {function} fun 事件委托
      */
     removeEvent(name: string, fun: EventListenerOrEventListenerObject, opt?: boolean | AddEventListenerOptions, target?: HTMLElement): this;
+    /**
+     * 获取元素事件触发的位置
+     *
+     * @method getEventPosition
+     * @static
+     * @param {eventArg} evt 当前触发事件的参数
+     * @return {point} 事件触发的位置
+     */
+    getEventPosition(evt: MouseEvent, target?: any): {
+        x: number;
+        y: number;
+        pageX: number;
+        pageY: number;
+        isTouch: boolean;
+    };
 }
