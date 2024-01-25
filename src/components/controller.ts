@@ -15,6 +15,7 @@ const GCursors = {
     'skew': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAdVBMVEUAAABlY/97e/9kYv9kY/9nZ/9lY/9kYv9kY/9kYv9kY/9lY/9kYv9kY/9pYP9oYP9kYv9kYv9kY/9kYv9iYv9nY/9kYv9lYv9kYv9lYv9lY/9kYv9lYv9kY/9kYv9lZf9lY/9kYv9kYv9lYv9kYv9lY/9lY/+ktQNRAAAAJnRSTlMA/ATv3xHmW/V0TtO3khcNy8XBUh8U6ti+ppt5bksnGTqygmNEZ0ctpdUAAAEmSURBVEjH7VPbloIwDKSloAUqF6kgd123//+Ja+jSSpGqD74xbynJycxkcDZs+BIOAa2ygrgIuaQoKxocbN03FooFQnZ73u1RIlZQUG/ZvzsJC9zGaOeZkEAJa9ou9zD28q5tWIKERDZb0kvu+3MQm5vj4LyXWh7k42Rce/VW1F1d+J5g9fILddmv29eX0PGj6vReRdhmOI7uLakqgWTnWNGBRFWBo7l9IAeRqgKGFzulCzirjyZAxGRb6/tHM2GREq1VC7eWtvpCoN3M1nq0NX3gwAt9OBiACfNwZKaSRyoaVST0xJBN0UjNMzVG+NCog0zho0tP4noebwKP/2zq+Ll5AwuNAYpEyIZXv+hJU3I4d17iiKToN6Fs/WDgg34djQ0bvo4/naYvgs8xmvwAAAAASUVORK5CYII='
 };
 
+// 控制元素移动和矩阵变换
 export class JControllerItem extends JElement<HTMLDivElement> {
     constructor(option) {
 
@@ -31,7 +32,6 @@ export class JControllerItem extends JElement<HTMLDivElement> {
         this.width = this.height = this.size;
 
         this.editor = option.editor;
-        this.transform.bind(this);
 
         if(this.editor) {
             this.editor.on('mouseup', (e) => {
@@ -253,7 +253,11 @@ export default class JControllerComponent extends JControllerItem {
                 backgroundColor: 'transparent'
             }
         });
-        this.hoverItem.visible = false;        
+        this.hoverItem.visible = false;     
+        
+        this.on('move', (opt) => {
+            this.applyToTarget();
+        });
     }
 
     items = [] as Array<JControllerItem>;
@@ -314,6 +318,15 @@ export default class JControllerComponent extends JControllerItem {
             }
         });*/
         return item;
+    }
+    
+    // 把变换应用到目标元素
+    applyToTarget() {
+
+        if(!this.target) return;
+
+        this.target.left = Number(this.left) - Number(this.editor.left);
+        this.target.top = Number(this.top) - Number(this.editor.top);
     }
 
     // 绑定到操作的对象

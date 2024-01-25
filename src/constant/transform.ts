@@ -1,4 +1,4 @@
-
+import EventEmiter from 'eventemitter3';
 import util from '../lib/util';
 
 export interface StyleTransform {
@@ -18,47 +18,105 @@ export interface StyleTransform {
     skewY?: number;
 }
 
-export default class Transform implements StyleTransform {
-    constructor(option?: StyleTransform, el?: any) {
+export interface TransformWatcher {
+    target: any;
+    watchProps?: Array<string>
+}
+
+export default class Transform extends EventEmiter implements StyleTransform {
+    constructor(option?: StyleTransform, targetOption?: TransformWatcher) {
+        super();
         if(option) Object.assign(this, option);
-        if(el) this.bind(el);
+        if(targetOption) this.bind(targetOption);
     }
-    target?: any;
+
+    // 响应变化换元素和属性
+    targets = [] as Array<TransformWatcher>;
+
     // x偏移量
     translateX: string|number = 0;
+    get translateXString() {
+        return `translateX(${util.toPX(this.translateX)})`;
+    }
+
     // y偏移量
     translateY: string|number = 0;
+    get translateYString() {
+        return `translateY(${util.toPX(this.translateY)})`;
+    }
     // z偏移量
     translateZ: string|number = 0;
+    get translateZString() {
+        return `translateZ(${util.toPX(this.translateZ)})`;
+    }
 
     rotateX: number = 0;
+    get rotateXString() {
+        return `rotateX(${util.toDeg(this.rotateX)})`;
+    }
     rotateY: number = 0;
+    get rotateYString() {
+        return `rotateY(${util.toDeg(this.rotateY)})`;
+    }
     rotateZ: number = 0;
+    get rotateZString() {
+        return `rotateZ(${util.toDeg(this.rotateZ)})`;
+    }
     
     scaleX: number = 1;
+    get scaleXString() {
+        return `scaleX(${this.scaleX})`;
+    }
     scaleY: number = 1;
+    get scaleYString() {
+        return `scaleY(${this.scaleY})`;
+    }
     scaleZ: number = 1;
+    get scaleZString() {
+        return `scaleZ(${this.scaleZ})`;
+    }
 
     skewX: number = 0;
+    get skewXString() {
+        return `skewX(${util.toDeg(this.skewX)})`;
+    }
     skewY: number = 0;
+    get skewYString() {
+        return `skewY(${util.toDeg(this.skewY)})`;
+    }
 
     from(data: StyleTransform) {
         if(data) Object.assign(this, data);
     }
     // 生效
-    apply(el: any = this.target) {
-        if(el && el.css) el.css('transform', this.toString()); 
-        else if(el) el.style.transform = this.toString();
+    apply(target: TransformWatcher | Array<TransformWatcher> = this.targets) {
+        if(Array.isArray(target)) {
+            for(const t of target) {
+                this.apply(t);
+            }
+            return;
+        }
+        else {
+            if(target.target && target.target.css) target.target.css('transform', this.toString(target.watchProps)); 
+            else if(target.target) target.target.style.transform = this.toString(target.watchProps);
+        }
     }
 
     // 绑定并刷新到目标上
-    bind(target: any) {
-        this.target = target;
-        this.apply();
+    bind(target: TransformWatcher) {
+        this.targets.push(target);
+        this.apply(target);
+    }
+    unbind(target: TransformWatcher) {
+        for(let i=this.targets.length-1; i>-1; i--) {
+            if(this.targets[i].target === target.target) {
+                this.targets.splice(i, 1);
+            }
+        }
     }
 
     // 生成transform代理
-    static createProxy(obj: StyleTransform = {}, el?: any) {
+    static createProxy(obj: StyleTransform = {}, el?: TransformWatcher) {
         const transform = new Transform(obj, el);
         // 代理处理
         const proxy = new Proxy<Transform>(transform, {
@@ -75,13 +133,20 @@ export default class Transform implements StyleTransform {
         return proxy;
     }
 
-    toString() {
-        const translate = `translateX(${util.toPX(this.translateX)}) translateY(${util.toPX(this.translateY)}) translateZ(${util.toPX(this.translateZ)})`;
-        const rotate = `rotateX(${util.toDeg(this.rotateX)}) rotateY(${util.toDeg(this.rotateY)}) rotateZ(${util.toDeg(this.rotateZ)})`;
-        const scale = `scaleX(${this.scaleX}) scaleY(${this.scaleY}) scaleZ(${this.scaleZ})`;
-        const skew = `skewX(${util.toDeg(this.skewX)}) skewY(${util.toDeg(this.skewY)})`;
+    toString(watchProps: Array<string>|undefined) {
+        const res = [];
+        if(!watchProps) {
+            watchProps = ['translateX', 'translateY', 'translateZ', "rotateX", 'rotateY', 'rotateZ', 'scaleX', 'scaleY', 'scaleZ', 'skewX', 'skewY'];
+        }
 
-        return `${translate} ${rotate} ${scale} ${skew}`;
+        for(const n of watchProps) {
+            const nv = this[n + 'String'];
+            if(typeof this[n] !== 'undefined' && typeof nv !== 'undefined') {
+                res.push(nv);
+            }
+        }
+
+        return res.join(' ');
     }
 
     toJSON() {

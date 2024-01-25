@@ -1088,43 +1088,151 @@ var util = {
     }
 };
 
-var Transform = /** @class */ (function () {
-    function Transform(option, el) {
+var Transform = /** @class */ (function (_super) {
+    __extends(Transform, _super);
+    function Transform(option, targetOption) {
+        var _this = _super.call(this) || this;
+        // 响应变化换元素和属性
+        _this.targets = [];
         // x偏移量
-        this.translateX = 0;
+        _this.translateX = 0;
         // y偏移量
-        this.translateY = 0;
+        _this.translateY = 0;
         // z偏移量
-        this.translateZ = 0;
-        this.rotateX = 0;
-        this.rotateY = 0;
-        this.rotateZ = 0;
-        this.scaleX = 1;
-        this.scaleY = 1;
-        this.scaleZ = 1;
-        this.skewX = 0;
-        this.skewY = 0;
+        _this.translateZ = 0;
+        _this.rotateX = 0;
+        _this.rotateY = 0;
+        _this.rotateZ = 0;
+        _this.scaleX = 1;
+        _this.scaleY = 1;
+        _this.scaleZ = 1;
+        _this.skewX = 0;
+        _this.skewY = 0;
         if (option)
-            Object.assign(this, option);
-        if (el)
-            this.bind(el);
+            Object.assign(_this, option);
+        if (targetOption)
+            _this.bind(targetOption);
+        return _this;
     }
+    Object.defineProperty(Transform.prototype, "translateXString", {
+        get: function () {
+            return "translateX(".concat(util.toPX(this.translateX), ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "translateYString", {
+        get: function () {
+            return "translateY(".concat(util.toPX(this.translateY), ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "translateZString", {
+        get: function () {
+            return "translateZ(".concat(util.toPX(this.translateZ), ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "rotateXString", {
+        get: function () {
+            return "rotateX(".concat(util.toDeg(this.rotateX), ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "rotateYString", {
+        get: function () {
+            return "rotateY(".concat(util.toDeg(this.rotateY), ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "rotateZString", {
+        get: function () {
+            return "rotateZ(".concat(util.toDeg(this.rotateZ), ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "scaleXString", {
+        get: function () {
+            return "scaleX(".concat(this.scaleX, ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "scaleYString", {
+        get: function () {
+            return "scaleY(".concat(this.scaleY, ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "scaleZString", {
+        get: function () {
+            return "scaleZ(".concat(this.scaleZ, ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "skewXString", {
+        get: function () {
+            return "skewX(".concat(util.toDeg(this.skewX), ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "skewYString", {
+        get: function () {
+            return "skewY(".concat(util.toDeg(this.skewY), ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
     Transform.prototype.from = function (data) {
         if (data)
             Object.assign(this, data);
     };
     // 生效
-    Transform.prototype.apply = function (el) {
-        if (el === void 0) { el = this.target; }
-        if (el && el.css)
-            el.css('transform', this.toString());
-        else if (el)
-            el.style.transform = this.toString();
+    Transform.prototype.apply = function (target) {
+        var e_1, _a;
+        if (target === void 0) { target = this.targets; }
+        if (Array.isArray(target)) {
+            try {
+                for (var target_1 = __values(target), target_1_1 = target_1.next(); !target_1_1.done; target_1_1 = target_1.next()) {
+                    var t = target_1_1.value;
+                    this.apply(t);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (target_1_1 && !target_1_1.done && (_a = target_1.return)) _a.call(target_1);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+            return;
+        }
+        else {
+            if (target.target && target.target.css)
+                target.target.css('transform', this.toString(target.watchProps));
+            else if (target.target)
+                target.target.style.transform = this.toString(target.watchProps);
+        }
     };
     // 绑定并刷新到目标上
     Transform.prototype.bind = function (target) {
-        this.target = target;
-        this.apply();
+        this.targets.push(target);
+        this.apply(target);
+    };
+    Transform.prototype.unbind = function (target) {
+        for (var i = this.targets.length - 1; i > -1; i--) {
+            if (this.targets[i].target === target.target) {
+                this.targets.splice(i, 1);
+            }
+        }
     };
     // 生成transform代理
     Transform.createProxy = function (obj, el) {
@@ -1144,12 +1252,29 @@ var Transform = /** @class */ (function () {
         });
         return proxy;
     };
-    Transform.prototype.toString = function () {
-        var translate = "translateX(".concat(util.toPX(this.translateX), ") translateY(").concat(util.toPX(this.translateY), ") translateZ(").concat(util.toPX(this.translateZ), ")");
-        var rotate = "rotateX(".concat(util.toDeg(this.rotateX), ") rotateY(").concat(util.toDeg(this.rotateY), ") rotateZ(").concat(util.toDeg(this.rotateZ), ")");
-        var scale = "scaleX(".concat(this.scaleX, ") scaleY(").concat(this.scaleY, ") scaleZ(").concat(this.scaleZ, ")");
-        var skew = "skewX(".concat(util.toDeg(this.skewX), ") skewY(").concat(util.toDeg(this.skewY), ")");
-        return "".concat(translate, " ").concat(rotate, " ").concat(scale, " ").concat(skew);
+    Transform.prototype.toString = function (watchProps) {
+        var e_2, _a;
+        var res = [];
+        if (!watchProps) {
+            watchProps = ['translateX', 'translateY', 'translateZ', "rotateX", 'rotateY', 'rotateZ', 'scaleX', 'scaleY', 'scaleZ', 'skewX', 'skewY'];
+        }
+        try {
+            for (var watchProps_1 = __values(watchProps), watchProps_1_1 = watchProps_1.next(); !watchProps_1_1.done; watchProps_1_1 = watchProps_1.next()) {
+                var n = watchProps_1_1.value;
+                var nv = this[n + 'String'];
+                if (typeof this[n] !== 'undefined' && typeof nv !== 'undefined') {
+                    res.push(nv);
+                }
+            }
+        }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        finally {
+            try {
+                if (watchProps_1_1 && !watchProps_1_1.done && (_a = watchProps_1.return)) _a.call(watchProps_1);
+            }
+            finally { if (e_2) throw e_2.error; }
+        }
+        return res.join(' ');
     };
     Transform.prototype.toJSON = function () {
         return {
@@ -1167,7 +1292,7 @@ var Transform = /** @class */ (function () {
         };
     };
     return Transform;
-}());
+}(EventEmitter));
 
 var StyleNamesMap = [];
 var NumberStyleMap = ['left', 'top', 'right', 'bottom', 'width', 'height'];
@@ -1424,7 +1549,11 @@ var JElement = /** @class */ (function (_super) {
         if (option.style)
             _this.style.apply(option.style);
         // 变换控制的是核心元素
-        _this.transform = Transform.createProxy(option.transform);
+        _this.transform = Transform.createProxy(option.transform, {
+            target: _this,
+            // 如果指定了只响应某几个属性
+            watchProps: option.transformWatchProps
+        });
         _this.initOption(option);
         return _this;
     }
@@ -1660,6 +1789,7 @@ var JElement = /** @class */ (function (_super) {
     JElement.prototype.move = function (dx, dy) {
         this.left += dx;
         this.top += dy;
+        this.emit('move', { dx: dx, dy: dy });
     };
     // 重置大小
     JElement.prototype.resize = function (w, h) {
@@ -1746,12 +1876,18 @@ var JElement = /** @class */ (function (_super) {
 var JBaseComponent = /** @class */ (function (_super) {
     __extends(JBaseComponent, _super);
     function JBaseComponent(option) {
-        var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'div', style: __assign({}, ContainerDefaultStyle) })) || this;
+        var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'div', 
+            // 外层只响应Z轴旋转
+            transformWatchProps: [
+                'rotateZ',
+            ], style: __assign({}, ContainerDefaultStyle) })) || this;
         // 选中
         _this._selected = false;
         option.target = option.target || {};
         // 生成当前控制的元素
-        _this.target = new JElement(__assign(__assign({}, option), { style: {
+        _this.target = new JElement(__assign(__assign({}, option), { 
+            // 不响应本身的变换，只响应父级的
+            transformWatchProps: [], style: {
                 width: '100%',
                 height: '100%',
                 display: 'block',
@@ -1764,7 +1900,12 @@ var JBaseComponent = /** @class */ (function (_super) {
             e.preventDefault();
         });
         // 变换改为控制主元素
-        _this.transform.bind(_this.target);
+        _this.transform.bind({
+            target: _this.target,
+            watchProps: [
+                'rotateX', 'rotateY', 'translateX', 'translateY'
+            ]
+        });
         // 刷新样式
         if (option.style)
             _this.style.apply(option.style);
@@ -1808,7 +1949,7 @@ var JBaseComponent = /** @class */ (function (_super) {
     // 设置css到dom
     JBaseComponent.prototype.setDomStyle = function (name, value) {
         // 如果外层容器的样式，则加到container上
-        if (name in ContainerDefaultStyle) {
+        if (name in ContainerDefaultStyle || name === 'transform') {
             _super.prototype.setDomStyle.call(this, name, value);
         }
         else {
@@ -1865,6 +2006,7 @@ var GCursors = {
     'rotate': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAgVBMVEUAAAAiK9MjKdUfKNYjKdUiKNYiKdUeHuAjKNYjKNYiKNYyMswiKNYiKNYiKNYiKNYhKNYiKdUiKNYiKNYjKdUjKNYgJ9cjJdYiKNYiKNYiKdUhJ9cjKNYiKdUdLNMrK9MiKNYiKNYiKdUiKNYjKNYjKdUjKdUjKNYjKdUjKdUjKdaUW7eVAAAAKnRSTlMAFdMY1/v4CPXo4wXuyLh6RfKRjWpAJxykb1tSTjARC8OslYVgOivQrqey7caqAAABM0lEQVRIx+2U6W6DMBCEDdSE+2wg950e3/s/YGOBQI0hMf+qKvODHYsZe9derXjh32C2PsU+BIcyCw3kVhnRIUj3z/TvEcTp1RGizs42BJvH+kqSbPtlFkP52LFc353oshCTMM8pJzpchuuwrLEs8fdDes9zRhwH0gG9DbY1khR+OKQfd9hkuv4Nbp/hrFIKXe+ANebIiHW9gJbod2fhN7zTq+Shpb/3UusQ2fGeuMw6rtBv1vxraX9UgNNwPV1l0NONmbdMd7jUenkFqRhzyKEr3/DZENNHDSOuKpq3zZlEBfPG3EVcVDRv/RX5VkzCAv9jkiFMyO+GwHb1eOgt4Kvq104hverJIMshea/CG61X3y6yeDb7nJMHyChwVTia1LS7HAMJ+MmyNp/gO2cmXvjD+AHprhpoJKiYYAAAAABJRU5ErkJggg==',
     'skew': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAdVBMVEUAAABlY/97e/9kYv9kY/9nZ/9lY/9kYv9kY/9kYv9kY/9lY/9kYv9kY/9pYP9oYP9kYv9kYv9kY/9kYv9iYv9nY/9kYv9lYv9kYv9lYv9lY/9kYv9lYv9kY/9kYv9lZf9lY/9kYv9kYv9lYv9kYv9lY/9lY/+ktQNRAAAAJnRSTlMA/ATv3xHmW/V0TtO3khcNy8XBUh8U6ti+ppt5bksnGTqygmNEZ0ctpdUAAAEmSURBVEjH7VPbloIwDKSloAUqF6kgd123//+Ja+jSSpGqD74xbynJycxkcDZs+BIOAa2ygrgIuaQoKxocbN03FooFQnZ73u1RIlZQUG/ZvzsJC9zGaOeZkEAJa9ou9zD28q5tWIKERDZb0kvu+3MQm5vj4LyXWh7k42Rce/VW1F1d+J5g9fILddmv29eX0PGj6vReRdhmOI7uLakqgWTnWNGBRFWBo7l9IAeRqgKGFzulCzirjyZAxGRb6/tHM2GREq1VC7eWtvpCoN3M1nq0NX3gwAt9OBiACfNwZKaSRyoaVST0xJBN0UjNMzVG+NCog0zho0tP4noebwKP/2zq+Ll5AwuNAYpEyIZXv+hJU3I4d17iiKToN6Fs/WDgg34djQ0bvo4/naYvgs8xmvwAAAAASUVORK5CYII='
 };
+// 控制元素移动和矩阵变换
 var JControllerItem = /** @class */ (function (_super) {
     __extends(JControllerItem, _super);
     function JControllerItem(option) {
@@ -1887,7 +2029,6 @@ var JControllerItem = /** @class */ (function (_super) {
         _this.style.cursor = _this.style.cursor || GCursors[_this.dir];
         _this.width = _this.height = _this.size;
         _this.editor = option.editor;
-        _this.transform.bind(_this);
         if (_this.editor) {
             _this.editor.on('mouseup', function (e) {
                 _this.onDragEnd(e);
@@ -1944,6 +2085,7 @@ var JControllerComponent = /** @class */ (function (_super) {
         return _this;
     }
     JControllerComponent.prototype.init = function (option) {
+        var _this = this;
         this.createItem('l', {
             shape: 'rect',
             style: __assign(__assign({}, option.itemStyle), { left: 0, top: '50%' }),
@@ -2033,6 +2175,9 @@ var JControllerComponent = /** @class */ (function (_super) {
             style: __assign(__assign({}, option.itemStyle), { borderStyle: 'dotted', backgroundColor: 'transparent' })
         });
         this.hoverItem.visible = false;
+        this.on('move', function (opt) {
+            _this.applyToTarget();
+        });
     };
     // 生成控制点
     JControllerComponent.prototype.createItem = function (id, option) {
@@ -2081,6 +2226,13 @@ var JControllerComponent = /** @class */ (function (_super) {
                     }
                 });*/
         return item;
+    };
+    // 把变换应用到目标元素
+    JControllerComponent.prototype.applyToTarget = function () {
+        if (!this.target)
+            return;
+        this.target.left = Number(this.left) - Number(this.editor.left);
+        this.target.top = Number(this.top) - Number(this.editor.top);
     };
     // 绑定到操作的对象
     JControllerComponent.prototype.bind = function (target) {

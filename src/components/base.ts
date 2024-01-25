@@ -7,6 +7,10 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
         super({
             ...option,
             nodeType: 'div',
+            // 外层只响应Z轴旋转
+            transformWatchProps: [
+                'rotateZ',
+            ],
             style: {
                 ...ContainerDefaultStyle,      
             }
@@ -15,6 +19,8 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
         // 生成当前控制的元素
         this.target = new JElement<T>({
             ...option,
+            // 不响应本身的变换，只响应父级的
+            transformWatchProps: [],
             style: {
                 width: '100%',
                 height: '100%',
@@ -29,7 +35,12 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
             e.preventDefault();
         });
         // 变换改为控制主元素
-        this.transform.bind(this.target);
+        this.transform.bind({
+            target: this.target,
+            watchProps: [
+                'rotateX', 'rotateY', 'translateX', 'translateY'
+            ]
+        });
         
         // 刷新样式
         if(option.style) this.style.apply(option.style);
@@ -68,7 +79,7 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
     // 设置css到dom
     setDomStyle(name: string, value: string) {
        // 如果外层容器的样式，则加到container上
-       if(name in ContainerDefaultStyle) {
+       if(name in ContainerDefaultStyle || name === 'transform') {
             super.setDomStyle(name, value);
         }
         else {

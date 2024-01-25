@@ -36,7 +36,11 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         if(option.style) this.style.apply(option.style);
 
         // 变换控制的是核心元素
-        this.transform = JTransform.createProxy(option.transform);
+        this.transform = JTransform.createProxy(option.transform, {
+            target: this,
+            // 如果指定了只响应某几个属性
+            watchProps: option.transformWatchProps
+        });
 
         this.initOption(option);        
     }
@@ -233,6 +237,8 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     move(dx, dy) {
         this.left += dx;
         this.top += dy;
+
+        this.emit('move', {dx, dy});
     }
 
     // 重置大小

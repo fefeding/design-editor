@@ -22,6 +22,7 @@ export default class JControllerComponent extends JControllerItem {
     hoverItem: JControllerItem;
     target: JElement;
     createItem(id: any, option: any): JControllerItem;
+    applyToTarget(): void;
     bind(target: JElement): void;
     unbind(target: JElement): void;
 }
