@@ -1,5 +1,5 @@
 
-import util from 'src/lib/util';
+import util from '../lib/util';
 import JElement from '../core/element';
 
 // 鼠标指针
@@ -36,16 +36,16 @@ export class JControllerItem extends JElement<HTMLDivElement> {
 
         if(this.editor) {
             // @ts-ignore
-            this.editor.container.on('mouseup', (e) => {
+            this.editor.view.on('mouseup', (e) => {
                 this.onDragEnd(e);
             });
             // @ts-ignore
-            this.editor.container.on('mouseout', (e) => {
+            this.editor.view.on('mouseout', (e) => {
                 if(e.target !== this.editor.dom) return;// 不是out编辑器，不处理
                 this.onDragEnd(e);
             });
             // @ts-ignore
-            this.editor.container.on('mousemove', (e) => {
+            this.editor.view.on('mousemove', (e) => {
                 this.onDragMove(e);
             });
         }
@@ -106,7 +106,7 @@ export class JControllerItem extends JElement<HTMLDivElement> {
             x: pos.x,
             y: pos.y,
         };
-
+        console.log('start', this.dragStartPosition);
         this.isMoving = true;
 
         event.stopPropagation && event.stopPropagation();
@@ -361,7 +361,7 @@ export default class JControllerComponent extends JControllerItem {
                 offX = pos.offX;
                 offY = pos.offY;
             }
-
+            
             switch(dir) {                
                 case 'l': {
                     args.x = offX;
@@ -419,7 +419,8 @@ export default class JControllerComponent extends JControllerItem {
             this.move(args.x, args.y);
         }
         if(args.width) {
-            this.width = Math.max(util.toNumber(this.width) + args.width, 1);
+            const width = util.toNumber(this.width) + args.width;
+            this.width = Math.max(width, 1);
         }
         if(args.height) {
             this.height = Math.max(util.toNumber(this.height) + args.height, 1);

@@ -897,4 +897,5 @@ export declare const ContainerDefaultStyle: {
     bottom: string;
     padding: string;
     margin: string;
+    overflow: string;
 };

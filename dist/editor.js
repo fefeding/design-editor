@@ -74,79 +74,81 @@ var __values = (this && this.__values) || function(o) {
 import JBase from './components/base';
 import JText from './components/text';
 import JImage from './components/image';
+import JElement from './core/element';
+import JController from './components/controller';
+import util from './lib/util';
 var JEditor = /** @class */ (function (_super) {
     __extends(JEditor, _super);
-    function JEditor(container, option) {
+    function JEditor(option) {
         if (option === void 0) { option = {}; }
-        var _this = _super.call(this, option) || this;
-        // 所有支持的类型
-        _this.shapes = {
-            'image': JImage,
-            'text': JText
-        };
-        if (typeof container === 'string')
-            container = document.getElementById(container);
-        container.appendChild(_this.dom);
-        container.style.position = 'relative';
-        _this.init(option);
-        return _this;
-    }
-    // 初始化整个编辑器
-    JEditor.prototype.init = function (option) {
-        this.dom.style.width = '100%';
-        this.dom.style.height = '100%';
-        if (option.style.containerBackgroundColor)
-            this.dom.style.backgroundColor = option.style.containerBackgroundColor;
-        this.target.css({
+        var _this = this;
+        option.style = option.style || {};
+        Object.assign(option.style, {
             'boxShadow': '0 0 10px 10px #ccc',
             'position': 'absolute',
             'backgroundSize': '100% 100%',
             'overflow': 'hidden'
         });
+        // 外层只响应Z轴旋转
+        option.transformWatchProps = [
+            'rotateZ'
+        ];
+        _this = _super.call(this, option) || this;
+        // 所有支持的类型
+        _this.shapes = {
+            'image': JImage,
+            'text': JText
+        };
+        if (typeof option.container === 'string')
+            option.container = document.getElementById(option.container);
+        _this.view = new JElement({
+            style: {
+                'border': 0,
+                'padding': 0,
+                'margin': 0,
+                'position': 'relative',
+                'width': '100%',
+                'height': '100%',
+            }
+        });
+        // 变换改为控制主元素
+        _this.transform.bind({
+            target: _this.view,
+            watchProps: [
+                'scaleX', 'scaleY'
+            ]
+        });
+        if (option.container)
+            option.container.appendChild(_this.view.dom);
+        _this.view.addChild(_this.dom);
+        _this.init(option);
+        return _this;
+    }
+    // 初始化整个编辑器
+    JEditor.prototype.init = function (option) {
+        var _this = this;
+        if (option.style.containerBackgroundColor)
+            this.dom.style.backgroundColor = option.style.containerBackgroundColor;
+        // 生成控制器
+        this.ElementController = new JController({
+            editor: this,
+            visible: false
+        });
+        this.view.addChild(this.ElementController.dom); // 加到外层
+        var styleNode = document.createElement('style');
+        styleNode.innerHTML = ".j-design-editor-container {\n                                    border: 0;\n                                }\n                                .j-design-editor-container:hover {\n                                    box-shadow: 0 0 1px 1px rgba(255,255,255,0.5);\n                                }";
+        this.view.addChild(styleNode);
         if (option.width && option.height) {
             this.resize(option.width, option.height);
         }
+        this.on('select', function (e) {
+            _this.select(_this); // 选中自已
+        });
+        this.on('mousedown', function (e) {
+            this.selected = true;
+            this.ElementController.onDragStart(e);
+        });
     };
-    Object.defineProperty(JEditor.prototype, "width", {
-        get: function () {
-            return this.target.width;
-        },
-        set: function (v) {
-            this.target && this.resize(v, this.height);
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JEditor.prototype, "height", {
-        get: function () {
-            return this.target.height;
-        },
-        set: function (v) {
-            this.target && this.resize(this.width, v);
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JEditor.prototype, "left", {
-        get: function () {
-            return this.target.left;
-        },
-        set: function (v) {
-            this.target && (this.target.left = v);
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JEditor.prototype, "top", {
-        get: function () {
-            return this.target.top;
-        },
-        set: function (v) {
-            this.target && (this.target.top = v);
-        },
-        enumerable: false,
-        configurable: true
-    });
     Object.defineProperty(JEditor.prototype, "children", {
         // 重写子集为target
         get: function () {
@@ -155,15 +157,49 @@ var JEditor = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(JEditor.prototype, "selectedElements", {
+        // 被选中的元素
+        get: function () {
+            var e_1, _a;
+            var res = [];
+            try {
+                for (var _b = __values(this.children), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var el = _c.value;
+                    if (el instanceof JBase && el.selected) {
+                        res.push(el);
+                    }
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+            return res;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    // 选中某个元素
+    JEditor.prototype.select = function (el) {
+        // 选把所有已选择的取消
+        this.selectedElements.every(function (p) { return p !== el && p.selected && (p.selected = false); });
+        if (el.selected)
+            this.ElementController.bind(el);
+        else
+            this.ElementController.unbind(el);
+    };
     JEditor.prototype.resize = function (width, height) {
         var _this = this;
         if (width === void 0) { width = this.width; }
         if (height === void 0) { height = this.height; }
-        this.target.attr('data-size', "".concat(width, "*").concat(height));
-        this.target.width = width;
-        this.target.height = height;
-        this.left = this.dom.clientWidth / 2 - parseFloat(width + '') / 2;
-        this.top = this.dom.clientHeight / 2 - parseFloat(height + '') / 2;
+        this.attr('data-size', "".concat(width, "*").concat(height));
+        this.width = width;
+        this.height = height;
+        this.left = util.toNumber(this.view.width) / 2 - util.toNumber(width) / 2;
+        this.top = util.toNumber(this.view.height) / 2 - util.toNumber(height) / 2;
         setTimeout(function () {
             _this.emit('resize', {
                 width: width,
@@ -176,15 +212,36 @@ var JEditor = /** @class */ (function (_super) {
         if (child === this.target) {
             return _super.prototype.addChild.call(this, child);
         }
+        var self = this;
+        child.on('select', function (v) {
+            self.select(this);
+        });
+        child.on('mousedown', function (e) {
+            this.selected = true;
+            self.ElementController.onDragStart(e);
+        });
         return this.target.addChild(child);
     };
     // 移除
-    // @ts-ignore
     JEditor.prototype.removeChild = function (el) {
         if (el === this.target) {
-            return _super.prototype.addChild.call(this, el);
+            //console.warn('不能移除自已');
+            return;
+        }
+        if (el instanceof JElement) {
+            el.off('select');
+            el.off('mousedown');
         }
         return this.target.removeChild(el);
+    };
+    // 把domcument坐标转为编辑器相对坐标
+    JEditor.prototype.toEditorPosition = function (pos) {
+        // 编辑器坐标
+        var editorPos = util.getElementPosition(this.dom);
+        return {
+            x: pos.x - editorPos.x,
+            y: pos.y - editorPos.y
+        };
     };
     JEditor.prototype.clear = function () {
         this.css({
@@ -234,28 +291,24 @@ var JEditor = /** @class */ (function (_super) {
         });
     };
     JEditor.prototype.toJSON = function () {
-        var e_1, _a;
-        var data = {
-            width: this.width,
-            height: this.height,
-            children: []
-        };
+        var e_2, _a;
+        var data = _super.prototype.toJSON.call(this);
         try {
             for (var _b = __values(this.children), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var c = _c.value;
-                if (!c.type)
+                if (!c.type || c === this)
                     continue;
                 if (c.toJSON) {
                     data.children.push(c.toJSON());
                 }
             }
         }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_1) throw e_1.error; }
+            finally { if (e_2) throw e_2.error; }
         }
         return data;
     };
@@ -264,7 +317,7 @@ var JEditor = /** @class */ (function (_super) {
         return JSON.stringify(data);
     };
     JEditor.prototype.fromJSON = function (data) {
-        var e_2, _a;
+        var e_3, _a;
         this.clear();
         if (typeof data === 'string')
             data = JSON.parse(data);
@@ -281,12 +334,12 @@ var JEditor = /** @class */ (function (_super) {
                 this.addChild(item);
             }
         }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_2) throw e_2.error; }
+            finally { if (e_3) throw e_3.error; }
         }
     };
     return JEditor;

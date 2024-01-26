@@ -21,12 +21,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         this.type = this.type || option.type || '';
 
         const nodeType = option.nodeType || 'div';
-        this.dom = document.createElement(nodeType);
-        // 事件托管
-        this.event = new JEvent(this.dom);
-        this.event.init((e: Event) => {
-            this.emit(e.type, e);
-        });
+        this.dom = document.createElement(nodeType);        
 
         // 样式代理处理
         this.style = JStyle.createProxy();
@@ -42,7 +37,9 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
             watchProps: option.transformWatchProps
         });
 
-        this.initOption(option);        
+        this.initOption(option);
+        
+        this.bindEvent();// 事件绑定
     }
     // 初始化一些基础属性
     initOption(option) {
@@ -57,6 +54,15 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         if(typeof option.zIndex !== 'undefined') this.zIndex = option.zIndex;
         if(typeof option.visible !== 'undefined') this.visible = !!option.visible;
         if(option.className) this.className = option.className;
+    }
+
+    // 绑定事件
+    bindEvent(dom?: HTMLElement) {
+        // 事件托管
+        this.event = new JEvent(dom || this.dom);
+        this.event.init((e: Event) => {
+            this.emit(e.type, e);
+        });
     }
 
     id = '';
@@ -123,16 +129,18 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     }
 
     get width() {
-        if(this.dom && this.dom.clientWidth) return this.dom.clientWidth;
-        return this.style.width || 0;
+        let w = this.style.width || 0;
+        if(!w && this.dom && this.dom.clientWidth) return this.dom.clientWidth;
+        return w;
     }
     set width(v) {
         this.style.width = v;
     }
 
     get height() {
-        if(this.dom && this.dom.clientHeight) return this.dom.clientHeight;
-        return this.style.height || 0;
+        let h = this.style.height || 0;
+        if(!h && this.dom && this.dom.clientHeight) return this.dom.clientHeight;
+        return h;
     }
     set height(v) {
         this.style.height = v;
@@ -178,7 +186,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
 
     // 设置css到dom
     setDomStyle(name: string, value: string) {
-        if(name === 'backgroundImage') {
+        if(name === 'backgroundImage' && value) {
             if(!/^\s*url\(/.test(value)) value = `url(${value})`;
         }
         util.css(this.dom, name, value);
@@ -193,40 +201,6 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     attr(name: string, value: string|number|undefined) {
         return util.attr(this.dom, name, value);
     }
-
-    /*
-    // 被选中
-    get selected() {
-        return this._selected;
-    }
-    set selected(v) {
-        if(v) this.editor.controlElement.bind(this);
-        else {
-            this.editor.controlElement.unbind(this);
-        }
-        this.propertyChange('selected', v, this._selected);
-        this._selected = v;
-    }*/
-
-    bindEvent() {
-        /*
-        
-        this.container.on('pointerdown', function(event) {
-            this.emit('pointerdown', event);
-        }, this);
-        this.container.on('pointerup', function(event) {
-            this.emit('pointerup', event);
-        }, this);
-        this.container.on('pointerenter', function(event) {
-            this.emit('pointerenter', event);
-        }, this);
-        this.container.on('pointerleave', function(event) {
-            this.emit('pointerleave', event);
-        }, this);
-        this.container.on('pointerout', function(event) {
-            this.emit('pointerout', event);
-        }, this);*/
-    }   
     // 移位
     move(dx, dy) {
         this.left = util.toNumber(this.left) + dx;
@@ -281,22 +255,27 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     }
 
     // 转为json
-    toJSON(props=[]) {
-        const fields = ['left', 'top', 'width', 'height', 'rotation', 'type', 'style', 'id', ...props];
+    toJSON(props=[], ig=(p:JElement)=>true) {
+        const fields = ['left', 'top', 'width', 'height', 'rotation', 'type', 'style', 'transform', 'id', ...props];
         const obj = {
             children: []
         };
        
         for(const k of fields) {
-            if(typeof this[k] !== 'undefined') {
+            const v = this[k];
+            if(typeof v === 'string' || typeof v === 'number') {
                 obj[k] = this[k];
+            }
+            else if(v && v.toJSON) {
+                obj[k] = v.toJSON();
             }
         }
 
-        if(this.transform) obj['transform'] = this.transform.toJSON();
+        //if(this.transform) obj['transform'] = this.transform.toJSON();
 
         if(this.children && this.children.length) {
             for(const child of this.children) {
+                if(child === this || ig(child) === false) continue;
                 obj.children.push(child.toJSON())
             }
         }

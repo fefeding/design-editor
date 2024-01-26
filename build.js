@@ -11,7 +11,7 @@ const rollupOptions = require('./rollup.config.js');
 	umd – 通用模块定义，以amd，cjs 和 iife 为一体
 	system - SystemJS 加载器格式
 */
-async function build(format = 'es') {
+async function build(format = 'esm') {
 	
 	const outputOptions = Object.assign(rollupOptions.output, {
 		file: `./dist/index.${format}.js`,
@@ -28,7 +28,7 @@ async function build(format = 'es') {
 	await bundle.write(outputOptions);
 }
 
-async function watch(format = 'es') {
+async function watch(format = 'esm') {
 	const outputOptions = Object.assign(rollupOptions.output, {
 		file: `./dist/index.${format}.js`,
 		format
@@ -61,7 +61,7 @@ async function watch(format = 'es') {
 	 })
 }
 	
-build('es');
+build('esm');
 
 module.exports = {
 	watch

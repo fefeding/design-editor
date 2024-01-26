@@ -903,5 +903,6 @@ export const ContainerDefaultStyle = {
     right: 'auto',
     bottom: 'auto',
     padding: '0',
-    margin: '0'
+    margin: '0',
+    overflow: 'visible'
 }

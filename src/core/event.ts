@@ -1,4 +1,4 @@
-import util from "src/lib/util";
+import util from "../lib/util";
 
 const SupportEventNames = [
     'mousedown','mouseup','mouseover','mousemove','mouseout','mousewheel','click','dblclick','keydown','keypress','keyup','blur','change','focus','drag','dragenter','dragleave','dragover','dragstart','drop'

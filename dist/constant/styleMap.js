@@ -542,6 +542,7 @@ export var ContainerDefaultStyle = {
     height: 10,
     right: 'auto',
     bottom: 'auto',
-    padding: '1px',
-    margin: '0'
+    padding: '0',
+    margin: '0',
+    overflow: 'auto'
 };

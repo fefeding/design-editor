@@ -6,7 +6,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "node test/dev",
-    "build": "gulp && node build.js",
+    "build": "node build.js",
     "push": "npm publish --registry=https://registry.npmjs.org"
   },
   "devDependencies": {
@@ -26,7 +26,7 @@
     "gulp-cli": "^2.3.0",
     "gulp-concat": "^2.6.1",
     "gulp-typescript": "^6.0.0-alpha.1",
-    "html2canvas": "^1.4.1",
+    "html-to-image": "^1.11.11",
     "request": "^2.88.2",
     "rollup": "^4.9.6",
     "rollup-plugin-babel": "^4.4.0",

@@ -28,8 +28,26 @@ import Base from './base';
 var JText = /** @class */ (function (_super) {
     __extends(JText, _super);
     function JText(option) {
-        return _super.call(this, __assign(__assign({}, option), { nodeType: 'div' })) || this;
+        var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'div' })) || this;
+        if (option.text)
+            _this.text = option.text;
+        return _this;
     }
+    Object.defineProperty(JText.prototype, "text", {
+        get: function () {
+            return this.target.dom.innerText;
+        },
+        set: function (v) {
+            this.target.dom.innerText = v;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    JText.prototype.toJSON = function (props) {
+        if (props === void 0) { props = []; }
+        props.push('text');
+        return _super.prototype.toJSON.call(this, props);
+    };
     return JText;
 }(Base));
 export default JText;

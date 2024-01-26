@@ -104,6 +104,10 @@ var JElementStyle = /** @class */ (function (_super) {
             value: value
         });
     };
+    // 触发所有更新到dom
+    JElementStyle.prototype.refresh = function () {
+        this.apply(this);
+    };
     // 转为json
     JElementStyle.prototype.toJSON = function () {
         var e_3, _a;

@@ -3,9 +3,7 @@ const ts = require('gulp-typescript');
 const browserify = require('browserify');
 const tsify = require('tsify');
 const source = require('vinyl-source-stream');
-const tsProject = ts.createProject('tsconfig.json', {
-    module: 'es2015'
-});
+const tsProject = ts.createProject('tsconfig.json');
 
 
 function createDtsTask(cb) {
@@ -28,15 +26,14 @@ function buildESTask(cb) {
     return browserify({
         basedir: '.',
         debug: true,
-        entries: ['./src/index.ts'],        
+        entries: ['./dist/index.js'],        
         cache: {},
         packageCache: {}
     })
     //.plugin('@babel/plugin-proposal-function-bind')
     .transform("babelify", {
         presets: [
-            ['@babel/preset-typescript', { module: 'commonjs'}],
-            ['@babel/env', {modules: false,}],
+            ['@babel/env', {modules: 'commonjs',}],
         ],        
         //plugins: ['transform-runtime'] 
     })  //使用babel转换es6代码.bundle()*/

@@ -25,47 +25,45 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 import { ContainerDefaultStyle } from '../constant/styleMap';
-import JTransform from '../constant/transform';
 import JElement from '../core/element';
 var JBaseComponent = /** @class */ (function (_super) {
     __extends(JBaseComponent, _super);
     function JBaseComponent(option) {
-        var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'div', style: __assign({}, ContainerDefaultStyle) })) || this;
+        var _this = _super.call(this, __assign(__assign({ 
+            // 外层只响应Z轴旋转
+            transformWatchProps: [
+                'rotateZ', 'scaleX', 'scaleY'
+            ] }, option), { nodeType: 'div', className: 'j-design-editor-container', style: __assign({}, ContainerDefaultStyle) })) || this;
+        // 选中
+        _this._selected = false;
         option.target = option.target || {};
         // 生成当前控制的元素
-        _this.target = new JElement(__assign(__assign({}, option), { style: {
-                width: '100%',
-                height: '100%',
+        _this.target = new JElement(__assign(__assign({}, option), { 
+            // 不响应本身的变换，只响应父级的
+            transformWatchProps: [], width: '100%', height: '100%', style: {
                 display: 'block',
+                cursor: 'pointer'
             } }));
         _this.addChild(_this.target);
+        // 变换改为控制主元素
+        _this.transform.bind({
+            target: _this.target,
+            watchProps: [
+                'rotateX', 'rotateY', 'translateX', 'translateY', 'skewX', 'skewY'
+            ]
+        });
         // 刷新样式
         if (option.style)
             _this.style.apply(option.style);
-        // 变换控制的是核心元素
-        _this.transform = JTransform.createProxy(option.transform, _this.target);
-        if (option.text)
-            _this.text = option.text;
-        if (option.html)
-            _this.html = option.html;
         return _this;
     }
-    Object.defineProperty(JBaseComponent.prototype, "text", {
+    Object.defineProperty(JBaseComponent.prototype, "selected", {
         get: function () {
-            return this.target.dom.innerText;
+            return this._selected;
         },
         set: function (v) {
-            this.target.dom.innerText = v;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JBaseComponent.prototype, "html", {
-        get: function () {
-            return this.target.dom.innerHTML;
-        },
-        set: function (v) {
-            this.target.dom.innerHTML = v;
+            this._selected = v;
+            this.emit('select', v);
         },
         enumerable: false,
         configurable: true
@@ -73,11 +71,11 @@ var JBaseComponent = /** @class */ (function (_super) {
     // 设置css到dom
     JBaseComponent.prototype.setDomStyle = function (name, value) {
         // 如果外层容器的样式，则加到container上
-        if (name in ContainerDefaultStyle) {
+        if (name in ContainerDefaultStyle || name === 'transform') {
             _super.prototype.setDomStyle.call(this, name, value);
         }
         else {
-            this.target && this.target.setDomStyle(name, value);
+            this.target && this.target.css(name, value);
         }
     };
     return JBaseComponent;

@@ -1,3 +1,6 @@
+
+
+
 export default {
     // 是否是数字
     isNumber(v: string|number) {

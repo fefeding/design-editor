@@ -29,12 +29,13 @@ var JImage = /** @class */ (function (_super) {
     __extends(JImage, _super);
     function JImage(option) {
         var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'img' })) || this;
-        _this.dom.onload = function (e) {
+        _this.target.dom.onload = function (e) {
             _this.emit('load', e);
         };
-        _this.dom.onerror = function (e) {
+        _this.target.dom.onerror = function (e) {
             _this.emit('error', e);
         };
+        _this.target.attr('crossorigin', 'anonymous');
         _this.src = option.url || option.src || '';
         return _this;
     }
@@ -48,6 +49,11 @@ var JImage = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    JImage.prototype.toJSON = function (props) {
+        if (props === void 0) { props = []; }
+        props.push('src');
+        return _super.prototype.toJSON.call(this, props);
+    };
     return JImage;
 }(Base));
 export default JImage;

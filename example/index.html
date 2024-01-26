@@ -1,17 +1,20 @@
 <!doctype html>
 <html>
-	<head>
+
+<head>
 	<meta content="text/html; charset=UTF-8" http-equiv="content-type" />
 	<meta name="viewport" content="width=device-width,initial-scale=1">
 	<link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 	<script src="lib/bootstrap/js/bootstrap.min.js" crossorigin="anonymous"></script>
 	<script src="lib/html2canvas.js" crossorigin="anonymous"></script>
 	<style>
-		html,body{
-			margin:0;
+		html,
+		body {
+			margin: 0;
 			padding: 0;
 		}
-		#mycanvas_container{
+
+		#mycanvas_container {
 			overflow: auto;
 			text-align: center;
 			height: 100%;
@@ -20,152 +23,169 @@
 			background-color: #eee;
 		}
 	</style>
-	</head>
-	<body>
-		<div id="container" class="container text-left" style="max-width: 100%; max-height: 100%; overflow: hidden;">
-			<div class="row" style="width: 100%; height:100%; overflow: hidden;">
-			  <div class="col-2" style="height:100%; overflow:auto;">
+</head>
+
+<body>
+	<div id="container" class="container text-left" style="max-width: 100%; max-height: 100%; overflow: hidden;">
+		<div class="row" style="width: 100%; height:100%; overflow: hidden;">
+			<div class="col-2" style="height:100%; overflow:auto;">
 				<ul class="list-group" id="tmpl_container">
-					<li class="list-group-item"><img src="templates/1.jpeg" class="img-thumbnail" data-tmplid="1" alt="..."></li>
-					<li class="list-group-item"><img src="templates/2.jpeg" class="img-thumbnail" data-tmplid="2" alt="..."></li>
-					<li class="list-group-item"><img src="templates/3.jpeg" class="img-thumbnail" data-tmplid="3" alt="..."></li>
-					<li class="list-group-item"><img src="templates/4.jpeg" class="img-thumbnail" data-tmplid="4" alt="..."></li>
-				  </ul>
-			  </div>
-			  <div class="col-8" style="height:100%; overflow: hidden;">
+					<li class="list-group-item"><img src="templates/1.jpeg" class="img-thumbnail" data-tmplid="1"
+							alt="..."></li>
+					<li class="list-group-item"><img src="templates/2.jpeg" class="img-thumbnail" data-tmplid="2"
+							alt="..."></li>
+					<li class="list-group-item"><img src="templates/3.jpeg" class="img-thumbnail" data-tmplid="3"
+							alt="..."></li>
+					<li class="list-group-item"><img src="templates/4.jpeg" class="img-thumbnail" data-tmplid="4"
+							alt="..."></li>
+				</ul>
+			</div>
+			<div class="col-8" style="height:100%; overflow: hidden;">
 				<div id="myeditor_container" style="height:100%; overflow:auto;background-color: #eee;">
 					<img id="btn_zoomin" src="images/zoom_in.png" style="position: fixed; left: 60%; bottom: 10px; z-index:100;box-shadow: 0 0 10px 10px #fff; transform:scale(0.6);
 					background-color: #fff;" />
 					<img id="btn_zoomout" src="images/zoom_out.png" style="position: fixed; left: 65%; bottom: 10px; z-index:100;box-shadow: 0 0 10px 10px #fff; transform:scale(0.6);
 					background-color: #fff;" />
 				</div>
-			  </div>
-			  <div class="col-2" style="height:100%; overflow:auto;">
-				<img id="previewImg" width="200" />
-			  </div>
 			</div>
-		  </div>
-		
-	</body>
-	<script type="module">	
-		import JEditor from "../dist/index.es.js";
-		
-		console.log(JEditor);
-		const container = document.getElementById('container');
-		container.style.height = window.innerHeight + 'px';
+			<div class="col-2" style="height:100%; overflow:auto;">
+				<img id="previewImg" width="200" />
+			</div>
+		</div>
+	</div>
 
-		const editor = new JEditor('myeditor_container', {
-			width: 800,
-			height: 600,
-			style: {
-				backgroundColor: '#fff',
-				backgroundImage: 'https://jtcospublic.ciccten.com/public/image/bf.jpg',
-				containerBackgroundColor: '#eee'
-			}
-		});
+</body>
+<script type="module">
+	import '../node_modules/html-to-image/dist/html-to-image.js';
+	import JEditor from "../dist/index.esm.js";
 
-		// 大小改变后居中
-		editor.on('resize', function(size) {        
-			const scale  = Math.min(this.container.clientWidth / (this.width*1.2), this.container.clientHeight / (this.height*1.2));
-			if(scale < 1 && scale < this.transform.scaleX) {
-				this.scale(scale);
-			}
-		})
+	const container = document.getElementById('myeditor_container');
+	container.style.height = window.innerHeight + 'px';
 
-		//editor.scale(0.8);
-
-		editor.fromJSON({"style":{"backgroundImage":"https://jtcospublic.ciccten.com/public/image/bf.jpg","backgroundColor":"#fffffff"},"width":600,"height":800,"children":[{"x":300,"y":400,"width":100,"height":100,"url":"https://pixijs.com/assets/bunny.png","rotation":0,"type":"image","style":{}},{"x":300,"y":100,"width":461,"height":39,"text":"Basic text, 中文测试, complete","rotation":0,"type":"text","style":{"fontFamily":"Crosterian","dropShadow":true,"dropShadowAlpha":0.3,"dropShadowAngle":2.1,"dropShadowBlur":4,"dropShadowColor":"0xeeeeee","dropShadowDistance":10,"fill":["#ffffff"],"color":"#004620","fontSize":22,"fontWeight":"lighter","lineJoin":"round","strokeThickness":1}},{"x":100,"y":200,"width":400,"height":400,"url":"https://jtcospublic.ciccten.com/config-server/1703730310545220869/idcard_qrcode.png","rotation":1.0471975511965976,"type":"image","style":{}}]})
-
-		// 加载模板
-		async function loadTemplate(id) {
-			const tmpl = await editor.loader.load(`templates/${id}.json`);
-			editor.fromJSON(tmpl.data || tmpl);
+	const editor = new JEditor({
+		width: 800,
+		height: 600,
+		style: {
+			backgroundColor: '#fff',
+			containerBackgroundColor: '#eee'
 		}
+	});
 
-		// 模板点击
-		document.getElementById('tmpl_container').addEventListener('click', function(e) {
-			if(e.target.nodeName === 'IMG') {
-				const idAttr = e.target.attributes['data-tmplid'];
-				if(idAttr && idAttr.value) {
-					loadTemplate(idAttr.value);
-				}
+	container.appendChild(editor.view.dom);
+
+	// 大小改变后居中
+	editor.on('resize', function (size) {
+		const scale = Math.min(this.view.width / (this.width * 1.2), this.view.height / (this.height * 1.2));
+		if (scale < 1 && scale < this.transform.scaleX) {
+			this.scale(scale);
+		}
+	})
+
+
+	// 加载模板
+	async function loadTemplate(id, cb) {
+		const url = `templates/${id}.json`;
+        const request = new XMLHttpRequest();//新建XMLHttpRequest对象
+        request.onreadystatechange = function (e) { //状态发生变化时，函数被回调
+            if (this.readyState === 4) { //成功完成
+                //判断相应结果：
+                if (this.status ===200) {
+                    const tmpl = JSON.parse(this.responseText);
+                    cb(tmpl);
+                } else {
+                    console.log(e);
+                    alert('加载模板失败');
+                }
+            }
+        }
+        //发送请求：
+        request.open('GET', url);
+        request.send();
+	}
+
+	// 模板点击
+	document.getElementById('tmpl_container').addEventListener('click', function (e) {
+		if (e.target.nodeName === 'IMG') {
+			const idAttr = e.target.attributes['data-tmplid'];
+			if (idAttr && idAttr.value) {
+				loadTemplate(idAttr.value, (tmpl) => {                    
+		            editor.fromJSON(tmpl.data || tmpl);
+                });
 			}
-		});
-/*
-		const img = editor.createImage('https://pixijs.com/assets/bunny.png');
-		img.width = 100;
-		img.height = 100;
-
-		img.on('load', () => {
-			//img.resize(100, 100);
-			
-			img.x = editor.width / 2;
-			img.y = editor.height / 2;
-
-			const img2 = editor.createImage();
-			//img2.width = 200;
-			//img2.height = 200;
-
-			img2.url = 'https://jtcospublic.ciccten.com/config-server/1703730310545220869/idcard_qrcode.png';
-
-			img2.x = img.x + 100;
-			img2.y = img.y + 100;
-			img2.angle = 60;
-			editor.addChild(img2);
-		});
-		editor.addChild(img);
-
-		
-
-		const txt1 = editor.createShape('text', {
-			text: 'Basic text, 中文测试',
-			style: {
-				fontFamily: 'Crosterian'
-			}
-		});
-		editor.addChild(txt1);
-		txt1.x = 300;
-		txt1.y = 100;*/
-
-		/*editor.loader.loadFont({
-			"zcool-kuaile-regular": 'fonts/zcool-kuaile-regular.woff2',
-		}, (e) => {
-			console.log('load fonts', e);
-		}).then(()=>{
-			
-			const v = editor.loader.assets.get("zcool-kuaile-regular");
-			console.log('load fonts completed', v);
-		});*/
-
-
-		// 放大缩小
-		document.getElementById('btn_zoomin').onclick = function(){
-			editor.scale(editor.transform.scaleX + 0.1);
 		}
-		document.getElementById('btn_zoomout').onclick = function(){			
-			editor.scale(editor.transform.scaleX - 0.1);
-		}
-
-		// 调整大小
-		window.onresize = function() {
-			//editor.resize();
-		}
-
-		const preview = document.getElementById('previewImg');
-		async function createPreivew() {
-			const canvas = await html2canvas(editor.dom, {
-				width: editor.width,
-				height: editor.height,
-				//x: editor.left,
-				//y: editor.top,
-				useCORS: true
+	});
+	/*
+			const img = editor.createImage('https://pixijs.com/assets/bunny.png');
+			img.width = 100;
+			img.height = 100;
+	
+			img.on('load', () => {
+				//img.resize(100, 100);
+				
+				img.x = editor.width / 2;
+				img.y = editor.height / 2;
+	
+				const img2 = editor.createImage();
+				//img2.width = 200;
+				//img2.height = 200;
+	
+				img2.url = 'https://jtcospublic.ciccten.com/config-server/1703730310545220869/idcard_qrcode.png';
+	
+				img2.x = img.x + 100;
+				img2.y = img.y + 100;
+				img2.angle = 60;
+				editor.addChild(img2);
 			});
-			preview.src = canvas.toDataURL();
+			editor.addChild(img);
+	
+			
+	
+			const txt1 = editor.createShape('text', {
+				text: 'Basic text, 中文测试',
+				style: {
+					fontFamily: 'Crosterian'
+				}
+			});
+			editor.addChild(txt1);
+			txt1.x = 300;
+			txt1.y = 100;*/
 
-			setTimeout(createPreivew, 10000);
+	/*editor.loader.loadFont({
+		"zcool-kuaile-regular": 'fonts/zcool-kuaile-regular.woff2',
+	}, (e) => {
+		console.log('load fonts', e);
+	}).then(()=>{
+		
+		const v = editor.loader.assets.get("zcool-kuaile-regular");
+		console.log('load fonts completed', v);
+	});*/
 
-		};
-		setTimeout(createPreivew, 5000);
-	</script>
+
+	// 放大缩小
+	document.getElementById('btn_zoomin').onclick = function () {
+		editor.scale(editor.transform.scaleX + 0.1);
+	}
+	document.getElementById('btn_zoomout').onclick = function () {
+		editor.scale(editor.transform.scaleX - 0.1);
+	}
+
+	// 调整大小
+	window.onresize = function () {
+		//editor.resize();
+	}
+
+	const preview = document.getElementById('previewImg');
+	async function createPreivew() {
+		// https://github.com/bubkoo/html-to-image
+		const img = await window.htmlToImage.toPng(editor.target.dom);
+		preview.src = img;
+
+		setTimeout(createPreivew, 10000);
+
+		//console.log(editor.toString())
+
+	};
+	setTimeout(createPreivew, 2000);
+</script>
 
 </html>

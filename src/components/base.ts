@@ -4,6 +4,8 @@ import JElement from '../core/element';
 
 export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends JElement<T> {
     constructor(option) {
+        option.style = option.style || {};
+        Object.assign(option.style, ContainerDefaultStyle);
         super({
             // 外层只响应Z轴旋转
             transformWatchProps: [
@@ -12,9 +14,6 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
             ...option,
             nodeType: 'div',
             className: 'j-design-editor-container',
-            style: {
-                ...ContainerDefaultStyle,      
-            }
         });
         option.target = option.target || {};
         // 生成当前控制的元素
@@ -41,27 +40,10 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
         
         // 刷新样式
         if(option.style) this.style.apply(option.style);
-
-        if(option.text) this.text = option.text;
-        if(option.html) this.html = option.html;
     }
 
     // 当前控件的核心元素
     target: JElement<T>;
-
-    get text() {
-        return this.target.dom.innerText;
-    }
-    set text(v: string) {
-        this.target.dom.innerText = v;
-    }
-
-    get html() {
-        return this.target.dom.innerHTML;
-    }
-    set html(v: string) {
-        this.target.dom.innerHTML = v;
-    }
 
     // 选中
     private _selected = false;
@@ -85,7 +67,9 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
     }
 
     toJSON(props = []) {
-        props.push('html', 'text');
-        return super.toJSON(props);
+        // 转json忽略渲染组件
+        return super.toJSON(props, (el:JElement)=>{
+            return el !== this.target;
+        });
     }
 }

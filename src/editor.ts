@@ -1,4 +1,3 @@
-
 import JBase from './components/base';
 import JText from './components/text';
 import JImage from './components/image';
@@ -8,7 +7,7 @@ import util from './lib/util';
 
 export default class JEditor extends JBase {
 
-    constructor(container, option={} as any) {  
+    constructor(option={} as any) {  
         option.style = option.style||{};
         Object.assign(option.style, {
             'boxShadow': '0 0 10px 10px #ccc',
@@ -22,8 +21,8 @@ export default class JEditor extends JBase {
         ];
         super(option);
 
-        if(typeof container === 'string') container = document.getElementById(container);
-        this.container = new JElement<HTMLDivElement>({
+        if(typeof option.container === 'string') option.container = document.getElementById( option.container);
+        this.view = new JElement<HTMLDivElement>({
             style: {
                 'border': 0,
                 'padding': 0,
@@ -35,15 +34,17 @@ export default class JEditor extends JBase {
         });
         // 变换改为控制主元素
         this.transform.bind({
-            target: this.container,
+            target: this.view,
             watchProps: [
                 'scaleX', 'scaleY'
             ]
         });
-        container.appendChild(this.container.dom); 
-        this.container.addChild(this.dom);
+        if(option.container) option.container.appendChild(this.view.dom); 
+        this.view.addChild(this.dom);
 
-        this.init(option);        
+        this.init(option);  
+
+        this.bindEvent(this.view.dom);
     }
 
     // 初始化整个编辑器
@@ -56,7 +57,7 @@ export default class JEditor extends JBase {
             editor: this,
             visible: false
         });
-        this.container.addChild(this.ElementController.dom);// 加到外层
+        this.view.addChild(this.ElementController.dom);// 加到外层
         const styleNode = document.createElement('style');
         styleNode.innerHTML = `.j-design-editor-container {
                                     border: 0;
@@ -64,7 +65,7 @@ export default class JEditor extends JBase {
                                 .j-design-editor-container:hover {
                                     box-shadow: 0 0 1px 1px rgba(255,255,255,0.5);
                                 }`;
-        this.container.addChild(styleNode);
+        this.view.addChild(styleNode);
 
         if(option.width && option.height) {
             this.resize(option.width, option.height);
@@ -79,7 +80,7 @@ export default class JEditor extends JBase {
     }
 
     // 外层用于定位的容器
-    container: JElement<HTMLDivElement>;
+    view: JElement<HTMLDivElement>;
 
     // 所有支持的类型
     shapes = {
@@ -105,6 +106,11 @@ export default class JEditor extends JBase {
         return res;
     }
 
+    // 绑定事件
+    bindEvent(dom?: HTMLElement) {
+        if(this.view) super.bindEvent(this.view.dom);// 编辑器事件绑到整个容器上
+    }
+
     // 选中某个元素
     select(el: JBase) {
         // 选把所有已选择的取消
@@ -118,12 +124,12 @@ export default class JEditor extends JBase {
         this.attr('data-size', `${width}*${height}`);
 
         this.width = width;
-        this.height = height;
-
-        this.left = util.toNumber(this.container.width) / 2 - util.toNumber(width) / 2;
-        this.top = util.toNumber(this.container.height) / 2 - util.toNumber(height) / 2;
+        this.height = height;        
         
         setTimeout(() => {
+            this.left = util.toNumber(this.view.dom.clientWidth) / 2 - util.toNumber(width) / 2;
+            this.top = util.toNumber(this.view.dom.clientHeight) / 2 - util.toNumber(height) / 2;
+
             this.emit('resize', {
                 width,
                 height
@@ -150,13 +156,12 @@ export default class JEditor extends JBase {
     // 移除
     removeChild(el: JElement|HTMLElement) {
         if(el === this.target) {
-            console.warn('不能移除自已');
+            //console.warn('不能移除自已');
             return;
         }
         if(el instanceof JElement) {
             el.off('select');
-            el.off('mousehover');
-            el.off('mousehout');
+            el.off('mousedown');
         }
         return this.target.removeChild(el);
     }
@@ -164,7 +169,7 @@ export default class JEditor extends JBase {
     // 把domcument坐标转为编辑器相对坐标
     toEditorPosition(pos: {x: number, y: number}) {
         // 编辑器坐标
-        const editorPos = util.getElementPosition(this.dom);
+        const editorPos = util.getElementPosition(this.view.dom);
         return {
             x: pos.x - editorPos.x,
             y: pos.y - editorPos.y
@@ -215,32 +220,6 @@ export default class JEditor extends JBase {
             url,
         });
         return img;
-    }
-
-    // 转为图片数据
-    async toImage() {
-        
-    }
-
-    toJSON() {
-        const data = {
-            width: this.width,
-            height: this.height,
-            children: []
-        };
-        for(const c of this.children) {
-            
-            if(!c.type) continue;
-            if(c.toJSON) {
-                data.children.push(c.toJSON());
-            }
-        }
-        return data;
-    }
-
-    toString() {
-        const data = this.toJSON();
-        return JSON.stringify(data);
     }
 
     fromJSON(data) {
