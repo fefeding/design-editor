@@ -29,7 +29,7 @@ export default class JElementStyle extends JElementStyleMap {
         
         for(const name of this.names) {
             if(typeof name !== 'string') continue;
-            if(typeof data[name] === 'string') {
+            if(typeof data[name] === 'string' || typeof data[name] === 'number') {
                 if(target instanceof JElementStyle) {
                     target.setStyle(name, data[name]);
                 }

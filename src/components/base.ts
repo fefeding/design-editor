@@ -5,7 +5,11 @@ import JElement from '../core/element';
 export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends JElement<T> {
     constructor(option) {
         option.style = option.style || {};
-        Object.assign(option.style, ContainerDefaultStyle);
+        // position和overflow预设的值优先级最高
+        option.style = Object.assign({...ContainerDefaultStyle}, option.style, {
+            position: ContainerDefaultStyle.position,
+            overflow: ContainerDefaultStyle.overflow
+        });
         super({
             // 外层只响应Z轴旋转
             transformWatchProps: [
@@ -39,7 +43,7 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
         });
         
         // 刷新样式
-        if(option.style) this.style.apply(option.style);
+        this.style.refresh();
     }
 
     // 当前控件的核心元素

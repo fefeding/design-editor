@@ -896,10 +896,10 @@ export class JElementStyleProperty extends JElementStyleMap {
 // 最外层容器默认样式
 export const ContainerDefaultStyle = {
     position: 'absolute',
-    left: 0,
-    top: 0,
-    width: 10,
-    height: 10,
+    left: '0',
+    top: '0',
+    width: '10px',
+    height: '10px',
     right: 'auto',
     bottom: 'auto',
     padding: '0',

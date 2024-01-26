@@ -3,11 +3,14 @@ const fs = require('fs');
 
 for(const id of [1,2,3,4]) {
 
-const data = JSON.parse(fs.readFileSync(`./${id}.json`, 'utf8'));
+    let data = JSON.parse(fs.readFileSync(`./${id}.json`, 'utf8'));
+    const res = {
+        id,
+        data: null
+    }
+    res.data = convertElement(data.data || data);
 
-const res = convertElement(data);
-
-fs.writeFileSync(`./${id}.json`, JSON.stringify(res), 'utf8');
+    fs.writeFileSync(`./${id}.json`, JSON.stringify(res), 'utf8');
 }
 
 function convertElement(el) {
@@ -34,18 +37,36 @@ function convertElement(el) {
 
     if(el.url) res.src = el.url;
 
-    for(const k in res.style) {
-        if(k.startsWith('_')) delete res.style[k];
+    for(let k in res.style) {
+        let v = res.style[k];
+        if(k.startsWith('_')) {            
+            delete res.style[k];
+            k = k.replace(/^_/, '');
+            res.style[k] = v;
+        }
         if((res.type === 'text' || res.type === 'image')) {            
             if(k === 'fill') {
-                if(Array.isArray(res.style[k])) res.style[k] = res.style[k][0];
-                res.style.color = res.style[k];
+                if(Array.isArray(v)) v = v[0];
+                res.style.color = v;
                 delete res.style[k];
             }
             if(k === 'align') {
-                res.style['text-align'] = res.style['align'];
+                res.style['textAlign'] = v;
                 delete res.style[k];
             }
+        }
+        if(k === 'fontSize' && v && !(v+'').includes('px')) {
+            if(res.style['lineHeight'] && !(res.style['lineHeight']+'').includes('px')) {
+                res.style['lineHeight'] = (v * res.style['lineHeight']) + 'px';
+            }
+            res.style[k] = v + 'px';
+        }
+        
+
+        if(k === 'wordWrap' && v) {
+            res.style['wordWrap'] = 'break-word';
+            res.style['wordBreak'] = 'keep-all';
+            res.style['whiteSpace'] = 'pre-wrap';
         }
     }
 

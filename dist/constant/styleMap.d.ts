@@ -889,10 +889,10 @@ export declare class JElementStyleProperty extends JElementStyleMap {
 }
 export declare const ContainerDefaultStyle: {
     position: string;
-    left: number;
-    top: number;
-    width: number;
-    height: number;
+    left: string;
+    top: string;
+    width: string;
+    height: string;
     right: string;
     bottom: string;
     padding: string;

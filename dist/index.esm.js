@@ -926,10 +926,10 @@ var JElementStyleProperty = /** @class */ (function (_super) {
 // 最外层容器默认样式
 var ContainerDefaultStyle = {
     position: 'absolute',
-    left: 0,
-    top: 0,
-    width: 10,
-    height: 10,
+    left: '0',
+    top: '0',
+    width: '10px',
+    height: '10px',
     right: 'auto',
     bottom: 'auto',
     padding: '0',
@@ -1409,7 +1409,7 @@ var JElementStyle = /** @class */ (function (_super) {
                 var name_1 = _c.value;
                 if (typeof name_1 !== 'string')
                     continue;
-                if (typeof data[name_1] === 'string') {
+                if (typeof data[name_1] === 'string' || typeof data[name_1] === 'number') {
                     if (target instanceof JElementStyle) {
                         target.setStyle(name_1, data[name_1]);
                     }
@@ -1981,7 +1981,11 @@ var JBaseComponent = /** @class */ (function (_super) {
     function JBaseComponent(option) {
         var _this = this;
         option.style = option.style || {};
-        Object.assign(option.style, ContainerDefaultStyle);
+        // position和overflow预设的值优先级最高
+        option.style = Object.assign(__assign({}, ContainerDefaultStyle), option.style, {
+            position: ContainerDefaultStyle.position,
+            overflow: ContainerDefaultStyle.overflow
+        });
         _this = _super.call(this, __assign(__assign({ 
             // 外层只响应Z轴旋转
             transformWatchProps: [
@@ -2006,8 +2010,7 @@ var JBaseComponent = /** @class */ (function (_super) {
             ]
         });
         // 刷新样式
-        if (option.style)
-            _this.style.apply(option.style);
+        _this.style.refresh();
         return _this;
     }
     Object.defineProperty(JBaseComponent.prototype, "selected", {
