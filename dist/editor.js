@@ -155,10 +155,11 @@ var JEditor = /** @class */ (function (_super) {
     };
     // 选中某个元素
     JEditor.prototype.select = function (el) {
-        // 选把所有已选择的取消
-        this.selectedElements.every(function (p) { return p !== el && p.selected && (p.selected = false); });
-        if (el.selected)
+        if (el.selected) {
             this.ElementController.bind(el);
+            // 选把所有已选择的取消
+            this.selectedElements.every(function (p) { return p !== el && p.selected && (p.selected = false); });
+        }
         else
             this.ElementController.unbind(el);
     };
