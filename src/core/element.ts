@@ -123,6 +123,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     }
 
     get width() {
+        if(this.dom && this.dom.clientWidth) return this.dom.clientWidth;
         return this.style.width || 0;
     }
     set width(v) {
@@ -130,6 +131,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     }
 
     get height() {
+        if(this.dom && this.dom.clientHeight) return this.dom.clientHeight;
         return this.style.height || 0;
     }
     set height(v) {

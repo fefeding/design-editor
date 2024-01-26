@@ -5,13 +5,13 @@ import JElement from '../core/element';
 export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends JElement<T> {
     constructor(option) {
         super({
-            ...option,
-            nodeType: 'div',
-            className: 'j-design-editor-container',
             // 外层只响应Z轴旋转
             transformWatchProps: [
                 'rotateZ','scaleX','scaleY'
             ],
+            ...option,
+            nodeType: 'div',
+            className: 'j-design-editor-container',
             style: {
                 ...ContainerDefaultStyle,      
             }

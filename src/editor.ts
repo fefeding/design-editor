@@ -8,42 +8,55 @@ import util from './lib/util';
 
 export default class JEditor extends JBase {
 
-    constructor(container, option={}) {  
-        super(option);
-
-        if(typeof container === 'string') container = document.getElementById(container);
-        this.container = document.createElement('div');
-        util.css(this.container, {
-            'border': 0,
-            'padding': 0,
-            'margin': 0,
-            'position': 'relative',
-            'width': '100%',
-            'height': '100%',
-        });
-        container.appendChild(this.container); 
-        this.container.appendChild(this.dom);
-
-        this.init(option, this.container);        
-    }
-
-    // 初始化整个编辑器
-    init(option, container: HTMLDivElement) {
-
-        if(option.style.containerBackgroundColor) this.dom.style.backgroundColor = option.style.containerBackgroundColor;
-        this.css({
+    constructor(container, option={} as any) {  
+        option.style = option.style||{};
+        Object.assign(option.style, {
             'boxShadow': '0 0 10px 10px #ccc',
             'position': 'absolute',
             'backgroundSize': '100% 100%',
             'overflow': 'hidden'
         });
+        // 外层只响应Z轴旋转
+        option.transformWatchProps = [
+            'rotateZ'
+        ];
+        super(option);
+
+        if(typeof container === 'string') container = document.getElementById(container);
+        this.container = new JElement<HTMLDivElement>({
+            style: {
+                'border': 0,
+                'padding': 0,
+                'margin': 0,
+                'position': 'relative',
+                'width': '100%',
+                'height': '100%',
+            }
+        });
+        // 变换改为控制主元素
+        this.transform.bind({
+            target: this.container,
+            watchProps: [
+                'scaleX', 'scaleY'
+            ]
+        });
+        container.appendChild(this.container.dom); 
+        this.container.addChild(this.dom);
+
+        this.init(option);        
+    }
+
+    // 初始化整个编辑器
+    init(option) {
+
+        if(option.style.containerBackgroundColor) this.dom.style.backgroundColor = option.style.containerBackgroundColor;
 
         // 生成控制器
         this.ElementController = new JController({
             editor: this,
             visible: false
         });
-        container.appendChild(this.ElementController.dom);// 加到外层
+        this.container.addChild(this.ElementController.dom);// 加到外层
         const styleNode = document.createElement('style');
         styleNode.innerHTML = `.j-design-editor-container {
                                     border: 0;
@@ -51,7 +64,7 @@ export default class JEditor extends JBase {
                                 .j-design-editor-container:hover {
                                     box-shadow: 0 0 1px 1px rgba(255,255,255,0.5);
                                 }`;
-        container.appendChild(styleNode);
+        this.container.addChild(styleNode);
 
         if(option.width && option.height) {
             this.resize(option.width, option.height);
@@ -66,7 +79,7 @@ export default class JEditor extends JBase {
     }
 
     // 外层用于定位的容器
-    container: HTMLDivElement;
+    container: JElement<HTMLDivElement>;
 
     // 所有支持的类型
     shapes = {
@@ -77,33 +90,6 @@ export default class JEditor extends JBase {
     // 元素控帛器
     ElementController: JController;
 
-    get width() {
-        return this.target.width
-    }
-    set width(v) {
-        this.target && this.resize(v, this.height);
-    }
-
-    get height() {
-        return this.target.height;
-    }
-    set height(v) {
-        this.target && this.resize(this.width, v);
-    }
-
-    get left() {
-        return this.target.left;
-    }
-    set left(v) {
-        this.target && (this.target.left = v);
-    }
-
-    get top() {
-        return this.target.top;
-    }
-    set top(v) {
-        this.target && (this.target.top = v);
-    }
     // 重写子集为target
     get children() {
         return this.target.children;
@@ -129,13 +115,13 @@ export default class JEditor extends JBase {
 
     resize(width=this.width, height=this.height) {
 
-        this.target.attr('data-size', `${width}*${height}`);
+        this.attr('data-size', `${width}*${height}`);
 
-        this.target.width = width;
-        this.target.height = height;
+        this.width = width;
+        this.height = height;
 
-        this.left = this.dom.clientWidth / 2 - parseFloat(width+'') / 2;
-        this.top = this.dom.clientHeight / 2 - parseFloat(height+'') / 2;
+        this.left = util.toNumber(this.container.width) / 2 - util.toNumber(width) / 2;
+        this.top = util.toNumber(this.container.height) / 2 - util.toNumber(height) / 2;
         
         setTimeout(() => {
             this.emit('resize', {

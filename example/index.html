@@ -34,8 +34,10 @@
 			  </div>
 			  <div class="col-8" style="height:100%; overflow: hidden;">
 				<div id="myeditor_container" style="height:100%; overflow:auto;background-color: #eee;">
-					<img id="btn_zoomin" src="images/zoom_in.png" style="position: fixed; left: 60%; bottom: 60px; z-index:100; transform:scale(0.6)" />
-					<img id="btn_zoomout" src="images/zoom_out.png" style="position: fixed; left: 65%; bottom: 60px; z-index:100; transform:scale(0.6)" />
+					<img id="btn_zoomin" src="images/zoom_in.png" style="position: fixed; left: 60%; bottom: 10px; z-index:100;box-shadow: 0 0 10px 10px #fff; transform:scale(0.6);
+					background-color: #fff;" />
+					<img id="btn_zoomout" src="images/zoom_out.png" style="position: fixed; left: 65%; bottom: 10px; z-index:100;box-shadow: 0 0 10px 10px #fff; transform:scale(0.6);
+					background-color: #fff;" />
 				</div>
 			  </div>
 			  <div class="col-2" style="height:100%; overflow:auto;">
@@ -64,7 +66,7 @@
 
 		// 大小改变后居中
 		editor.on('resize', function(size) {        
-			const scale  = Math.min(this.dom.clientWidth / (this.width*1.2), this.dom.clientHeight / (this.height*1.2));
+			const scale  = Math.min(this.container.clientWidth / (this.width*1.2), this.container.clientHeight / (this.height*1.2));
 			if(scale < 1 && scale < this.transform.scaleX) {
 				this.scale(scale);
 			}
@@ -154,13 +156,13 @@
 			const canvas = await html2canvas(editor.dom, {
 				width: editor.width,
 				height: editor.height,
-				x: editor.left,
-				y: editor.top,
+				//x: editor.left,
+				//y: editor.top,
 				useCORS: true
 			});
 			preview.src = canvas.toDataURL();
 
-			setTimeout(createPreivew, 2000);
+			setTimeout(createPreivew, 10000);
 
 		};
 		setTimeout(createPreivew, 5000);

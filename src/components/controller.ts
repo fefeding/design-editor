@@ -35,14 +35,17 @@ export class JControllerItem extends JElement<HTMLDivElement> {
         this.editor = option.editor;
 
         if(this.editor) {
-            this.editor.on('mouseup', (e) => {
+            // @ts-ignore
+            this.editor.container.on('mouseup', (e) => {
                 this.onDragEnd(e);
             });
-            this.editor.on('mouseout', (e) => {
+            // @ts-ignore
+            this.editor.container.on('mouseout', (e) => {
                 if(e.target !== this.editor.dom) return;// 不是out编辑器，不处理
                 this.onDragEnd(e);
             });
-            this.editor.on('mousemove', (e) => {
+            // @ts-ignore
+            this.editor.container.on('mousemove', (e) => {
                 this.onDragMove(e);
             });
         }
@@ -304,7 +307,7 @@ export default class JControllerComponent extends JControllerItem {
 
     target: JElement;
     // 选择框边距
-    paddingSize = 2;
+    paddingSize = 1;
 
     isEditor = false;// 当前关联是否是编辑器
 

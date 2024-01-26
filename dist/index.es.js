@@ -1543,11 +1543,14 @@ var SupportEventNames = [
 ];
 var JEvent = /** @class */ (function () {
     function JEvent(target) {
-        this.target = target;
+        if (target)
+            this.target = target;
     }
     // 初始化所有支持的事件
-    JEvent.prototype.init = function (handler) {
-        this.bindEvent(SupportEventNames, handler);
+    JEvent.prototype.init = function (handler, target) {
+        if (target)
+            this.target = target;
+        this.bindEvent(SupportEventNames, handler, false, target);
     };
     /**
      * 绑定事件到html对象
@@ -1793,6 +1796,8 @@ var JElement = /** @class */ (function (_super) {
     });
     Object.defineProperty(JElement.prototype, "width", {
         get: function () {
+            if (this.dom && this.dom.clientWidth)
+                return this.dom.clientWidth;
             return this.style.width || 0;
         },
         set: function (v) {
@@ -1803,6 +1808,8 @@ var JElement = /** @class */ (function (_super) {
     });
     Object.defineProperty(JElement.prototype, "height", {
         get: function () {
+            if (this.dom && this.dom.clientHeight)
+                return this.dom.clientHeight;
             return this.style.height || 0;
         },
         set: function (v) {
@@ -2028,11 +2035,11 @@ var JElement = /** @class */ (function (_super) {
 var JBaseComponent = /** @class */ (function (_super) {
     __extends(JBaseComponent, _super);
     function JBaseComponent(option) {
-        var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'div', className: 'j-design-editor-container', 
+        var _this = _super.call(this, __assign(__assign({ 
             // 外层只响应Z轴旋转
             transformWatchProps: [
                 'rotateZ', 'scaleX', 'scaleY'
-            ], style: __assign({}, ContainerDefaultStyle) })) || this;
+            ] }, option), { nodeType: 'div', className: 'j-design-editor-container', style: __assign({}, ContainerDefaultStyle) })) || this;
         // 选中
         _this._selected = false;
         option.target = option.target || {};
@@ -2186,15 +2193,18 @@ var JControllerItem = /** @class */ (function (_super) {
         _this.width = _this.height = _this.size;
         _this.editor = option.editor;
         if (_this.editor) {
-            _this.editor.on('mouseup', function (e) {
+            // @ts-ignore
+            _this.editor.container.on('mouseup', function (e) {
                 _this.onDragEnd(e);
             });
-            _this.editor.on('mouseout', function (e) {
+            // @ts-ignore
+            _this.editor.container.on('mouseout', function (e) {
                 if (e.target !== _this.editor.dom)
                     return; // 不是out编辑器，不处理
                 _this.onDragEnd(e);
             });
-            _this.editor.on('mousemove', function (e) {
+            // @ts-ignore
+            _this.editor.container.on('mousemove', function (e) {
                 _this.onDragMove(e);
             });
         }
@@ -2278,7 +2288,7 @@ var JControllerComponent = /** @class */ (function (_super) {
         _this = _super.call(this, option) || this;
         _this.items = [];
         // 选择框边距
-        _this.paddingSize = 2;
+        _this.paddingSize = 1;
         _this.isEditor = false; // 当前关联是否是编辑器
         _this.init(option);
         // html2canvas不渲染
@@ -2633,7 +2643,19 @@ var JEditor = /** @class */ (function (_super) {
     __extends(JEditor, _super);
     function JEditor(container, option) {
         if (option === void 0) { option = {}; }
-        var _this = _super.call(this, option) || this;
+        var _this = this;
+        option.style = option.style || {};
+        Object.assign(option.style, {
+            'boxShadow': '0 0 10px 10px #ccc',
+            'position': 'absolute',
+            'backgroundSize': '100% 100%',
+            'overflow': 'hidden'
+        });
+        // 外层只响应Z轴旋转
+        option.transformWatchProps = [
+            'rotateZ'
+        ];
+        _this = _super.call(this, option) || this;
         // 所有支持的类型
         _this.shapes = {
             'image': JImage,
@@ -2641,40 +2663,42 @@ var JEditor = /** @class */ (function (_super) {
         };
         if (typeof container === 'string')
             container = document.getElementById(container);
-        _this.container = document.createElement('div');
-        util.css(_this.container, {
-            'border': 0,
-            'padding': 0,
-            'margin': 0,
-            'position': 'relative',
-            'width': '100%',
-            'height': '100%',
+        _this.container = new JElement({
+            style: {
+                'border': 0,
+                'padding': 0,
+                'margin': 0,
+                'position': 'relative',
+                'width': '100%',
+                'height': '100%',
+            }
         });
-        container.appendChild(_this.container);
-        _this.container.appendChild(_this.dom);
-        _this.init(option, _this.container);
+        // 变换改为控制主元素
+        _this.transform.bind({
+            target: _this.container,
+            watchProps: [
+                'scaleX', 'scaleY'
+            ]
+        });
+        container.appendChild(_this.container.dom);
+        _this.container.addChild(_this.dom);
+        _this.init(option);
         return _this;
     }
     // 初始化整个编辑器
-    JEditor.prototype.init = function (option, container) {
+    JEditor.prototype.init = function (option) {
         var _this = this;
         if (option.style.containerBackgroundColor)
             this.dom.style.backgroundColor = option.style.containerBackgroundColor;
-        this.css({
-            'boxShadow': '0 0 10px 10px #ccc',
-            'position': 'absolute',
-            'backgroundSize': '100% 100%',
-            'overflow': 'hidden'
-        });
         // 生成控制器
         this.ElementController = new JControllerComponent({
             editor: this,
             visible: false
         });
-        container.appendChild(this.ElementController.dom); // 加到外层
+        this.container.addChild(this.ElementController.dom); // 加到外层
         var styleNode = document.createElement('style');
         styleNode.innerHTML = ".j-design-editor-container {\n                                    border: 0;\n                                }\n                                .j-design-editor-container:hover {\n                                    box-shadow: 0 0 1px 1px rgba(255,255,255,0.5);\n                                }";
-        container.appendChild(styleNode);
+        this.container.addChild(styleNode);
         if (option.width && option.height) {
             this.resize(option.width, option.height);
         }
@@ -2686,46 +2710,6 @@ var JEditor = /** @class */ (function (_super) {
             this.ElementController.onDragStart(e);
         });
     };
-    Object.defineProperty(JEditor.prototype, "width", {
-        get: function () {
-            return this.target.width;
-        },
-        set: function (v) {
-            this.target && this.resize(v, this.height);
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JEditor.prototype, "height", {
-        get: function () {
-            return this.target.height;
-        },
-        set: function (v) {
-            this.target && this.resize(this.width, v);
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JEditor.prototype, "left", {
-        get: function () {
-            return this.target.left;
-        },
-        set: function (v) {
-            this.target && (this.target.left = v);
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JEditor.prototype, "top", {
-        get: function () {
-            return this.target.top;
-        },
-        set: function (v) {
-            this.target && (this.target.top = v);
-        },
-        enumerable: false,
-        configurable: true
-    });
     Object.defineProperty(JEditor.prototype, "children", {
         // 重写子集为target
         get: function () {
@@ -2772,11 +2756,11 @@ var JEditor = /** @class */ (function (_super) {
         var _this = this;
         if (width === void 0) { width = this.width; }
         if (height === void 0) { height = this.height; }
-        this.target.attr('data-size', "".concat(width, "*").concat(height));
-        this.target.width = width;
-        this.target.height = height;
-        this.left = this.dom.clientWidth / 2 - parseFloat(width + '') / 2;
-        this.top = this.dom.clientHeight / 2 - parseFloat(height + '') / 2;
+        this.attr('data-size', "".concat(width, "*").concat(height));
+        this.width = width;
+        this.height = height;
+        this.left = util.toNumber(this.container.width) / 2 - util.toNumber(width) / 2;
+        this.top = util.toNumber(this.container.height) / 2 - util.toNumber(height) / 2;
         setTimeout(function () {
             _this.emit('resize', {
                 width: width,

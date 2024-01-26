@@ -4,13 +4,14 @@ const SupportEventNames = [
     'mousedown','mouseup','mouseover','mousemove','mouseout','mousewheel','click','dblclick','keydown','keypress','keyup','blur','change','focus','drag','dragenter','dragleave','dragover','dragstart','drop'
 ]
 export default class JEvent {
-    constructor(target: HTMLElement) {
-        this.target = target;
+    constructor(target?: HTMLElement) {
+        if(target) this.target = target;
     }
 
     // 初始化所有支持的事件
-    init(handler: EventListenerOrEventListenerObject) {
-        this.bindEvent(SupportEventNames, handler);
+    init(handler: EventListenerOrEventListenerObject, target?: HTMLElement) {
+        if(target) this.target = target;
+        this.bindEvent(SupportEventNames, handler, false, target);
     }
 
     target: HTMLElement;

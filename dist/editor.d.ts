@@ -4,21 +4,13 @@ import JImage from './components/image';
 import JElement from './core/element';
 import JController from './components/controller';
 export default class JEditor extends JBase {
-    constructor(container: any, option?: {});
-    init(option: any, container: HTMLDivElement): void;
-    container: HTMLDivElement;
+    constructor(container: any, option?: any);
+    init(option: any): void;
+    container: JElement<HTMLDivElement>;
     shapes: {
         [key: string]: typeof JBase;
     };
     ElementController: JController;
-    get width(): string | number;
-    set width(v: string | number);
-    get height(): string | number;
-    set height(v: string | number);
-    get left(): string | number;
-    set left(v: string | number);
-    get top(): string | number;
-    set top(v: string | number);
     get children(): JElement<HTMLElement>[];
     get selectedElements(): Array<JBase>;
     select(el: JBase): void;

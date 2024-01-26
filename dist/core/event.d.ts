@@ -1,6 +1,6 @@
 export default class JEvent {
-    constructor(target: HTMLElement);
-    init(handler: EventListenerOrEventListenerObject): void;
+    constructor(target?: HTMLElement);
+    init(handler: EventListenerOrEventListenerObject, target?: HTMLElement): void;
     target: HTMLElement;
     /**
      * 绑定事件到html对象
