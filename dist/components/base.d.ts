@@ -10,4 +10,7 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
     get selected(): boolean;
     set selected(v: boolean);
     setDomStyle(name: string, value: string): void;
+    toJSON(props?: any[]): {
+        children: any[];
+    };
 }

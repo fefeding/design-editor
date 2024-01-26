@@ -83,4 +83,9 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
             this.target && this.target.css(name, value);
         }
     }
+
+    toJSON(props = []) {
+        props.push('html', 'text');
+        return super.toJSON(props);
+    }
 }

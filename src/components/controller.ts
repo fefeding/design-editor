@@ -141,6 +141,8 @@ export default class JControllerComponent extends JControllerItem {
         //option.style.boxShadow = '0 0 2px 2px #ccc';
         super(option);
         this.init(option);
+        // html2canvas不渲染
+        this.attr('data-html2canvas-ignore', 'true');
     }
 
     init(option) {

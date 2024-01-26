@@ -12,19 +12,26 @@ export default class JEditor extends JBase {
         super(option);
 
         if(typeof container === 'string') container = document.getElementById(container);
-        
-        container.appendChild(this.dom); 
-        container.style.position = 'relative';  
+        this.container = document.createElement('div');
+        util.css(this.container, {
+            'border': 0,
+            'padding': 0,
+            'margin': 0,
+            'position': 'relative',
+            'width': '100%',
+            'height': '100%',
+        });
+        container.appendChild(this.container); 
+        this.container.appendChild(this.dom);
 
-        this.init(option, container);        
+        this.init(option, this.container);        
     }
 
     // 初始化整个编辑器
     init(option, container: HTMLDivElement) {
-        this.dom.style.width = '100%';
-        this.dom.style.height = '100%';
+
         if(option.style.containerBackgroundColor) this.dom.style.backgroundColor = option.style.containerBackgroundColor;
-        this.target.css({
+        this.css({
             'boxShadow': '0 0 10px 10px #ccc',
             'position': 'absolute',
             'backgroundSize': '100% 100%',
@@ -36,7 +43,7 @@ export default class JEditor extends JBase {
             editor: this,
             visible: false
         });
-        this.dom.appendChild(this.ElementController.dom);// 加到外层
+        container.appendChild(this.ElementController.dom);// 加到外层
         const styleNode = document.createElement('style');
         styleNode.innerHTML = `.j-design-editor-container {
                                     border: 0;
@@ -57,6 +64,9 @@ export default class JEditor extends JBase {
             this.ElementController.onDragStart(e);
         });
     }
+
+    // 外层用于定位的容器
+    container: HTMLDivElement;
 
     // 所有支持的类型
     shapes = {

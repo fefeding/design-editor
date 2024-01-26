@@ -5,6 +5,7 @@
 	<meta name="viewport" content="width=device-width,initial-scale=1">
 	<link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 	<script src="lib/bootstrap/js/bootstrap.min.js" crossorigin="anonymous"></script>
+	<script src="lib/html2canvas.js" crossorigin="anonymous"></script>
 	<style>
 		html,body{
 			margin:0;
@@ -148,7 +149,21 @@
 			//editor.resize();
 		}
 
-		
+		const preview = document.getElementById('previewImg');
+		async function createPreivew() {
+			const canvas = await html2canvas(editor.dom, {
+				width: editor.width,
+				height: editor.height,
+				x: editor.left,
+				y: editor.top,
+				useCORS: true
+			});
+			preview.src = canvas.toDataURL();
+
+			setTimeout(createPreivew, 2000);
+
+		};
+		setTimeout(createPreivew, 5000);
 	</script>
 
 </html>

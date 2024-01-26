@@ -1155,6 +1155,41 @@ var util = {
             p.y = x1 * sin + y1 * cos + center.y;
         }
         return p;
+    },
+    // 设置样式
+    css: function (dom, name, value) {
+        var e_1, _a;
+        if (!name)
+            return;
+        if (typeof name === 'object') {
+            try {
+                for (var _b = __values(Object.getOwnPropertyNames(name)), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var n = _c.value;
+                    this.css(dom, n, name[n]);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+        }
+        else {
+            dom.style[name] = value;
+        }
+        return this;
+    },
+    // dom属性
+    attr: function (dom, name, value) {
+        if (typeof value !== 'undefined') {
+            dom.setAttribute(name, value + '');
+            return value;
+        }
+        else {
+            return dom.getAttribute(name);
+        }
     }
 };
 
@@ -1835,42 +1870,16 @@ var JElement = /** @class */ (function (_super) {
             if (!/^\s*url\(/.test(value))
                 value = "url(".concat(value, ")");
         }
-        this.dom.style[name] = value;
+        util.css(this.dom, name, value);
     };
     // 设置样式
     JElement.prototype.css = function (name, value) {
-        var e_1, _a;
-        if (!name)
-            return;
-        if (typeof name === 'object') {
-            try {
-                for (var _b = __values(Object.getOwnPropertyNames(name)), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var n = _c.value;
-                    this.css(n, name[n]);
-                }
-            }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
-            finally {
-                try {
-                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-                }
-                finally { if (e_1) throw e_1.error; }
-            }
-        }
-        else {
-            this.style[name] = value;
-        }
+        util.css(this, name, value);
         return this;
     };
     // dom属性
     JElement.prototype.attr = function (name, value) {
-        if (typeof value !== 'undefined') {
-            this.dom.setAttribute(name, value + '');
-            return value;
-        }
-        else {
-            return this.dom.getAttribute(name);
-        }
+        return util.attr(this.dom, name, value);
     };
     /*
     // 被选中
@@ -1921,7 +1930,7 @@ var JElement = /** @class */ (function (_super) {
     };
     // 新增子元素
     JElement.prototype.addChild = function (child, parent) {
-        var e_2, _a;
+        var e_1, _a;
         if (parent === void 0) { parent = this; }
         if (Array.isArray(child)) {
             try {
@@ -1930,12 +1939,12 @@ var JElement = /** @class */ (function (_super) {
                     parent.addChild(c);
                 }
             }
-            catch (e_2_1) { e_2 = { error: e_2_1 }; }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
             finally {
                 try {
                     if (child_1_1 && !child_1_1.done && (_a = child_1.return)) _a.call(child_1);
                 }
-                finally { if (e_2) throw e_2.error; }
+                finally { if (e_1) throw e_1.error; }
             }
             return parent;
         }
@@ -1964,10 +1973,14 @@ var JElement = /** @class */ (function (_super) {
         // @ts-ignore
         delete el.parent;
     };
-    JElement.prototype.toJSON = function () {
-        var e_3, _a;
-        var fields = ['x', 'y', 'width', 'height', 'url', 'text', 'rotation', 'type', 'style', 'id', 'skew', 'points', 'isClosed'];
-        var obj = {};
+    // 转为json
+    JElement.prototype.toJSON = function (props) {
+        var e_2, _a, e_3, _b;
+        if (props === void 0) { props = []; }
+        var fields = __spreadArray(['left', 'top', 'width', 'height', 'rotation', 'type', 'style', 'id'], __read(props), false);
+        var obj = {
+            children: []
+        };
         try {
             for (var fields_1 = __values(fields), fields_1_1 = fields_1.next(); !fields_1_1.done; fields_1_1 = fields_1.next()) {
                 var k = fields_1_1.value;
@@ -1976,18 +1989,38 @@ var JElement = /** @class */ (function (_super) {
                 }
             }
         }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
         finally {
             try {
                 if (fields_1_1 && !fields_1_1.done && (_a = fields_1.return)) _a.call(fields_1);
             }
-            finally { if (e_3) throw e_3.error; }
+            finally { if (e_2) throw e_2.error; }
+        }
+        if (this.transform)
+            obj['transform'] = this.transform.toJSON();
+        if (this.children && this.children.length) {
+            try {
+                for (var _c = __values(this.children), _d = _c.next(); !_d.done; _d = _c.next()) {
+                    var child = _d.value;
+                    obj.children.push(child.toJSON());
+                }
+            }
+            catch (e_3_1) { e_3 = { error: e_3_1 }; }
+            finally {
+                try {
+                    if (_d && !_d.done && (_b = _c.return)) _b.call(_c);
+                }
+                finally { if (e_3) throw e_3.error; }
+            }
         }
         return obj;
     };
     JElement.prototype.toString = function () {
         var obj = this.toJSON();
         return JSON.stringify(obj);
+    };
+    JElement.prototype.toHtml = function () {
+        return this.dom.outerHTML;
     };
     return JElement;
 }(EventEmitter));
@@ -2068,6 +2101,11 @@ var JBaseComponent = /** @class */ (function (_super) {
             this.target && this.target.css(name, value);
         }
     };
+    JBaseComponent.prototype.toJSON = function (props) {
+        if (props === void 0) { props = []; }
+        props.push('html', 'text');
+        return _super.prototype.toJSON.call(this, props);
+    };
     return JBaseComponent;
 }(JElement));
 
@@ -2083,12 +2121,13 @@ var JImage = /** @class */ (function (_super) {
     __extends(JImage, _super);
     function JImage(option) {
         var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'img' })) || this;
-        _this.dom.onload = function (e) {
+        _this.target.dom.onload = function (e) {
             _this.emit('load', e);
         };
-        _this.dom.onerror = function (e) {
+        _this.target.dom.onerror = function (e) {
             _this.emit('error', e);
         };
+        _this.target.attr('crossorigin', 'anonymous');
         _this.src = option.url || option.src || '';
         return _this;
     }
@@ -2102,6 +2141,11 @@ var JImage = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    JImage.prototype.toJSON = function (props) {
+        if (props === void 0) { props = []; }
+        props.push('src');
+        return _super.prototype.toJSON.call(this, props);
+    };
     return JImage;
 }(JBaseComponent));
 
@@ -2237,6 +2281,8 @@ var JControllerComponent = /** @class */ (function (_super) {
         _this.paddingSize = 2;
         _this.isEditor = false; // 当前关联是否是编辑器
         _this.init(option);
+        // html2canvas不渲染
+        _this.attr('data-html2canvas-ignore', 'true');
         return _this;
     }
     JControllerComponent.prototype.init = function (option) {
@@ -2595,19 +2641,26 @@ var JEditor = /** @class */ (function (_super) {
         };
         if (typeof container === 'string')
             container = document.getElementById(container);
-        container.appendChild(_this.dom);
-        container.style.position = 'relative';
-        _this.init(option, container);
+        _this.container = document.createElement('div');
+        util.css(_this.container, {
+            'border': 0,
+            'padding': 0,
+            'margin': 0,
+            'position': 'relative',
+            'width': '100%',
+            'height': '100%',
+        });
+        container.appendChild(_this.container);
+        _this.container.appendChild(_this.dom);
+        _this.init(option, _this.container);
         return _this;
     }
     // 初始化整个编辑器
     JEditor.prototype.init = function (option, container) {
         var _this = this;
-        this.dom.style.width = '100%';
-        this.dom.style.height = '100%';
         if (option.style.containerBackgroundColor)
             this.dom.style.backgroundColor = option.style.containerBackgroundColor;
-        this.target.css({
+        this.css({
             'boxShadow': '0 0 10px 10px #ccc',
             'position': 'absolute',
             'backgroundSize': '100% 100%',
@@ -2618,7 +2671,7 @@ var JEditor = /** @class */ (function (_super) {
             editor: this,
             visible: false
         });
-        this.dom.appendChild(this.ElementController.dom); // 加到外层
+        container.appendChild(this.ElementController.dom); // 加到外层
         var styleNode = document.createElement('style');
         styleNode.innerHTML = ".j-design-editor-container {\n                                    border: 0;\n                                }\n                                .j-design-editor-container:hover {\n                                    box-shadow: 0 0 1px 1px rgba(255,255,255,0.5);\n                                }";
         container.appendChild(styleNode);

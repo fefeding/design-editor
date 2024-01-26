@@ -8,12 +8,14 @@ export default class JImage extends Base<HTMLImageElement> {
             nodeType: 'img'
         });
 
-        this.dom.onload = (e) => {
+        this.target.dom.onload = (e) => {
             this.emit('load', e);
         };
-        this.dom.onerror = (e) => {
+        this.target.dom.onerror = (e) => {
             this.emit('error', e);
         };
+
+        this.target.attr('crossorigin', 'anonymous');
 
         this.src = option.url || option.src || '';
     }
@@ -23,5 +25,10 @@ export default class JImage extends Base<HTMLImageElement> {
     }
     set src(v: string) {
         this.target.dom.src = v;
+    }
+
+    toJSON(props = []) {
+        props.push('src');
+        return super.toJSON(props);
     }
 }

@@ -26,6 +26,7 @@
     "gulp-cli": "^2.3.0",
     "gulp-concat": "^2.6.1",
     "gulp-typescript": "^6.0.0-alpha.1",
+    "html2canvas": "^1.4.1",
     "request": "^2.88.2",
     "rollup": "^4.9.6",
     "rollup-plugin-babel": "^4.4.0",

@@ -6,6 +6,7 @@ import JController from './components/controller';
 export default class JEditor extends JBase {
     constructor(container: any, option?: {});
     init(option: any, container: HTMLDivElement): void;
+    container: HTMLDivElement;
     shapes: {
         [key: string]: typeof JBase;
     };

@@ -179,31 +179,17 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         if(name === 'backgroundImage') {
             if(!/^\s*url\(/.test(value)) value = `url(${value})`;
         }
-        this.dom.style[name] = value;
+        util.css(this.dom, name, value);
     }   
 
     // 设置样式
-    css(name: string|Object, value?: string) {
-        if(!name) return;
-        if(typeof name === 'object') {
-            for(const n of Object.getOwnPropertyNames(name)) {
-                this.css(n, name[n]);
-            }
-        }
-        else {
-            this.style[name] = value;
-        }
+    css(name: string|Object, value?: string|number) {
+        util.css(this, name, value);
         return this;
     }
     // dom属性
     attr(name: string, value: string|number|undefined) {
-        if(typeof value !== 'undefined') {
-            this.dom.setAttribute(name, value+'');
-            return value;
-        }
-        else {
-            return this.dom.getAttribute(name);
-        }
+        return util.attr(this.dom, name, value);
     }
 
     /*
@@ -292,13 +278,24 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         delete el.parent;
     }
 
-    toJSON() {
-        const fields = ['x', 'y', 'width', 'height', 'url', 'text', 'rotation', 'type', 'style', 'id', 'skew', 'points', 'isClosed'];
-        const obj = {};
+    // 转为json
+    toJSON(props=[]) {
+        const fields = ['left', 'top', 'width', 'height', 'rotation', 'type', 'style', 'id', ...props];
+        const obj = {
+            children: []
+        };
        
         for(const k of fields) {
             if(typeof this[k] !== 'undefined') {
                 obj[k] = this[k];
+            }
+        }
+
+        if(this.transform) obj['transform'] = this.transform.toJSON();
+
+        if(this.children && this.children.length) {
+            for(const child of this.children) {
+                obj.children.push(child.toJSON())
             }
         }
         return obj;
@@ -307,5 +304,9 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     toString() {
         const obj = this.toJSON();
         return JSON.stringify(obj);
+    }
+
+    toHtml() {
+        return this.dom.outerHTML;
     }
 }

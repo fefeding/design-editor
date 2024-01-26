@@ -41,14 +41,17 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     set className(v: string);
     transform: JTransform;
     setDomStyle(name: string, value: string): void;
-    css(name: string | Object, value?: string): this;
-    attr(name: string, value: string | number | undefined): string | number;
+    css(name: string | Object, value?: string | number): this;
+    attr(name: string, value: string | number | undefined): any;
     bindEvent(): void;
     move(dx: any, dy: any): void;
     resize(w: any, h: any): void;
     addChild(child: JElement | HTMLElement, parent?: JElement): JElement<HTMLElement>;
     remove(): void;
     removeChild(el: JElement | HTMLElement): JElement<HTMLElement>[];
-    toJSON(): {};
+    toJSON(props?: any[]): {
+        children: any[];
+    };
     toString(): string;
+    toHtml(): string;
 }

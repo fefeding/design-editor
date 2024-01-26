@@ -105,5 +105,29 @@ export default {
             p.y = x1 * sin + y1 * cos + center.y;
         }
         return p;
+    },
+
+    // 设置样式
+    css(dom: any, name: string|Object, value?: string|number) {
+        if(!name) return;
+        if(typeof name === 'object') {
+            for(const n of Object.getOwnPropertyNames(name)) {
+                this.css(dom, n, name[n]);
+            }
+        }
+        else {
+            dom.style[name] = value;
+        }
+        return this;
+    },
+    // dom属性
+    attr(dom: any, name: string, value: string|number|undefined) {
+        if(typeof value !== 'undefined') {
+            dom.setAttribute(name, value+'');
+            return value;
+        }
+        else {
+            return dom.getAttribute(name);
+        }
     }
 }

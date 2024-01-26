@@ -40,5 +40,7 @@ declare const _default: {
         x: number;
         y: number;
     }, r: number): T;
+    css(dom: any, name: string | Object, value?: string | number): any;
+    attr(dom: any, name: string, value: string | number | undefined): any;
 };
 export default _default;
