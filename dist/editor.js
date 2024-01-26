@@ -24,42 +24,6 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (g && (g = 0, op[0] && (_ = 0)), _) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
@@ -87,11 +51,10 @@ var JEditor = /** @class */ (function (_super) {
             'boxShadow': '0 0 10px 10px #ccc',
             'position': 'absolute',
             'backgroundSize': '100% 100%',
-            'overflow': 'hidden'
         });
         // 外层只响应Z轴旋转
         option.transformWatchProps = [
-            'rotateZ'
+            'rotateZ', 'scaleX', 'scaleY'
         ];
         _this = _super.call(this, option) || this;
         // 所有支持的类型
@@ -111,17 +74,21 @@ var JEditor = /** @class */ (function (_super) {
                 'height': '100%',
             }
         });
-        // 变换改为控制主元素
-        _this.transform.bind({
-            target: _this.view,
+        /*// 变换改为控制主元素
+        this.transform.bind({
+            target: this.view,
             watchProps: [
                 'scaleX', 'scaleY'
             ]
+        });*/
+        _this.target.css({
+            'overflow': 'hidden'
         });
         if (option.container)
             option.container.appendChild(_this.view.dom);
         _this.view.addChild(_this.dom);
         _this.init(option);
+        _this.bindEvent(_this.view.dom);
         return _this;
     }
     // 初始化整个编辑器
@@ -134,7 +101,6 @@ var JEditor = /** @class */ (function (_super) {
             editor: this,
             visible: false
         });
-        this.view.addChild(this.ElementController.dom); // 加到外层
         var styleNode = document.createElement('style');
         styleNode.innerHTML = ".j-design-editor-container {\n                                    border: 0;\n                                }\n                                .j-design-editor-container:hover {\n                                    box-shadow: 0 0 1px 1px rgba(255,255,255,0.5);\n                                }";
         this.view.addChild(styleNode);
@@ -182,6 +148,11 @@ var JEditor = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    // 绑定事件
+    JEditor.prototype.bindEvent = function (dom) {
+        if (this.view)
+            _super.prototype.bindEvent.call(this, this.view.dom); // 编辑器事件绑到整个容器上
+    };
     // 选中某个元素
     JEditor.prototype.select = function (el) {
         // 选把所有已选择的取消
@@ -198,9 +169,9 @@ var JEditor = /** @class */ (function (_super) {
         this.attr('data-size', "".concat(width, "*").concat(height));
         this.width = width;
         this.height = height;
-        this.left = util.toNumber(this.view.width) / 2 - util.toNumber(width) / 2;
-        this.top = util.toNumber(this.view.height) / 2 - util.toNumber(height) / 2;
         setTimeout(function () {
+            _this.left = util.toNumber(_this.view.dom.clientWidth) / 2 - util.toNumber(width) / 2;
+            _this.top = util.toNumber(_this.view.dom.clientHeight) / 2 - util.toNumber(height) / 2;
             _this.emit('resize', {
                 width: width,
                 height: height
@@ -237,7 +208,7 @@ var JEditor = /** @class */ (function (_super) {
     // 把domcument坐标转为编辑器相对坐标
     JEditor.prototype.toEditorPosition = function (pos) {
         // 编辑器坐标
-        var editorPos = util.getElementPosition(this.dom);
+        var editorPos = util.getElementPosition(this.view.dom);
         return {
             x: pos.x - editorPos.x,
             y: pos.y - editorPos.y
@@ -252,6 +223,7 @@ var JEditor = /** @class */ (function (_super) {
             var el = this.children[i];
             this.removeChild(el);
         }
+        this.ElementController.visible = false;
     };
     // 缩放
     JEditor.prototype.scale = function (x, y) {
@@ -282,42 +254,8 @@ var JEditor = /** @class */ (function (_super) {
         var img = this.createShape('image', __assign(__assign({}, option), { url: url }));
         return img;
     };
-    // 转为图片数据
-    JEditor.prototype.toImage = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                return [2 /*return*/];
-            });
-        });
-    };
-    JEditor.prototype.toJSON = function () {
-        var e_2, _a;
-        var data = _super.prototype.toJSON.call(this);
-        try {
-            for (var _b = __values(this.children), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var c = _c.value;
-                if (!c.type || c === this)
-                    continue;
-                if (c.toJSON) {
-                    data.children.push(c.toJSON());
-                }
-            }
-        }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-            }
-            finally { if (e_2) throw e_2.error; }
-        }
-        return data;
-    };
-    JEditor.prototype.toString = function () {
-        var data = this.toJSON();
-        return JSON.stringify(data);
-    };
     JEditor.prototype.fromJSON = function (data) {
-        var e_3, _a;
+        var e_2, _a;
         this.clear();
         if (typeof data === 'string')
             data = JSON.parse(data);
@@ -334,12 +272,12 @@ var JEditor = /** @class */ (function (_super) {
                 this.addChild(item);
             }
         }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_3) throw e_3.error; }
+            finally { if (e_2) throw e_2.error; }
         }
     };
     return JEditor;

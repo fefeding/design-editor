@@ -73,7 +73,7 @@ var JElementStyle = /** @class */ (function (_super) {
                 var name_1 = _c.value;
                 if (typeof name_1 !== 'string')
                     continue;
-                if (typeof data[name_1] === 'string') {
+                if (typeof data[name_1] === 'string' || typeof data[name_1] === 'number') {
                     if (target instanceof JElementStyle) {
                         target.setStyle(name_1, data[name_1]);
                     }

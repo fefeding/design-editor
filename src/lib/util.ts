@@ -78,6 +78,14 @@ export default {
             pos.y += el.y;
         } 
         return pos;
+    },   
+    // 把domcument坐标转为指定元素相对坐标
+    toDomPosition(pos: {x: number, y: number}, dom: HTMLElement) {
+        const domPos = this.getElementPosition(dom);
+        return {
+            x: pos.x - domPos.x,
+            y: pos.y - domPos.y
+        };
     },
     /**
      * 把一个或多个点绕某个点旋转一定角度

@@ -21,6 +21,13 @@ declare const _default: {
         y: number;
         x: number;
     };
+    toDomPosition(pos: {
+        x: number;
+        y: number;
+    }, dom: HTMLElement): {
+        x: number;
+        y: number;
+    };
     /**
      * 把一个或多个点绕某个点旋转一定角度
      * 先把坐标原点移到旋转中心点，计算后移回

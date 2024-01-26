@@ -536,13 +536,13 @@ export { JElementStyleProperty };
 // 最外层容器默认样式
 export var ContainerDefaultStyle = {
     position: 'absolute',
-    left: 0,
-    top: 0,
-    width: 10,
-    height: 10,
+    left: '0',
+    top: '0',
+    width: '10px',
+    height: '10px',
     right: 'auto',
     bottom: 'auto',
     padding: '0',
     margin: '0',
-    overflow: 'auto'
+    overflow: 'visible'
 };

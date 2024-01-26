@@ -75,11 +75,6 @@ var JElement = /** @class */ (function (_super) {
         _this.type = _this.type || option.type || '';
         var nodeType = option.nodeType || 'div';
         _this.dom = document.createElement(nodeType);
-        // 事件托管
-        _this.event = new JEvent(_this.dom);
-        _this.event.init(function (e) {
-            _this.emit(e.type, e);
-        });
         // 样式代理处理
         _this.style = JStyle.createProxy();
         _this.style.on('change', function (s) {
@@ -94,6 +89,7 @@ var JElement = /** @class */ (function (_super) {
             watchProps: option.transformWatchProps
         });
         _this.initOption(option);
+        _this.bindEvent(); // 事件绑定
         return _this;
     }
     // 初始化一些基础属性
@@ -112,6 +108,15 @@ var JElement = /** @class */ (function (_super) {
             this.visible = !!option.visible;
         if (option.className)
             this.className = option.className;
+    };
+    // 绑定事件
+    JElement.prototype.bindEvent = function (dom) {
+        var _this = this;
+        // 事件托管
+        this.event = new JEvent(dom || this.dom);
+        this.event.init(function (e) {
+            _this.emit(e.type, e);
+        });
     };
     Object.defineProperty(JElement.prototype, "children", {
         get: function () {
@@ -190,9 +195,10 @@ var JElement = /** @class */ (function (_super) {
     });
     Object.defineProperty(JElement.prototype, "width", {
         get: function () {
-            if (this.dom && this.dom.clientWidth)
+            var w = this.style.width || 0;
+            if (!w && this.dom && this.dom.clientWidth)
                 return this.dom.clientWidth;
-            return this.style.width || 0;
+            return w;
         },
         set: function (v) {
             this.style.width = v;
@@ -202,9 +208,10 @@ var JElement = /** @class */ (function (_super) {
     });
     Object.defineProperty(JElement.prototype, "height", {
         get: function () {
-            if (this.dom && this.dom.clientHeight)
+            var h = this.style.height || 0;
+            if (!h && this.dom && this.dom.clientHeight)
                 return this.dom.clientHeight;
-            return this.style.height || 0;
+            return h;
         },
         set: function (v) {
             this.style.height = v;
@@ -282,38 +289,6 @@ var JElement = /** @class */ (function (_super) {
     JElement.prototype.attr = function (name, value) {
         return util.attr(this.dom, name, value);
     };
-    /*
-    // 被选中
-    get selected() {
-        return this._selected;
-    }
-    set selected(v) {
-        if(v) this.editor.controlElement.bind(this);
-        else {
-            this.editor.controlElement.unbind(this);
-        }
-        this.propertyChange('selected', v, this._selected);
-        this._selected = v;
-    }*/
-    JElement.prototype.bindEvent = function () {
-        /*
-        
-        this.container.on('pointerdown', function(event) {
-            this.emit('pointerdown', event);
-        }, this);
-        this.container.on('pointerup', function(event) {
-            this.emit('pointerup', event);
-        }, this);
-        this.container.on('pointerenter', function(event) {
-            this.emit('pointerenter', event);
-        }, this);
-        this.container.on('pointerleave', function(event) {
-            this.emit('pointerleave', event);
-        }, this);
-        this.container.on('pointerout', function(event) {
-            this.emit('pointerout', event);
-        }, this);*/
-    };
     // 移位
     JElement.prototype.move = function (dx, dy) {
         this.left = util.toNumber(this.left) + dx;
@@ -375,9 +350,10 @@ var JElement = /** @class */ (function (_super) {
         delete el.parent;
     };
     // 转为json
-    JElement.prototype.toJSON = function (props) {
+    JElement.prototype.toJSON = function (props, ig) {
         var e_2, _a, e_3, _b;
         if (props === void 0) { props = []; }
+        if (ig === void 0) { ig = function (p) { return true; }; }
         var fields = __spreadArray(['left', 'top', 'width', 'height', 'rotation', 'type', 'style', 'transform', 'id'], __read(props), false);
         var obj = {
             children: []
@@ -406,7 +382,7 @@ var JElement = /** @class */ (function (_super) {
             try {
                 for (var _c = __values(this.children), _d = _c.next(); !_d.done; _d = _c.next()) {
                     var child = _d.value;
-                    if (child === this)
+                    if (child === this || ig(child) === false)
                         continue;
                     obj.children.push(child.toJSON());
                 }

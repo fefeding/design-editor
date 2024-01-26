@@ -94,6 +94,14 @@ export default {
         }
         return pos;
     },
+    // 把domcument坐标转为指定元素相对坐标
+    toDomPosition: function (pos, dom) {
+        var domPos = this.getElementPosition(dom);
+        return {
+            x: pos.x - domPos.x,
+            y: pos.y - domPos.y
+        };
+    },
     /**
      * 把一个或多个点绕某个点旋转一定角度
      * 先把坐标原点移到旋转中心点，计算后移回

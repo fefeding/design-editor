@@ -146,6 +146,7 @@ export default class JControllerComponent extends JControllerItem {
         this.init(option);
         // html2canvas不渲染
         this.attr('data-html2canvas-ignore', 'true');
+        this.editor.dom.appendChild(this.dom);
     }
 
     init(option) {
@@ -462,10 +463,8 @@ export default class JControllerComponent extends JControllerItem {
             y: util.toNumber(this.top) + util.toNumber(this.height)/2,
         };
         // 编辑器坐标
-        // @ts-ignore
-        const pos1 = this.editor.toEditorPosition(oldPosition);
-        // @ts-ignore
-        const pos2 = this.editor.toEditorPosition(newPosition);
+        const pos1 = util.toDomPosition(oldPosition, this.editor.dom);
+        const pos2 = util.toDomPosition(newPosition, this.editor.dom);
 
         // 因为center是相对于编辑器的，所以事件坐标也需要转到编辑器
         const cx1 = pos1.x - center.x;
@@ -501,8 +500,19 @@ export default class JControllerComponent extends JControllerItem {
 
         if(!this.target) return;
 
-        this.target.left = util.toNumber(this.left) - (this.isEditor? 0 : util.toNumber(this.editor.left)) + this.paddingSize;
-        this.target.top = util.toNumber(this.top) - (this.isEditor? 0 : util.toNumber(this.editor.top)) + this.paddingSize;
+        const pos = {
+            x: util.toNumber(this.left) + (this.isEditor?util.toNumber(this.target.left):0),
+            y: util.toNumber(this.top) + (this.isEditor?util.toNumber(this.target.top):0)
+        };     
+
+        this.target.left = pos.x;
+        this.target.top = pos.y;
+
+        // 编辑器相对位置一直是0
+        if(this.isEditor) {
+            this.left = 0;
+            this.top = 0;
+        }
 
         this.target.transform.from({
             //skewX: this.transform.skewX,
@@ -536,8 +546,14 @@ export default class JControllerComponent extends JControllerItem {
         this.isEditor = target === this.editor;
         this.reset(this.isEditor);
 
-        this.left = util.toNumber(target.left) + (this.isEditor? 0 : util.toNumber(this.editor.left)) - this.paddingSize;
-        this.top = util.toNumber(target.top) + (this.isEditor? 0 : util.toNumber(this.editor.top)) - this.paddingSize;
+        // 编辑器的话，需要把它的坐标转为相对于容器的
+        const pos = {
+            x: (this.isEditor? 0: util.toNumber(target.left)),
+            y: (this.isEditor? 0: util.toNumber(target.top))
+        };        
+        
+        this.left = pos.x;
+        this.top = pos.y;
 
         this.width = util.toNumber(target.width) + this.paddingSize * 2;
         this.height = util.toNumber(target.height) + this.paddingSize * 2;

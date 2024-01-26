@@ -1087,6 +1087,14 @@ var util = {
         }
         return pos;
     },
+    // 把domcument坐标转为指定元素相对坐标
+    toDomPosition: function (pos, dom) {
+        var domPos = this.getElementPosition(dom);
+        return {
+            x: pos.x - domPos.x,
+            y: pos.y - domPos.y
+        };
+    },
     /**
      * 把一个或多个点绕某个点旋转一定角度
      * 先把坐标原点移到旋转中心点，计算后移回
@@ -2240,6 +2248,7 @@ var JControllerComponent = /** @class */ (function (_super) {
         _this.init(option);
         // html2canvas不渲染
         _this.attr('data-html2canvas-ignore', 'true');
+        _this.editor.dom.appendChild(_this.dom);
         return _this;
     }
     JControllerComponent.prototype.init = function (option) {
@@ -2481,10 +2490,8 @@ var JControllerComponent = /** @class */ (function (_super) {
             y: util.toNumber(this.top) + util.toNumber(this.height) / 2,
         };
         // 编辑器坐标
-        // @ts-ignore
-        var pos1 = this.editor.toEditorPosition(oldPosition);
-        // @ts-ignore
-        var pos2 = this.editor.toEditorPosition(newPosition);
+        var pos1 = util.toDomPosition(oldPosition, this.editor.dom);
+        var pos2 = util.toDomPosition(newPosition, this.editor.dom);
         // 因为center是相对于编辑器的，所以事件坐标也需要转到编辑器
         var cx1 = pos1.x - center.x;
         var cy1 = pos1.y - center.y;
@@ -2516,8 +2523,17 @@ var JControllerComponent = /** @class */ (function (_super) {
     JControllerComponent.prototype.applyToTarget = function () {
         if (!this.target)
             return;
-        this.target.left = util.toNumber(this.left) - (this.isEditor ? 0 : util.toNumber(this.editor.left)) + this.paddingSize;
-        this.target.top = util.toNumber(this.top) - (this.isEditor ? 0 : util.toNumber(this.editor.top)) + this.paddingSize;
+        var pos = {
+            x: util.toNumber(this.left) + (this.isEditor ? util.toNumber(this.target.left) : 0),
+            y: util.toNumber(this.top) + (this.isEditor ? util.toNumber(this.target.top) : 0)
+        };
+        this.target.left = pos.x;
+        this.target.top = pos.y;
+        // 编辑器相对位置一直是0
+        if (this.isEditor) {
+            this.left = 0;
+            this.top = 0;
+        }
         this.target.transform.from({
             //skewX: this.transform.skewX,
             //skewY: this.transform.skewY,
@@ -2559,8 +2575,13 @@ var JControllerComponent = /** @class */ (function (_super) {
     JControllerComponent.prototype.bind = function (target) {
         this.isEditor = target === this.editor;
         this.reset(this.isEditor);
-        this.left = util.toNumber(target.left) + (this.isEditor ? 0 : util.toNumber(this.editor.left)) - this.paddingSize;
-        this.top = util.toNumber(target.top) + (this.isEditor ? 0 : util.toNumber(this.editor.top)) - this.paddingSize;
+        // 编辑器的话，需要把它的坐标转为相对于容器的
+        var pos = {
+            x: (this.isEditor ? 0 : util.toNumber(target.left)),
+            y: (this.isEditor ? 0 : util.toNumber(target.top))
+        };
+        this.left = pos.x;
+        this.top = pos.y;
         this.width = util.toNumber(target.width) + this.paddingSize * 2;
         this.height = util.toNumber(target.height) + this.paddingSize * 2;
         this.transform.from({
@@ -2597,11 +2618,10 @@ var JEditor = /** @class */ (function (_super) {
             'boxShadow': '0 0 10px 10px #ccc',
             'position': 'absolute',
             'backgroundSize': '100% 100%',
-            'overflow': 'hidden'
         });
         // 外层只响应Z轴旋转
         option.transformWatchProps = [
-            'rotateZ'
+            'rotateZ', 'scaleX', 'scaleY'
         ];
         _this = _super.call(this, option) || this;
         // 所有支持的类型
@@ -2621,12 +2641,15 @@ var JEditor = /** @class */ (function (_super) {
                 'height': '100%',
             }
         });
-        // 变换改为控制主元素
-        _this.transform.bind({
-            target: _this.view,
+        /*// 变换改为控制主元素
+        this.transform.bind({
+            target: this.view,
             watchProps: [
                 'scaleX', 'scaleY'
             ]
+        });*/
+        _this.target.css({
+            'overflow': 'hidden'
         });
         if (option.container)
             option.container.appendChild(_this.view.dom);
@@ -2767,6 +2790,7 @@ var JEditor = /** @class */ (function (_super) {
             var el = this.children[i];
             this.removeChild(el);
         }
+        this.ElementController.visible = false;
     };
     // 缩放
     JEditor.prototype.scale = function (x, y) {

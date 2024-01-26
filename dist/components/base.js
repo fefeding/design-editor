@@ -29,11 +29,18 @@ import JElement from '../core/element';
 var JBaseComponent = /** @class */ (function (_super) {
     __extends(JBaseComponent, _super);
     function JBaseComponent(option) {
-        var _this = _super.call(this, __assign(__assign({ 
+        var _this = this;
+        option.style = option.style || {};
+        // position和overflow预设的值优先级最高
+        option.style = Object.assign(__assign({}, ContainerDefaultStyle), option.style, {
+            position: ContainerDefaultStyle.position,
+            overflow: ContainerDefaultStyle.overflow
+        });
+        _this = _super.call(this, __assign(__assign({ 
             // 外层只响应Z轴旋转
             transformWatchProps: [
                 'rotateZ', 'scaleX', 'scaleY'
-            ] }, option), { nodeType: 'div', className: 'j-design-editor-container', style: __assign({}, ContainerDefaultStyle) })) || this;
+            ] }, option), { nodeType: 'div', className: 'j-design-editor-container' })) || this;
         // 选中
         _this._selected = false;
         option.target = option.target || {};
@@ -53,8 +60,7 @@ var JBaseComponent = /** @class */ (function (_super) {
             ]
         });
         // 刷新样式
-        if (option.style)
-            _this.style.apply(option.style);
+        _this.style.refresh();
         return _this;
     }
     Object.defineProperty(JBaseComponent.prototype, "selected", {
@@ -77,6 +83,14 @@ var JBaseComponent = /** @class */ (function (_super) {
         else {
             this.target && this.target.css(name, value);
         }
+    };
+    JBaseComponent.prototype.toJSON = function (props) {
+        var _this = this;
+        if (props === void 0) { props = []; }
+        // 转json忽略渲染组件
+        return _super.prototype.toJSON.call(this, props, function (el) {
+            return el !== _this.target;
+        });
     };
     return JBaseComponent;
 }(JElement));

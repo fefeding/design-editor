@@ -73,9 +73,9 @@
 
 	container.appendChild(editor.view.dom);
 
-	// 大小改变后居中
+	// 大小改变后居中, 并且显示全部
 	editor.on('resize', function (size) {
-		const scale = Math.min(this.view.width / (this.width * 1.2), this.view.height / (this.height * 1.2));
+		const scale = Math.min(this.view.dom.clientWidth / (this.width * 1.4), this.view.dom.clientHeight / (this.height * 1.4));
 		if (scale < 1 && scale < this.transform.scaleX) {
 			this.scale(scale);
 		}
@@ -177,6 +177,7 @@
 	const preview = document.getElementById('previewImg');
 	async function createPreivew() {
 		// https://github.com/bubkoo/html-to-image
+        // 截图取target的dom节点，才是真的编辑渲染区域
 		const img = await window.htmlToImage.toPng(editor.target.dom);
 		preview.src = img;
 

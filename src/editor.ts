@@ -12,12 +12,11 @@ export default class JEditor extends JBase {
         Object.assign(option.style, {
             'boxShadow': '0 0 10px 10px #ccc',
             'position': 'absolute',
-            'backgroundSize': '100% 100%',
-            'overflow': 'hidden'
+            'backgroundSize': '100% 100%',            
         });
         // 外层只响应Z轴旋转
         option.transformWatchProps = [
-            'rotateZ'
+            'rotateZ', 'scaleX', 'scaleY'
         ];
         super(option);
 
@@ -32,12 +31,16 @@ export default class JEditor extends JBase {
                 'height': '100%',
             }
         });
-        // 变换改为控制主元素
+        /*// 变换改为控制主元素
         this.transform.bind({
             target: this.view,
             watchProps: [
                 'scaleX', 'scaleY'
             ]
+        });*/
+        
+        this.target.css({
+            'overflow': 'hidden'
         });
         if(option.container) option.container.appendChild(this.view.dom); 
         this.view.addChild(this.dom);
@@ -186,6 +189,7 @@ export default class JEditor extends JBase {
             const el = this.children[i];
             this.removeChild(el);
         }
+        this.ElementController.visible = false;
     }
 
     // 缩放
