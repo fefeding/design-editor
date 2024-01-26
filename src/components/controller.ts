@@ -106,7 +106,7 @@ export class JControllerItem extends JElement<HTMLDivElement> {
             x: pos.x,
             y: pos.y,
         };
-        console.log('start', this.dragStartPosition);
+        
         this.isMoving = true;
 
         event.stopPropagation && event.stopPropagation();

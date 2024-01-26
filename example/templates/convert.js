@@ -56,9 +56,9 @@ function convertElement(el) {
             }
         }
         if(k === 'fontSize' && v && !(v+'').includes('px')) {
-            if(res.style['lineHeight'] && !(res.style['lineHeight']+'').includes('px')) {
-                res.style['lineHeight'] = (v * res.style['lineHeight']) + 'px';
-            }
+            res.style[k] = v + 'px';
+        }
+        if(k === 'lineHeight' && v && !(v+'').includes('px')) {
             res.style[k] = v + 'px';
         }
         
