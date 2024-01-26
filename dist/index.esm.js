@@ -2645,7 +2645,6 @@ var JEditor = /** @class */ (function (_super) {
             editor: this,
             visible: false
         });
-        this.view.addChild(this.ElementController.dom); // 加到外层
         var styleNode = document.createElement('style');
         styleNode.innerHTML = ".j-design-editor-container {\n                                    border: 0;\n                                }\n                                .j-design-editor-container:hover {\n                                    box-shadow: 0 0 1px 1px rgba(255,255,255,0.5);\n                                }";
         this.view.addChild(styleNode);

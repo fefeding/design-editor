@@ -57,7 +57,7 @@ export default class JEditor extends JBase {
             editor: this,
             visible: false
         });
-        this.view.addChild(this.ElementController.dom);// 加到外层
+        
         const styleNode = document.createElement('style');
         styleNode.innerHTML = `.j-design-editor-container {
                                     border: 0;
