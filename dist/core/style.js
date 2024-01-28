@@ -24,9 +24,8 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
-import JElementStyleMap, { JElementStyleProperty } from '../constant/styleMap';
+import JElementCssStyle from '../constant/styleMap';
 import util from '../lib/util';
-var StyleNamesMap = [];
 var NumberStyleMap = ['left', 'top', 'right', 'bottom', 'width', 'height'];
 var JElementStyle = /** @class */ (function (_super) {
     __extends(JElementStyle, _super);
@@ -37,36 +36,9 @@ var JElementStyle = /** @class */ (function (_super) {
         }
         return _this;
     }
-    Object.defineProperty(JElementStyle.prototype, "names", {
-        // 所有样式名称
-        get: function () {
-            var e_1, _a;
-            if (!StyleNamesMap.length) {
-                var map = new JElementStyleProperty();
-                var keys = Object.getOwnPropertyNames(map);
-                try {
-                    for (var keys_1 = __values(keys), keys_1_1 = keys_1.next(); !keys_1_1.done; keys_1_1 = keys_1.next()) {
-                        var k = keys_1_1.value;
-                        if (typeof map[k] === 'string')
-                            StyleNamesMap.push(k);
-                    }
-                }
-                catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                finally {
-                    try {
-                        if (keys_1_1 && !keys_1_1.done && (_a = keys_1.return)) _a.call(keys_1);
-                    }
-                    finally { if (e_1) throw e_1.error; }
-                }
-            }
-            return StyleNamesMap;
-        },
-        enumerable: false,
-        configurable: true
-    });
     // 把样式应用到元素或当前对象
     JElementStyle.prototype.apply = function (data, target) {
-        var e_2, _a;
+        var e_1, _a;
         if (target === void 0) { target = this; }
         try {
             for (var _b = __values(this.names), _c = _b.next(); !_c.done; _c = _b.next()) {
@@ -83,12 +55,12 @@ var JElementStyle = /** @class */ (function (_super) {
                 }
             }
         }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_2) throw e_2.error; }
+            finally { if (e_1) throw e_1.error; }
         }
         return target;
     };
@@ -110,7 +82,7 @@ var JElementStyle = /** @class */ (function (_super) {
     };
     // 转为json
     JElementStyle.prototype.toJSON = function () {
-        var e_3, _a;
+        var e_2, _a;
         var obj = {};
         try {
             for (var _b = __values(this.names), _c = _b.next(); !_c.done; _c = _b.next()) {
@@ -120,12 +92,12 @@ var JElementStyle = /** @class */ (function (_super) {
                 obj[name_2] = this[name_2];
             }
         }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_3) throw e_3.error; }
+            finally { if (e_2) throw e_2.error; }
         }
         return obj;
     };
@@ -163,5 +135,5 @@ var JElementStyle = /** @class */ (function (_super) {
         return proxy;
     };
     return JElementStyle;
-}(JElementStyleMap));
+}(JElementCssStyle));
 export default JElementStyle;

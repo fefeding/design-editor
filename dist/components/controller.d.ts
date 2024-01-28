@@ -1,9 +1,10 @@
 import JElement from '../core/element';
-export declare class JControllerItem extends JElement<HTMLDivElement> {
+import { IJControllerItem, IJControllerComponent, IJBaseComponent, IJEditor } from '../constant/types';
+export declare class JControllerItem extends JElement<HTMLDivElement> implements IJControllerItem {
     constructor(option: any);
     dir: string;
     size: number;
-    editor: JElement;
+    editor: IJEditor;
     protected _isMoving: boolean;
     get isMoving(): boolean;
     set isMoving(v: boolean);
@@ -25,13 +26,13 @@ export declare class JControllerItem extends JElement<HTMLDivElement> {
     }): void;
     resetCursor(rotation: number): void;
 }
-export default class JControllerComponent extends JControllerItem {
+export default class JControllerComponent extends JControllerItem implements IJControllerComponent {
     constructor(option: any);
     init(option: any): void;
     items: JControllerItem[];
     rotateItem: JControllerItem;
     skewItem: JControllerItem;
-    target: JElement;
+    target: IJBaseComponent;
     paddingSize: number;
     isEditor: boolean;
     createItem(id: any, option: any): JControllerItem;
@@ -43,6 +44,6 @@ export default class JControllerComponent extends JControllerItem {
     rotateChange(e: any, args: any): void;
     applyToTarget(): void;
     reset(isEditor?: boolean): void;
-    bind(target: JElement): void;
-    unbind(target: JElement): void;
+    bind(target: IJBaseComponent): void;
+    unbind(target: IJBaseComponent): void;
 }

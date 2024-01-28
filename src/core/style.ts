@@ -1,31 +1,18 @@
-import JElementStyleMap, { JElementStyleProperty } from '../constant/styleMap';
+import JElementCssStyle, { JElementStyleDeclaration, JElementStyleProperty } from '../constant/styleMap';
 import util from '../lib/util';
 
-const StyleNamesMap = [] as Array<string>;
 const NumberStyleMap = ['left', 'top', 'right', 'bottom', 'width', 'height'];
 
-export default class JElementStyle extends JElementStyleMap {
-    constructor(option?: JElementStyleMap) {
+export default class JElementStyle extends JElementCssStyle {
+    constructor(option?: JElementStyleDeclaration) {
         super();
         if(option) {            
             this.apply(option);
         }
     }
 
-    // 所有样式名称
-    get names() {
-        if(!StyleNamesMap.length) {
-            const map = new JElementStyleProperty();
-            const keys = Object.getOwnPropertyNames(map);
-            for(const k of keys) {
-                if(typeof map[k] === 'string') StyleNamesMap.push(k);
-            }
-        }
-        return StyleNamesMap;
-    }
-
     // 把样式应用到元素或当前对象
-    apply(data: JElementStyleMap, target: CSSStyleDeclaration | JElementStyle = this) {
+    apply(data: JElementStyleDeclaration, target: CSSStyleDeclaration | JElementStyleDeclaration = this) {
         
         for(const name of this.names) {
             if(typeof name !== 'string') continue;
@@ -62,7 +49,7 @@ export default class JElementStyle extends JElementStyleMap {
 
     // 转为json
     toJSON() {
-        const obj = {} as JElementStyleMap;
+        const obj = {} as JElementStyleProperty;
         for(const name of this.names) {
             if(typeof this[name] === 'undefined') continue;
             obj[name] = this[name];

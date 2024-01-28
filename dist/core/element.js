@@ -58,6 +58,7 @@ import JEvent from '../core/event';
 var JElement = /** @class */ (function (_super) {
     __extends(JElement, _super);
     function JElement(option) {
+        if (option === void 0) { option = {}; }
         var _this = _super.call(this) || this;
         _this.id = '';
         // 类型名称
@@ -329,7 +330,7 @@ var JElement = /** @class */ (function (_super) {
             parent.dom.appendChild(child.dom);
             parent.children.push(child);
         }
-        else {
+        else if (child instanceof HTMLElement) {
             parent.dom.appendChild(child);
         }
     };

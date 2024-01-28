@@ -1,7 +1,10 @@
 
 import EventEmiter from 'eventemitter3';
+
+const StyleNamesMap = [] as Array<string>;
+
 // 支持的样式属性列表
-export default class JElementStyleMap extends EventEmiter {
+export class JElementStyleDeclaration extends EventEmiter {
     accentColor?: string;
     alignContent?: string;
     alignItems?: string;
@@ -413,7 +416,7 @@ export default class JElementStyleMap extends EventEmiter {
 
 
 // 样式属性集合
-export class JElementStyleProperty extends JElementStyleMap {
+export class JElementStyleProperty {
     accentColor: string='';
     alignContent: string='';
     alignItems: string='';
@@ -891,6 +894,35 @@ export class JElementStyleProperty extends JElementStyleMap {
     wordWrap: string='';
     writingMode: string='';
     zIndex: string='';
+}
+
+export default abstract class JElementCssStyle extends JElementStyleDeclaration {
+    // 所有样式名称
+    get names() {
+        if(!StyleNamesMap.length) {
+            const map = new JElementStyleProperty();
+            const keys = Object.getOwnPropertyNames(map);
+            for(const k of keys) {
+                if(typeof map[k] === 'string') StyleNamesMap.push(k);
+            }
+        }
+        return StyleNamesMap;
+    }
+
+    // 把样式应用到元素或当前对象
+    abstract apply(data: JElementStyleDeclaration, target?: CSSStyleDeclaration | JElementStyleDeclaration);
+
+    // 样式对应的元素
+    abstract applyTo(element: HTMLElement);
+
+    // 设置样式
+    abstract setStyle(name, value);
+
+    // 触发所有更新到dom
+    abstract refresh();
+
+    // 转为json
+    abstract toJSON(): JElementStyleProperty;
 }
 
 // 最外层容器默认样式

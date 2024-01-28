@@ -29,6 +29,7 @@ import JElement from '../core/element';
 var JBaseComponent = /** @class */ (function (_super) {
     __extends(JBaseComponent, _super);
     function JBaseComponent(option) {
+        if (option === void 0) { option = {}; }
         var _this = this;
         option.style = option.style || {};
         // position和overflow预设的值优先级最高

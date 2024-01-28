@@ -1,5 +1,5 @@
 import EventEmiter from 'eventemitter3';
-export default class JElementStyleMap extends EventEmiter {
+export declare class JElementStyleDeclaration extends EventEmiter {
     accentColor?: string;
     alignContent?: string;
     alignItems?: string;
@@ -408,7 +408,7 @@ export default class JElementStyleMap extends EventEmiter {
     writingMode?: string;
     zIndex?: string;
 }
-export declare class JElementStyleProperty extends JElementStyleMap {
+export declare class JElementStyleProperty {
     accentColor: string;
     alignContent: string;
     alignItems: string;
@@ -886,6 +886,14 @@ export declare class JElementStyleProperty extends JElementStyleMap {
     wordWrap: string;
     writingMode: string;
     zIndex: string;
+}
+export default abstract class JElementCssStyle extends JElementStyleDeclaration {
+    get names(): string[];
+    abstract apply(data: JElementStyleDeclaration, target?: CSSStyleDeclaration | JElementStyleDeclaration): any;
+    abstract applyTo(element: HTMLElement): any;
+    abstract setStyle(name: any, value: any): any;
+    abstract refresh(): any;
+    abstract toJSON(): JElementStyleProperty;
 }
 export declare const ContainerDefaultStyle: {
     position: string;

@@ -1,8 +1,8 @@
 import Base from './base';
-import JElement from '../core/element';
+import { IJBaseComponent } from '../constant/types';
 
-export default class JText extends Base<HTMLDivElement> {
-    constructor(option) {
+export default class JText extends Base<HTMLDivElement> implements IJBaseComponent {
+    constructor(option = {} as any) {
         super({
             ...option,
             nodeType: 'div'
