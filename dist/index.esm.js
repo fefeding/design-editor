@@ -2614,6 +2614,7 @@ var JControllerComponent = /** @class */ (function (_super) {
     JControllerComponent.prototype.unbind = function (target) {
         if (this.target === target) {
             this.reset(false);
+            this.visible = false;
         }
     };
     return JControllerComponent;
@@ -2734,10 +2735,11 @@ var JEditor = /** @class */ (function (_super) {
     };
     // 选中某个元素
     JEditor.prototype.select = function (el) {
-        // 选把所有已选择的取消
-        this.selectedElements.every(function (p) { return p !== el && p.selected && (p.selected = false); });
-        if (el.selected)
+        if (el.selected) {
+            // 选把所有已选择的取消
+            this.selectedElements.every(function (p) { return p !== el && p.selected && (p.selected = false); });
             this.elementController.bind(el);
+        }
         else
             this.elementController.unbind(el);
     };

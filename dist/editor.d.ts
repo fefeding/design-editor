@@ -12,7 +12,7 @@ export default class JEditor extends JBase implements IJEditor {
     get children(): IJElement<HTMLElement>[];
     get selectedElements(): Array<JBase>;
     bindEvent(dom?: HTMLElement): void;
-    select(el: JBase): void;
+    select(el: IJBaseComponent): void;
     resize(width?: string | number, height?: string | number): void;
     addChild(child: IJBaseComponent): IJElement<HTMLElement>;
     removeChild(el: IJElement | HTMLElement): IJElement<HTMLElement>[];

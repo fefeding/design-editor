@@ -118,10 +118,12 @@ export default class JEditor extends JBase implements IJEditor {
     }
 
     // 选中某个元素
-    select(el: JBase) {
-        // 选把所有已选择的取消
-        this.selectedElements.every(p=> p !== el && p.selected && (p.selected = false));
-        if(el.selected) this.elementController.bind(el);
+    select(el: IJBaseComponent) {
+        if(el.selected) {
+            // 选把所有已选择的取消
+            this.selectedElements.every(p=> p !== el && p.selected && (p.selected = false));
+            this.elementController.bind(el);
+        }
         else this.elementController.unbind(el);
     }
 

@@ -579,6 +579,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
     unbind(target: IJBaseComponent) {
         if(this.target === target) {
            this.reset(false);
+           this.visible = false;
         }
     }
 }
