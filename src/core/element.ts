@@ -6,6 +6,7 @@ import util from '../lib/util';
 import JEvent from '../core/event';
 import JElementCssStyle from '../constant/styleMap';
 import { IJElement, ITransform, IJEditor } from '../constant/types';
+import { ElementData } from '../constant/data';
 
 export default class JElement<T extends HTMLElement = HTMLElement> extends EventEmiter  implements IJElement{
 
@@ -46,25 +47,37 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
             watchProps: option.transformWatchProps
         });
 
-        this.initOption(option);
+        this.initData(option);
+
+        if(option.editable === false) this.editable = false;
+        if(option.className) this.className = option.className;
         
         this.bindEvent();// 事件绑定
     }
     // 初始化一些基础属性
-    initOption(option) {
-        this.x = option.x || option.left || this.x || 0;
-        this.y = option.y || option.top || this.y || 0;
+    initData(option, type=ElementData) {
+        this.data = ElementData.createProxy(new type());
+        // 属性变化映射到style
+        this.data.watch([
+            'x', 'y', 'left', 'top', 'width', 'height', 'zIndex', 'visible'
+        ], (item) => {
+            if(item.name === 'visible') {
+                this.style.display = item.value? 'block': 'none';
+            }
+            else if(item.name === 'x') this.data.left = item.value;
+            else if(item.name === 'y') this.data.top = item.value;
+            else this.style[item.name] = item.value;
+        });
+        this.data.x = option.x || option.left || this.data.x || 0;
+        this.data.y = option.y || option.top || this.data.y || 0;
 
-        this.width = option.width || option.width || this.width || 1;
-        this.height = option.height || option.height || this.height || 1;
+        this.data.width = option.width || option.width || this.data.width || 1;
+        this.data.height = option.height || option.height || this.data.height || 1;
 
-        if(typeof option.rotation !== 'undefined') this.rotation = option.rotation;
-        if(typeof option.angle !== 'undefined') this.angle = option.angle;
-        if(typeof option.zIndex !== 'undefined') this.zIndex = option.zIndex;
-        if(typeof option.visible !== 'undefined') this.visible = !!option.visible;
-        if(option.className) this.className = option.className;
-
-        if(option.editable === false) this.editable = false;
+        if(typeof option.rotation !== 'undefined') this.data.rotation = option.rotation;
+        if(typeof option.angle !== 'undefined') this.data.angle = option.angle;
+        if(typeof option.zIndex !== 'undefined') this.data.zIndex = option.zIndex;
+        if(typeof option.visible !== 'undefined') this.data.visible = !!option.visible;
     }
 
     // 绑定事件
@@ -107,54 +120,11 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     // 样式代理
     style: JElementCssStyle;
 
-    // 坐标X
-    get x() {
-        const v = this.style.left || 0;
-        return v;
-    }
-    set x(v: number|string) {
-        this.style.left = v;
-    }
-    // 坐标Y
-    get y() {
-        const v = this.style.top || 0;
-        return v;
-    }
-    set y(v: number|string) {
-        this.style.top = v;
-    }
-    get top() {
-        return this.y;
-    }
-    set top(v: string | number) {
-        this.y = v;
-    }
-    get left() {
-        return this.x;
-    }
-    set left(v: string | number) {
-        this.x = v;
-    }
-    // 坐标right
-    get right() {
-        const v = this.style.right || 0;
-        return v;
-    }
-    set right(v: number|string) {
-        this.style.right = v;
-    }
-    // 坐标bottom
-    get bottom() {
-        const v = this.style.bottom || 0;
-        return v;
-    }
-    set bottom(v: number|string) {
-        this.style.bottom = v;
-    }
+    data: ElementData;
 
     get width() {
         let w = this.style.width || 0;
-        if(!w && this.dom && this.dom.clientWidth) return this.dom.clientWidth;
+        if((!w || w === 'auto') && this.dom && this.dom.clientWidth) return this.dom.clientWidth;
         return w;
     }
     set width(v) {
@@ -163,7 +133,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
 
     get height() {
         let h = this.style.height || 0;
-        if(!h && this.dom && this.dom.clientHeight) return this.dom.clientHeight;
+        if((!h || h === 'auto') && this.dom && this.dom.clientHeight) return this.dom.clientHeight;
         return h;
     }
     set height(v) {
@@ -192,13 +162,6 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     set visible(v) {
         this.style.display = v? 'block': 'none';
     }
-
-    get zIndex() {
-        return Number(this.style.zIndex || '0');
-    }
-    set zIndex(v: number) {
-        this.style.zIndex = v + '';
-    }    
     get className() {
         return this.dom.className;
     }

@@ -1,8 +1,15 @@
 import JElementCssStyle from './styleMap';
+import { ElementData } from './data';
 import EventEmitter from './eventEmitter';
 
 // 数据对象
 export interface IData {
+    // 监控某个属性变化
+    watch(name: string, fun: Function): IData;
+
+    // 属性改变
+    propertyChange(name: string, value: any);
+
     from(data: object): IData;
     toJSON(): object;
 }
@@ -110,6 +117,7 @@ export interface IJElement<T extends HTMLElement = HTMLElement> extends EventEmi
     editor: IJEditor;
     event: IJEvent;
     style: JElementCssStyle;
+    data: ElementData;
     get x(): number | string;
     set x(v: number | string);
     get y(): number | string;

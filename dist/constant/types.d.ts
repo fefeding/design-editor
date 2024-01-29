@@ -1,6 +1,8 @@
 import JElementCssStyle from './styleMap';
 import EventEmitter from './eventEmitter';
 export interface IData {
+    watch(name: string, fun: Function): IData;
+    propertyChange(name: string, value: any): any;
     from(data: object): IData;
     toJSON(): object;
 }

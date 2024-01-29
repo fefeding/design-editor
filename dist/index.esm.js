@@ -1940,7 +1940,7 @@ var JElement = /** @class */ (function (_super) {
     Object.defineProperty(JElement.prototype, "width", {
         get: function () {
             var w = this.style.width || 0;
-            if (!w && this.dom && this.dom.clientWidth)
+            if ((!w || w === 'auto') && this.dom && this.dom.clientWidth)
                 return this.dom.clientWidth;
             return w;
         },
@@ -1953,7 +1953,7 @@ var JElement = /** @class */ (function (_super) {
     Object.defineProperty(JElement.prototype, "height", {
         get: function () {
             var h = this.style.height || 0;
-            if (!h && this.dom && this.dom.clientHeight)
+            if ((!h || h === 'auto') && this.dom && this.dom.clientHeight)
                 return this.dom.clientHeight;
             return h;
         },
