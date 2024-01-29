@@ -46,7 +46,7 @@ var JBaseComponent = /** @class */ (function (_super) {
         _this._selected = false;
         option.target = option.target || {};
         // 生成当前控制的元素
-        _this.target = new JElement(__assign(__assign({}, option), { 
+        _this.target = new JElement(__assign(__assign({}, option), { visible: true, 
             // 不响应本身的变换，只响应父级的
             transformWatchProps: [], width: '100%', height: '100%', style: {
                 display: 'block',

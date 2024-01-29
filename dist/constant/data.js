@@ -24,7 +24,7 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
-import EventEmiter from 'eventemitter3';
+import EventEmiter from './eventEmitter';
 var JData = /** @class */ (function (_super) {
     __extends(JData, _super);
     function JData(data) {

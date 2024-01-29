@@ -1,5 +1,5 @@
 import { IData } from './types';
-import EventEmiter from 'eventemitter3';
+import EventEmiter from './eventEmitter';
 export default class JData extends EventEmiter implements IData {
     constructor(data?: {});
     from(data: object): JData;

@@ -2,6 +2,7 @@
 import util from '../lib/util';
 import JElement from './element';
 import { IJControllerItem, IJControllerComponent, IJBaseComponent, IJEditor } from '../constant/types';
+import { topZIndex } from '../constant/styleMap';
 
 // 鼠标指针
 const GCursors = {
@@ -74,9 +75,13 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
         y: 0,
     };
 
-    onDragMove(event: MouseEvent, pos: {x: number, y: number} = event) {
+    onDragMove(event: MouseEvent) {
         if(!this.isMoving) return;
         
+        const pos = {
+            x: event.pageX || event.x,
+            y: event.pageY || event.y,
+        };
         const offX = (pos.x - this.dragStartPosition.x);
         const offY = (pos.y - this.dragStartPosition.y);
         
@@ -100,12 +105,16 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
         event.preventDefault();
     }
     
-    onDragStart(event: MouseEvent, pos: {x: number, y: number} = event)   {
-        
+    onDragStart(event: MouseEvent)   {
+        const pos = {
+            x: event.pageX || event.x,
+            y: event.pageY || event.y,
+        };
+
         // 选中的是渲染层的坐标，转为控制层的
         this.dragStartPosition = {
             x: pos.x,
-            y: pos.y,
+            y: pos.y
         };
         
         this.isMoving = true;
@@ -137,7 +146,7 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
 // 元素大小位置控制器
 export default class JControllerComponent extends JControllerItem implements IJControllerComponent {
     constructor(option) {
-        option.zIndex = 100000;
+        option.zIndex = topZIndex;
         option.style = option.style || {};
         option.style.cursor = option.style.cursor || 'move';
         option.dir = 'element';
@@ -145,9 +154,14 @@ export default class JControllerComponent extends JControllerItem implements IJC
         //option.style.boxShadow = '0 0 2px 2px #ccc';
         super(option);
         this.init(option);
-        // html2canvas不渲染
-        this.attr('data-html2canvas-ignore', 'true');
         this.editor.dom.appendChild(this.dom);
+
+        // 双击事件透传给操作杆绑定的对象
+        this.on('dblclick', (e) => {
+            if(this.target) {
+                this.target.emit('dblclick', e);
+            }
+        });
     }
 
     init(option) {
@@ -464,14 +478,10 @@ export default class JControllerComponent extends JControllerItem implements IJC
             y: util.toNumber(this.top) + util.toNumber(this.height)/2,
         };
 
-        console.log(this.left, this.top, center, oldPosition, newPosition, this.editor.left, this.editor.top)
-
         // 编辑器坐标
-        const pos1 = util.toDomPosition(oldPosition, this.editor.target.dom);
-        const pos2 = util.toDomPosition(newPosition, this.editor.target.dom);
-
-        console.log(this.left, this.top, center, pos1, pos2)
-
+        const pos1 = this.editor.toEditorPosition(oldPosition);
+        const pos2 = this.editor.toEditorPosition(newPosition);
+        
         // 因为center是相对于编辑器的，所以事件坐标也需要转到编辑器
         const cx1 = pos1.x - center.x;
         const cy1 = pos1.y - center.y;
@@ -540,7 +550,6 @@ export default class JControllerComponent extends JControllerItem implements IJC
         // 编辑器不让旋转和skew
         for(const item of this.items) {
             item.isMoving = false;
-            item.visible = !isEditor;
         }
         this.transform.from({
              rotateZ: 0,
@@ -574,6 +583,11 @@ export default class JControllerComponent extends JControllerItem implements IJC
         });
         this.target = target;
         this.visible = true;
+
+        // 编辑器不让旋转和skew
+        for(const item of this.items) {
+            item.visible = !this.isEditor && target.editable;
+        }
 
         // 如果是编辑器，则不能捕获事件
         this.css({

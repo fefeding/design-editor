@@ -1,5 +1,5 @@
 import Base from '../core/baseComponent';
-import { IJBaseComponent } from 'src/constant/types';
+import { IJBaseComponent } from '../constant/types';
 export default class JImage extends Base<HTMLImageElement> implements IJBaseComponent {
     constructor(option?: any);
     get src(): string;

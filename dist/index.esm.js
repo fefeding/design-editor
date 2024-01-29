@@ -467,8 +467,77 @@ var eventemitter3 = {exports: {}};
 } (eventemitter3));
 
 var eventemitter3Exports = eventemitter3.exports;
-var EventEmitter = /*@__PURE__*/getDefaultExportFromCjs(eventemitter3Exports);
+var EventEmitter$1 = /*@__PURE__*/getDefaultExportFromCjs(eventemitter3Exports);
 
+var EventEmitter = /** @class */ (function (_super) {
+    __extends(EventEmitter, _super);
+    function EventEmitter() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    // 用空格分隔事件名
+    EventEmitter.prototype.splitEventNames = function (name) {
+        if (!name)
+            return [];
+        var arr = name.split(' ');
+        return arr;
+    };
+    /**
+     * Add a listener for a given event.
+     */
+    EventEmitter.prototype.on = function (event, fn, context) {
+        var e_1, _a;
+        if (typeof event === 'string') {
+            var events = this.splitEventNames(event);
+            if (events.length) {
+                try {
+                    for (var events_1 = __values(events), events_1_1 = events_1.next(); !events_1_1.done; events_1_1 = events_1.next()) {
+                        var name_1 = events_1_1.value;
+                        _super.prototype.on.call(this, name_1, fn, context);
+                    }
+                }
+                catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                finally {
+                    try {
+                        if (events_1_1 && !events_1_1.done && (_a = events_1.return)) _a.call(events_1);
+                    }
+                    finally { if (e_1) throw e_1.error; }
+                }
+            }
+        }
+        else {
+            _super.prototype.on.call(this, event, fn, context);
+        }
+        return this;
+    };
+    EventEmitter.prototype.off = function (event, fn, context, once) {
+        var e_2, _a;
+        if (typeof event === 'string') {
+            var events = this.splitEventNames(event);
+            if (events.length) {
+                try {
+                    for (var events_2 = __values(events), events_2_1 = events_2.next(); !events_2_1.done; events_2_1 = events_2.next()) {
+                        var name_2 = events_2_1.value;
+                        _super.prototype.off.call(this, name_2, fn, context);
+                    }
+                }
+                catch (e_2_1) { e_2 = { error: e_2_1 }; }
+                finally {
+                    try {
+                        if (events_2_1 && !events_2_1.done && (_a = events_2.return)) _a.call(events_2);
+                    }
+                    finally { if (e_2) throw e_2.error; }
+                }
+            }
+        }
+        else {
+            _super.prototype.off.call(this, event, fn, context);
+        }
+        return this;
+    };
+    return EventEmitter;
+}(EventEmitter$1));
+
+var topZIndex = 10000;
 // 支持的样式属性列表
 var JElementStyleDeclaration = /** @class */ (function (_super) {
     __extends(JElementStyleDeclaration, _super);
@@ -1005,6 +1074,8 @@ var ContainerDefaultStyle = {
     bottom: 'auto',
     padding: '0',
     margin: '0',
+    zIndex: '0',
+    display: 'inline-block',
     overflow: 'visible'
 };
 
@@ -1158,9 +1229,33 @@ var util = {
         }
         return pos;
     },
+    // 获取元素bounds
+    getElementBoundingRect: function (el) {
+        var bounds = {
+            height: 0,
+            width: 0,
+            x: 0,
+            y: 0
+        };
+        if (el.getBoundingClientRect) {
+            bounds = el.getBoundingClientRect();
+            var scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+            var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            bounds.x += scrollLeft;
+            bounds.y += scrollTop;
+        }
+        else {
+            var pos = this.getElementPosition(el);
+            bounds.x = pos.x;
+            bounds.y = pos.y;
+            bounds.width = el.clientWidth;
+            bounds.height = el.clientHeight;
+        }
+        return bounds;
+    },
     // 把domcument坐标转为指定元素相对坐标
     toDomPosition: function (pos, dom) {
-        var domPos = this.getElementPosition(dom);
+        var domPos = this.getElementBoundingRect(dom);
         return {
             x: pos.x - domPos.x,
             y: pos.y - domPos.y
@@ -1685,6 +1780,8 @@ var JElement = /** @class */ (function (_super) {
         _this._type = '';
         // 子元素
         _this._children = [];
+        // 是否可编辑
+        _this.editable = true;
         // 复制属性
         for (var k in option) {
             var v = option[k];
@@ -1732,6 +1829,8 @@ var JElement = /** @class */ (function (_super) {
             this.visible = !!option.visible;
         if (option.className)
             this.className = option.className;
+        if (option.editable === false)
+            this.editable = false;
     };
     // 绑定事件
     JElement.prototype.bindEvent = function (dom) {
@@ -2073,7 +2172,7 @@ var JBaseComponent = /** @class */ (function (_super) {
         _this._selected = false;
         option.target = option.target || {};
         // 生成当前控制的元素
-        _this.target = new JElement(__assign(__assign({}, option), { 
+        _this.target = new JElement(__assign(__assign({}, option), { visible: true, 
             // 不响应本身的变换，只响应父级的
             transformWatchProps: [], width: '100%', height: '100%', style: {
                 display: 'block',
@@ -2125,9 +2224,18 @@ var JText = /** @class */ (function (_super) {
     __extends(JText, _super);
     function JText(option) {
         if (option === void 0) { option = {}; }
-        var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'div' })) || this;
+        var _this = this;
+        option.style = __assign({ fontFamily: 'Arial', textAlign: 'left', fontSize: 22, fontWeight: 'normal', fontStyle: 'normal', wordWrap: true, wordBreak: "keep-all" }, option.style);
+        _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'div' })) || this;
         if (option.text)
             _this.text = option.text;
+        // 双击可编辑
+        _this.on('dblclick', function () {
+            _this.edit();
+        });
+        _this.on('select', function () {
+            _this.closeEdit();
+        });
         return _this;
     }
     Object.defineProperty(JText.prototype, "text", {
@@ -2140,6 +2248,55 @@ var JText = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    // 进入编辑状态
+    JText.prototype.edit = function () {
+        var _this = this;
+        if (!this.editable)
+            return;
+        var editEl = this.editor.textEditElement;
+        if (!editEl) {
+            editEl = this.editor.textEditElement = new JElement({
+                nodeType: 'textarea',
+                visible: false,
+                zIndex: topZIndex,
+                style: {
+                    boxSizing: 'border-box',
+                    padding: '4px',
+                    position: 'absolute',
+                    resize: 'both'
+                }
+            });
+            editEl.on('blur', function (e) {
+                _this.closeEdit();
+            });
+            editEl.on('click dblclick mousedown', function (e) {
+                e.stopPropagation();
+            });
+            this.editor.dom.appendChild(editEl.dom);
+        }
+        editEl.dom.value = this.text;
+        var w = util.toNumber(this.width) * 1.2;
+        var h = util.toNumber(this.height) * 1.2;
+        var style = {};
+        style.width = Math.max(w, 100) + 'px';
+        style.height = Math.max(h, 100) + 'px';
+        style.top = this.top;
+        style.left = this.left;
+        style.fontSize = this.style.fontSize;
+        style.fontFamily = this.style.fontFamily;
+        style.fontWeight = this.style.fontWeight;
+        style.display = 'inline-block';
+        util.css(editEl, style);
+        editEl.dom.focus(); // 进入控件
+    };
+    // 结束编辑
+    JText.prototype.closeEdit = function () {
+        var editEl = this.editor.textEditElement;
+        if (!editEl)
+            return;
+        this.text = editEl.dom.value;
+        editEl.visible = false;
+    };
     JText.prototype.toJSON = function (props) {
         if (props === void 0) { props = []; }
         props.push('text');
@@ -2248,10 +2405,13 @@ var JControllerItem = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    JControllerItem.prototype.onDragMove = function (event, pos) {
-        if (pos === void 0) { pos = event; }
+    JControllerItem.prototype.onDragMove = function (event) {
         if (!this.isMoving)
             return;
+        var pos = {
+            x: event.pageX || event.x,
+            y: event.pageY || event.y,
+        };
         var offX = (pos.x - this.dragStartPosition.x);
         var offY = (pos.y - this.dragStartPosition.y);
         this.emit('change', {
@@ -2271,12 +2431,15 @@ var JControllerItem = /** @class */ (function (_super) {
         event.stopPropagation();
         event.preventDefault();
     };
-    JControllerItem.prototype.onDragStart = function (event, pos) {
-        if (pos === void 0) { pos = event; }
+    JControllerItem.prototype.onDragStart = function (event) {
+        var pos = {
+            x: event.pageX || event.x,
+            y: event.pageY || event.y,
+        };
         // 选中的是渲染层的坐标，转为控制层的
         this.dragStartPosition = {
             x: pos.x,
-            y: pos.y,
+            y: pos.y
         };
         this.isMoving = true;
         event.stopPropagation && event.stopPropagation();
@@ -2304,7 +2467,7 @@ var JControllerComponent = /** @class */ (function (_super) {
     __extends(JControllerComponent, _super);
     function JControllerComponent(option) {
         var _this = this;
-        option.zIndex = 100000;
+        option.zIndex = topZIndex;
         option.style = option.style || {};
         option.style.cursor = option.style.cursor || 'move';
         option.dir = 'element';
@@ -2316,9 +2479,13 @@ var JControllerComponent = /** @class */ (function (_super) {
         _this.paddingSize = 1;
         _this.isEditor = false; // 当前关联是否是编辑器
         _this.init(option);
-        // html2canvas不渲染
-        _this.attr('data-html2canvas-ignore', 'true');
         _this.editor.dom.appendChild(_this.dom);
+        // 双击事件透传给操作杆绑定的对象
+        _this.on('dblclick', function (e) {
+            if (_this.target) {
+                _this.target.emit('dblclick', e);
+            }
+        });
         return _this;
     }
     JControllerComponent.prototype.init = function (option) {
@@ -2559,11 +2726,9 @@ var JControllerComponent = /** @class */ (function (_super) {
             x: util.toNumber(this.left) + util.toNumber(this.width) / 2,
             y: util.toNumber(this.top) + util.toNumber(this.height) / 2,
         };
-        console.log(this.left, this.top, center, oldPosition, newPosition, this.editor.left, this.editor.top);
         // 编辑器坐标
-        var pos1 = util.toDomPosition(oldPosition, this.editor.target.dom);
-        var pos2 = util.toDomPosition(newPosition, this.editor.target.dom);
-        console.log(this.left, this.top, center, pos1, pos2);
+        var pos1 = this.editor.toEditorPosition(oldPosition);
+        var pos2 = this.editor.toEditorPosition(newPosition);
         // 因为center是相对于编辑器的，所以事件坐标也需要转到编辑器
         var cx1 = pos1.x - center.x;
         var cy1 = pos1.y - center.y;
@@ -2629,7 +2794,6 @@ var JControllerComponent = /** @class */ (function (_super) {
             for (var _b = __values(this.items), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var item = _c.value;
                 item.isMoving = false;
-                item.visible = !isEditor;
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -2645,6 +2809,7 @@ var JControllerComponent = /** @class */ (function (_super) {
     };
     // 绑定到操作的对象
     JControllerComponent.prototype.bind = function (target) {
+        var e_2, _a;
         this.isEditor = target === this.editor;
         this.reset(this.isEditor);
         // 编辑器的话，需要把它的坐标转为相对于容器的
@@ -2666,6 +2831,20 @@ var JControllerComponent = /** @class */ (function (_super) {
         });
         this.target = target;
         this.visible = true;
+        try {
+            // 编辑器不让旋转和skew
+            for (var _b = __values(this.items), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var item = _c.value;
+                item.visible = !this.isEditor && target.editable;
+            }
+        }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_2) throw e_2.error; }
+        }
         // 如果是编辑器，则不能捕获事件
         this.css({
             pointerEvents: this.isEditor ? 'none' : 'auto'
@@ -2944,7 +3123,7 @@ var JEditor = /** @class */ (function (_super) {
     // 把domcument坐标转为编辑器相对坐标
     JEditor.prototype.toEditorPosition = function (pos) {
         // 编辑器坐标
-        var editorPos = util.getElementPosition(this.view.dom);
+        var editorPos = util.getElementBoundingRect(this.target.dom);
         return {
             x: pos.x - editorPos.x,
             y: pos.y - editorPos.y

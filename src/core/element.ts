@@ -1,4 +1,4 @@
-import EventEmiter from 'eventemitter3';
+import EventEmiter from '../constant/eventEmitter';
 import { v4 as uuidv4 } from 'uuid';
 import JTransform from '../constant/transform';
 import JStyle from './style';
@@ -63,6 +63,8 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         if(typeof option.zIndex !== 'undefined') this.zIndex = option.zIndex;
         if(typeof option.visible !== 'undefined') this.visible = !!option.visible;
         if(option.className) this.className = option.className;
+
+        if(option.editable === false) this.editable = false;
     }
 
     // 绑定事件
@@ -203,6 +205,9 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     set className(v: string) {
         this.dom.className = v;
     }  
+    // 是否可编辑
+    editable: boolean = true;
+
     // 变换
     transform: ITransform;
 

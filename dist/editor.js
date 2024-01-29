@@ -218,7 +218,7 @@ var JEditor = /** @class */ (function (_super) {
     // 把domcument坐标转为编辑器相对坐标
     JEditor.prototype.toEditorPosition = function (pos) {
         // 编辑器坐标
-        var editorPos = util.getElementPosition(this.view.dom);
+        var editorPos = util.getElementBoundingRect(this.target.dom);
         return {
             x: pos.x - editorPos.x,
             y: pos.y - editorPos.y

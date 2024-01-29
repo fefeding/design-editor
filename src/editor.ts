@@ -190,7 +190,7 @@ export default class JEditor extends JBase implements IJEditor {
     // 把domcument坐标转为编辑器相对坐标
     toEditorPosition(pos: {x: number, y: number}) {
         // 编辑器坐标
-        const editorPos = util.getElementPosition(this.view.dom);
+        const editorPos = util.getElementBoundingRect(this.target.dom);
         return {
             x: pos.x - editorPos.x,
             y: pos.y - editorPos.y

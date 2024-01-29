@@ -12,14 +12,8 @@ export declare class JControllerItem extends JElement<HTMLDivElement> implements
         x: number;
         y: number;
     };
-    onDragMove(event: MouseEvent, pos?: {
-        x: number;
-        y: number;
-    }): void;
-    onDragStart(event: MouseEvent, pos?: {
-        x: number;
-        y: number;
-    }): void;
+    onDragMove(event: MouseEvent): void;
+    onDragStart(event: MouseEvent): void;
     onDragEnd(event: MouseEvent, pos?: {
         x: number;
         y: number;

@@ -94,9 +94,33 @@ export default {
         }
         return pos;
     },
+    // 获取元素bounds
+    getElementBoundingRect: function (el) {
+        var bounds = {
+            height: 0,
+            width: 0,
+            x: 0,
+            y: 0
+        };
+        if (el.getBoundingClientRect) {
+            bounds = el.getBoundingClientRect();
+            var scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+            var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            bounds.x += scrollLeft;
+            bounds.y += scrollTop;
+        }
+        else {
+            var pos = this.getElementPosition(el);
+            bounds.x = pos.x;
+            bounds.y = pos.y;
+            bounds.width = el.clientWidth;
+            bounds.height = el.clientHeight;
+        }
+        return bounds;
+    },
     // 把domcument坐标转为指定元素相对坐标
     toDomPosition: function (pos, dom) {
-        var domPos = this.getElementPosition(dom);
+        var domPos = this.getElementBoundingRect(dom);
         return {
             x: pos.x - domPos.x,
             y: pos.y - domPos.y

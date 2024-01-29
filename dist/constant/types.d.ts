@@ -1,5 +1,5 @@
 import JElementCssStyle from './styleMap';
-import EventEmitter from 'eventemitter3';
+import EventEmitter from './eventEmitter';
 export interface IData {
     from(data: object): IData;
     toJSON(): object;
@@ -118,6 +118,7 @@ export interface IJElement<T extends HTMLElement = HTMLElement> extends EventEmi
     get className(): string;
     set className(v: string);
     transform: ITransform;
+    editable: boolean;
     setDomStyle(name: string, value: string): void;
     css(name: string | Object, value?: string | number): this;
     attr(name: string, value: string | number | undefined): any;
@@ -183,6 +184,7 @@ export interface IJControllerComponent extends IJControllerItem {
 export interface IJEditor extends IJBaseComponent {
     view: IJElement<HTMLDivElement>;
     elementController: IJControllerComponent;
+    textEditElement?: IJElement<HTMLTextAreaElement>;
     fonts: IJFonts;
     get selectedElements(): Array<IJBaseComponent>;
     bindEvent(dom?: HTMLElement): void;

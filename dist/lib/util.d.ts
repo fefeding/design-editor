@@ -21,6 +21,12 @@ declare const _default: {
         y: number;
         x: number;
     };
+    getElementBoundingRect(el: HTMLElement): {
+        height: number;
+        width: number;
+        x: number;
+        y: number;
+    };
     toDomPosition(pos: {
         x: number;
         y: number;

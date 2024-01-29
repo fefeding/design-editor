@@ -24,6 +24,7 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
         // 生成当前控制的元素
         this.target = new JElement<T>({
             ...option,
+            visible: true,
             // 不响应本身的变换，只响应父级的
             transformWatchProps: [],
             width: '100%',

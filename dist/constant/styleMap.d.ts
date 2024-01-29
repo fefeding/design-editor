@@ -1,4 +1,5 @@
-import EventEmiter from 'eventemitter3';
+import EventEmiter from './eventEmitter';
+export declare const topZIndex = 10000;
 export declare class JElementStyleDeclaration extends EventEmiter {
     accentColor?: string;
     alignContent?: string;
@@ -906,5 +907,7 @@ export declare const ContainerDefaultStyle: {
     bottom: string;
     padding: string;
     margin: string;
+    zIndex: string;
+    display: string;
     overflow: string;
 };

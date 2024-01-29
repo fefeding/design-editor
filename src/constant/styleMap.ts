@@ -1,5 +1,7 @@
 
-import EventEmiter from 'eventemitter3';
+import EventEmiter from './eventEmitter';
+
+export const topZIndex = 10000;
 
 // 支持的样式属性列表
 export class JElementStyleDeclaration extends EventEmiter {
@@ -937,5 +939,7 @@ export const ContainerDefaultStyle = {
     bottom: 'auto',
     padding: '0',
     margin: '0',
+    zIndex: '0',
+    display: 'inline-block',
     overflow: 'visible'
 }

@@ -59,7 +59,6 @@ export default {
     getElementPosition(el: HTMLElement) {    
         const pos = {"y": 0, "x": 0};
         if(!el) return pos;
-
         if (el.offsetParent) {
             while (el.offsetParent) {
                 pos.y += el.offsetTop;
@@ -79,9 +78,33 @@ export default {
         } 
         return pos;
     },   
+    // 获取元素bounds
+    getElementBoundingRect(el: HTMLElement) {
+        let bounds = {
+            height: 0,
+            width: 0,
+            x: 0,
+            y: 0
+        };
+        if(el.getBoundingClientRect) {
+            bounds = el.getBoundingClientRect();
+            const scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;            
+            const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            bounds.x += scrollLeft;
+            bounds.y += scrollTop;
+        }
+        else {
+            const pos = this.getElementPosition(el);
+            bounds.x = pos.x;
+            bounds.y = pos.y;
+            bounds.width = el.clientWidth;
+            bounds.height = el.clientHeight;
+        }
+        return bounds;
+    },
     // 把domcument坐标转为指定元素相对坐标
     toDomPosition(pos: {x: number, y: number}, dom: HTMLElement) {
-        const domPos = this.getElementPosition(dom);
+        const domPos = this.getElementBoundingRect(dom);
         return {
             x: pos.x - domPos.x,
             y: pos.y - domPos.y

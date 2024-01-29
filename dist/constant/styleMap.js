@@ -24,7 +24,8 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
-import EventEmiter from 'eventemitter3';
+import EventEmiter from './eventEmitter';
+export var topZIndex = 10000;
 // 支持的样式属性列表
 var JElementStyleDeclaration = /** @class */ (function (_super) {
     __extends(JElementStyleDeclaration, _super);
@@ -564,5 +565,7 @@ export var ContainerDefaultStyle = {
     bottom: 'auto',
     padding: '0',
     margin: '0',
+    zIndex: '0',
+    display: 'inline-block',
     overflow: 'visible'
 };

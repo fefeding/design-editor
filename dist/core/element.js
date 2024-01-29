@@ -60,7 +60,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     }
     return to.concat(ar || Array.prototype.slice.call(from));
 };
-import EventEmiter from 'eventemitter3';
+import EventEmiter from '../constant/eventEmitter';
 import { v4 as uuidv4 } from 'uuid';
 import JTransform from '../constant/transform';
 import JStyle from './style';
@@ -76,6 +76,8 @@ var JElement = /** @class */ (function (_super) {
         _this._type = '';
         // 子元素
         _this._children = [];
+        // 是否可编辑
+        _this.editable = true;
         // 复制属性
         for (var k in option) {
             var v = option[k];
@@ -123,6 +125,8 @@ var JElement = /** @class */ (function (_super) {
             this.visible = !!option.visible;
         if (option.className)
             this.className = option.className;
+        if (option.editable === false)
+            this.editable = false;
     };
     // 绑定事件
     JElement.prototype.bindEvent = function (dom) {

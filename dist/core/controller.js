@@ -53,6 +53,7 @@ var __values = (this && this.__values) || function(o) {
 };
 import util from '../lib/util';
 import JElement from './element';
+import { topZIndex } from '../constant/styleMap';
 // 鼠标指针
 var GCursors = {
     'l': 'w-resize',
@@ -120,10 +121,13 @@ var JControllerItem = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    JControllerItem.prototype.onDragMove = function (event, pos) {
-        if (pos === void 0) { pos = event; }
+    JControllerItem.prototype.onDragMove = function (event) {
         if (!this.isMoving)
             return;
+        var pos = {
+            x: event.pageX || event.x,
+            y: event.pageY || event.y,
+        };
         var offX = (pos.x - this.dragStartPosition.x);
         var offY = (pos.y - this.dragStartPosition.y);
         this.emit('change', {
@@ -143,12 +147,15 @@ var JControllerItem = /** @class */ (function (_super) {
         event.stopPropagation();
         event.preventDefault();
     };
-    JControllerItem.prototype.onDragStart = function (event, pos) {
-        if (pos === void 0) { pos = event; }
+    JControllerItem.prototype.onDragStart = function (event) {
+        var pos = {
+            x: event.pageX || event.x,
+            y: event.pageY || event.y,
+        };
         // 选中的是渲染层的坐标，转为控制层的
         this.dragStartPosition = {
             x: pos.x,
-            y: pos.y,
+            y: pos.y
         };
         this.isMoving = true;
         event.stopPropagation && event.stopPropagation();
@@ -178,7 +185,7 @@ var JControllerComponent = /** @class */ (function (_super) {
     __extends(JControllerComponent, _super);
     function JControllerComponent(option) {
         var _this = this;
-        option.zIndex = 100000;
+        option.zIndex = topZIndex;
         option.style = option.style || {};
         option.style.cursor = option.style.cursor || 'move';
         option.dir = 'element';
@@ -190,9 +197,13 @@ var JControllerComponent = /** @class */ (function (_super) {
         _this.paddingSize = 1;
         _this.isEditor = false; // 当前关联是否是编辑器
         _this.init(option);
-        // html2canvas不渲染
-        _this.attr('data-html2canvas-ignore', 'true');
         _this.editor.dom.appendChild(_this.dom);
+        // 双击事件透传给操作杆绑定的对象
+        _this.on('dblclick', function (e) {
+            if (_this.target) {
+                _this.target.emit('dblclick', e);
+            }
+        });
         return _this;
     }
     JControllerComponent.prototype.init = function (option) {
@@ -433,11 +444,9 @@ var JControllerComponent = /** @class */ (function (_super) {
             x: util.toNumber(this.left) + util.toNumber(this.width) / 2,
             y: util.toNumber(this.top) + util.toNumber(this.height) / 2,
         };
-        console.log(this.left, this.top, center, oldPosition, newPosition, this.editor.left, this.editor.top);
         // 编辑器坐标
-        var pos1 = util.toDomPosition(oldPosition, this.editor.target.dom);
-        var pos2 = util.toDomPosition(newPosition, this.editor.target.dom);
-        console.log(this.left, this.top, center, pos1, pos2);
+        var pos1 = this.editor.toEditorPosition(oldPosition);
+        var pos2 = this.editor.toEditorPosition(newPosition);
         // 因为center是相对于编辑器的，所以事件坐标也需要转到编辑器
         var cx1 = pos1.x - center.x;
         var cy1 = pos1.y - center.y;
@@ -505,7 +514,6 @@ var JControllerComponent = /** @class */ (function (_super) {
             for (var _b = __values(this.items), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var item = _c.value;
                 item.isMoving = false;
-                item.visible = !isEditor;
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -521,6 +529,7 @@ var JControllerComponent = /** @class */ (function (_super) {
     };
     // 绑定到操作的对象
     JControllerComponent.prototype.bind = function (target) {
+        var e_2, _a;
         this.isEditor = target === this.editor;
         this.reset(this.isEditor);
         // 编辑器的话，需要把它的坐标转为相对于容器的
@@ -542,6 +551,20 @@ var JControllerComponent = /** @class */ (function (_super) {
         });
         this.target = target;
         this.visible = true;
+        try {
+            // 编辑器不让旋转和skew
+            for (var _b = __values(this.items), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var item = _c.value;
+                item.visible = !this.isEditor && target.editable;
+            }
+        }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_2) throw e_2.error; }
+        }
         // 如果是编辑器，则不能捕获事件
         this.css({
             pointerEvents: this.isEditor ? 'none' : 'auto'

@@ -1,4 +1,4 @@
-import EventEmiter from 'eventemitter3';
+import EventEmiter from './eventEmitter';
 import { IStyleTransform, ITransform, TransformWatcher } from './types';
 export default class Transform extends EventEmiter implements ITransform {
     constructor(option?: IStyleTransform, targetOption?: TransformWatcher);

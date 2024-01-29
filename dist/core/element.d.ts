@@ -1,4 +1,4 @@
-import EventEmiter from 'eventemitter3';
+import EventEmiter from '../constant/eventEmitter';
 import JEvent from '../core/event';
 import JElementCssStyle from '../constant/styleMap';
 import { IJElement, ITransform, IJEditor } from '../constant/types';
@@ -44,6 +44,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     set zIndex(v: number);
     get className(): string;
     set className(v: string);
+    editable: boolean;
     transform: ITransform;
     setDomStyle(name: string, value: string): void;
     css(name: string | Object, value?: string | number): this;
