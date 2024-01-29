@@ -5,7 +5,7 @@ import JStyle from './style';
 import util from '../lib/util';
 import JEvent from '../core/event';
 import JElementCssStyle from '../constant/styleMap';
-import { IJElement, IJEditor } from '../constant/types';
+import { IJElement, ITransform, IJEditor } from '../constant/types';
 
 export default class JElement<T extends HTMLElement = HTMLElement> extends EventEmiter  implements IJElement{
 
@@ -204,7 +204,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         this.dom.className = v;
     }  
     // 变换
-    transform: JTransform;
+    transform: ITransform;
 
     // 设置css到dom
     setDomStyle(name: string, value: string) {

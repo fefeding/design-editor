@@ -1,5 +1,3 @@
-
-import JTransform from './transform';
 import JElementCssStyle from './styleMap';
 import EventEmitter from 'eventemitter3';
 
@@ -17,6 +15,42 @@ export interface IJFonts {
     get(name: string): IJFontData | null ;
     check(name: string): boolean;
     load(name: string, url: string): Promise<IJFontData>;
+}
+
+export interface IStyleTransform {
+    translateX?: string|number;
+    translateY?: string|number;
+    translateZ?: string|number;
+
+    rotateX?: number;
+    rotateY?: number;
+    rotateZ?: number;
+
+    scaleX?: number;
+    scaleY?: number;
+    scaleZ?: number;
+
+    skewX?: number;
+    skewY?: number;
+}
+
+export interface ITransform extends IStyleTransform, EventEmitter {
+    from(data: IStyleTransform): void;
+    // 生效
+    apply(target?: TransformWatcher | Array<TransformWatcher>): void;
+
+    // 绑定并刷新到目标上
+    bind(target: TransformWatcher): void;
+    unbind(target: TransformWatcher): void;
+
+    toString(watchProps: Array<string>|undefined): string;
+
+    toJSON(): IStyleTransform;
+}
+
+export interface TransformWatcher {
+    target: any;
+    watchProps?: Array<string>
 }
 
 export interface IJEvent {
@@ -96,7 +130,7 @@ export interface IJElement<T extends HTMLElement = HTMLElement> extends EventEmi
     set zIndex(v: number);
     get className(): string;
     set className(v: string);
-    transform: JTransform;
+    transform: ITransform;
     setDomStyle(name: string, value: string): void;
     css(name: string | Object, value?: string | number): this;
     attr(name: string, value: string | number | undefined): any;

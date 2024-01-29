@@ -1,8 +1,7 @@
 import EventEmiter from 'eventemitter3';
-import JTransform from '../constant/transform';
 import JEvent from '../core/event';
 import JElementCssStyle from '../constant/styleMap';
-import { IJElement, IJEditor } from '../constant/types';
+import { IJElement, ITransform, IJEditor } from '../constant/types';
 export default class JElement<T extends HTMLElement = HTMLElement> extends EventEmiter implements IJElement {
     constructor(option?: any);
     initOption(option: any): void;
@@ -45,7 +44,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     set zIndex(v: number);
     get className(): string;
     set className(v: string);
-    transform: JTransform;
+    transform: ITransform;
     setDomStyle(name: string, value: string): void;
     css(name: string | Object, value?: string | number): this;
     attr(name: string, value: string | number | undefined): any;

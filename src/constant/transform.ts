@@ -1,30 +1,9 @@
 import EventEmiter from 'eventemitter3';
 import util from '../lib/util';
+import { IStyleTransform, ITransform, TransformWatcher } from './types';
 
-export interface StyleTransform {
-    translateX?: string|number;
-    translateY?: string|number;
-    translateZ?: string|number;
-
-    rotateX?: number;
-    rotateY?: number;
-    rotateZ?: number;
-
-    scaleX?: number;
-    scaleY?: number;
-    scaleZ?: number;
-
-    skewX?: number;
-    skewY?: number;
-}
-
-export interface TransformWatcher {
-    target: any;
-    watchProps?: Array<string>
-}
-
-export default class Transform extends EventEmiter implements StyleTransform {
-    constructor(option?: StyleTransform, targetOption?: TransformWatcher) {
+export default class Transform extends EventEmiter implements ITransform {
+    constructor(option?: IStyleTransform, targetOption?: TransformWatcher) {
         super();
         if(option) Object.assign(this, option);
         if(targetOption) this.bind(targetOption);
@@ -85,7 +64,7 @@ export default class Transform extends EventEmiter implements StyleTransform {
         return `skewY(${util.toRad(this.skewY)})`;
     }
 
-    from(data: StyleTransform) {
+    from(data: IStyleTransform) {
         if(data) Object.assign(this, data);
     }
     // 生效
@@ -116,7 +95,7 @@ export default class Transform extends EventEmiter implements StyleTransform {
     }
 
     // 生成transform代理
-    static createProxy(obj: StyleTransform = {}, el?: TransformWatcher) {
+    static createProxy(obj: IStyleTransform = {}, el?: TransformWatcher) {
         const transform = new Transform(obj, el);
         // 代理处理
         const proxy = new Proxy<Transform>(transform, {
@@ -149,7 +128,7 @@ export default class Transform extends EventEmiter implements StyleTransform {
         return res.join(' ');
     }
 
-    toJSON() {
+    toJSON(): IStyleTransform {
         return {
             translateX: this.translateX,
             translateY: this.translateY,
