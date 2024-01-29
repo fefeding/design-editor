@@ -1,6 +1,6 @@
 {
   "name": "j-html-design-editor",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "design canvas",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

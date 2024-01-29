@@ -1,5 +1,9 @@
 import JElementCssStyle from './styleMap';
 import EventEmitter from 'eventemitter3';
+export interface IData {
+    from(data: object): IData;
+    toJSON(): object;
+}
 export interface IJFontData {
     label: string;
     family: string;
