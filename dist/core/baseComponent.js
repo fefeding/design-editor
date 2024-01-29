@@ -60,8 +60,6 @@ var JBaseComponent = /** @class */ (function (_super) {
                 'rotateX', 'rotateY', 'translateX', 'translateY', 'skewX', 'skewY'
             ]
         });
-        // 刷新样式
-        _this.style.refresh();
         return _this;
     }
     Object.defineProperty(JBaseComponent.prototype, "selected", {

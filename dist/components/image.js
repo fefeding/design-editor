@@ -24,7 +24,7 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-import Base from './base';
+import Base from '../core/baseComponent';
 var JImage = /** @class */ (function (_super) {
     __extends(JImage, _super);
     function JImage(option) {

@@ -1,8 +1,8 @@
-import JBase from './components/base';
+import JBase from './core/baseComponent';
 import JText from './components/text';
 import JImage from './components/image';
 import JElement from './core/element';
-import JController from './components/controller';
+import JController from './core/controller';
 import JFonts from './core/fonts';
 import util from './lib/util';
 import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent, IJFonts, IJFontData } from './constant/types';

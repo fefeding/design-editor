@@ -13,6 +13,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
@@ -60,9 +71,9 @@ var JElement = /** @class */ (function (_super) {
     function JElement(option) {
         if (option === void 0) { option = {}; }
         var _this = _super.call(this) || this;
-        _this.id = '';
+        _this._id = '';
         // 类型名称
-        _this.type = '';
+        _this._type = '';
         // 子元素
         _this._children = [];
         // 复制属性
@@ -72,16 +83,17 @@ var JElement = /** @class */ (function (_super) {
                 continue;
             _this[k] = v;
         }
-        _this.id = _this.id || option.id || uuidv4().replace(/-/g, '');
-        _this.type = _this.type || option.type || '';
+        _this._id = _this.id || option.id || uuidv4().replace(/-/g, '');
+        _this._type = _this.type || option.type || '';
         var nodeType = option.nodeType || 'div';
-        _this.dom = document.createElement(nodeType);
+        _this._dom = document.createElement(nodeType);
         if (option.editor)
             _this.editor = option.editor;
         // 样式代理处理
         _this.style = JStyle.createProxy();
         _this.style.on('change', function (s) {
             _this.setDomStyle(s.name, s.value);
+            _this.emit('styleChange', __assign(__assign({}, s), { target: _this }));
         });
         if (option.style)
             _this.style.apply(option.style);
@@ -121,9 +133,30 @@ var JElement = /** @class */ (function (_super) {
             _this.emit(e.type, e);
         });
     };
+    Object.defineProperty(JElement.prototype, "id", {
+        get: function () {
+            return this._id;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(JElement.prototype, "type", {
+        get: function () {
+            return this._type;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(JElement.prototype, "children", {
         get: function () {
             return this._children;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(JElement.prototype, "dom", {
+        get: function () {
+            return this._dom;
         },
         enumerable: false,
         configurable: true
@@ -282,17 +315,6 @@ var JElement = /** @class */ (function (_super) {
                 value = "url(".concat(value, ")");
         }
         util.css(this.dom, name, value);
-        // 字体依赖事件
-        if (name === 'fontFamily') {
-            /*this.emit('fontChange', {
-                fontFamily: value
-            });*/
-            if (this.editor) {
-                this.editor.emit('fontChange', {
-                    family: value
-                });
-            }
-        }
     };
     // 设置样式
     JElement.prototype.css = function (name, value) {

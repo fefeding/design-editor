@@ -52,7 +52,7 @@ var __values = (this && this.__values) || function(o) {
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 import util from '../lib/util';
-import JElement from '../core/element';
+import JElement from './element';
 // 鼠标指针
 var GCursors = {
     'l': 'w-resize',

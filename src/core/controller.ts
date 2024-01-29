@@ -1,6 +1,6 @@
 
 import util from '../lib/util';
-import JElement from '../core/element';
+import JElement from './element';
 import { IJControllerItem, IJControllerComponent, IJBaseComponent, IJEditor } from '../constant/types';
 
 // 鼠标指针

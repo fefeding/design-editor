@@ -35,11 +35,11 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
-import JBase from './components/base';
+import JBase from './core/baseComponent';
 import JText from './components/text';
 import JImage from './components/image';
 import JElement from './core/element';
-import JController from './components/controller';
+import JController from './core/controller';
 import JFonts from './core/fonts';
 import util from './lib/util';
 var JEditor = /** @class */ (function (_super) {
@@ -111,6 +111,8 @@ var JEditor = /** @class */ (function (_super) {
             this.selected = true;
             this.elementController.onDragStart(e);
         });
+        // 刷新样式
+        this.style.refresh();
     };
     Object.defineProperty(JEditor.prototype, "children", {
         // 重写子集为target
@@ -178,6 +180,7 @@ var JEditor = /** @class */ (function (_super) {
     };
     // 添加元素到画布
     JEditor.prototype.addChild = function (child) {
+        var _this = this;
         if (child === this.target) {
             return _super.prototype.addChild.call(this, child);
         }
@@ -189,9 +192,15 @@ var JEditor = /** @class */ (function (_super) {
             this.selected = true;
             self.elementController.onDragStart(e);
         });
-        this.target.addChild(child, this.target);
+        // 监听样式改变
+        child.on('styleChange', function (e) {
+            _this.emit('styleChange', e);
+        });
         child.parent = this; // 把父设置成编辑器
         child.editor = this;
+        // 刷新样式
+        child.style.refresh();
+        this.target.addChild(child, this.target);
     };
     // 移除
     JEditor.prototype.removeChild = function (el) {
@@ -202,6 +211,7 @@ var JEditor = /** @class */ (function (_super) {
         if (el instanceof JElement) {
             el.off('select');
             el.off('mousedown');
+            el.off('styleChange');
         }
         return this.target.removeChild(el);
     };

@@ -24,7 +24,7 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-import Base from './base';
+import Base from '../core/baseComponent';
 var JText = /** @class */ (function (_super) {
     __extends(JText, _super);
     function JText(option) {

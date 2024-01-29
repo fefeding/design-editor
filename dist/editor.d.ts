@@ -1,4 +1,4 @@
-import JBase from './components/base';
+import JBase from './core/baseComponent';
 import JText from './components/text';
 import JImage from './components/image';
 import JElement from './core/element';

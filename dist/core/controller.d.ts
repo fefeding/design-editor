@@ -1,4 +1,4 @@
-import JElement from '../core/element';
+import JElement from './element';
 import { IJControllerItem, IJControllerComponent, IJBaseComponent, IJEditor } from '../constant/types';
 export declare class JControllerItem extends JElement<HTMLDivElement> implements IJControllerItem {
     constructor(option: any);

@@ -1,4 +1,4 @@
-import Base from './base';
+import Base from '../core/baseComponent';
 import { IJBaseComponent } from '../constant/types';
 export default class JText extends Base<HTMLDivElement> implements IJBaseComponent {
     constructor(option?: any);
