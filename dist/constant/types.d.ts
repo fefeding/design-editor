@@ -55,10 +55,10 @@ export interface IJEvent {
     };
 }
 export interface IJElement<T extends HTMLElement = HTMLElement> extends EventEmitter {
-    id: string;
-    type: string;
+    get id(): string;
+    get type(): string;
     get children(): IJElement<HTMLElement>[];
-    dom: T;
+    get dom(): T;
     parent: IJElement | undefined;
     editor: IJEditor;
     event: IJEvent;

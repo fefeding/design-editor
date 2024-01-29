@@ -19,11 +19,11 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
             this[k] = v;
         }
 
-        this.id = this.id || option.id || uuidv4().replace(/-/g, '');
-        this.type = this.type || option.type || '';
+        this._id = this.id || option.id || uuidv4().replace(/-/g, '');
+        this._type = this.type || option.type || '';
 
         const nodeType = option.nodeType || 'div';
-        this.dom = document.createElement(nodeType);   
+        this._dom = document.createElement(nodeType);   
         
         if(option.editor) this.editor = option.editor;
 
@@ -31,6 +31,11 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         this.style = JStyle.createProxy();
         this.style.on('change', (s) => {
             this.setDomStyle(s.name, s.value);
+
+            this.emit('styleChange', {
+                ...s,
+                target: this
+            });
         });
         if(option.style) this.style.apply(option.style);
 
@@ -69,16 +74,25 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         });
     }
 
-    id = '';
+    protected _id: string = '';
+    get id() {
+        return this._id;
+    }
     // 类型名称
-    type = '';
+    protected _type = '';
+    get type() {
+        return this._type;
+    }
     // 子元素
     private _children = [] as Array<IJElement>;
     get children() {
         return this._children;
     }
     // 控件最外层的容器
-    dom: T;
+    protected _dom: T;
+    get dom() {
+        return this._dom;
+    }
     // 父元素
     parent: IJElement | undefined;
 
@@ -199,18 +213,6 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         }
         
         util.css(this.dom, name, value);
-
-        // 字体依赖事件
-        if(name === 'fontFamily') {
-            /*this.emit('fontChange', {
-                fontFamily: value
-            });*/
-            if(this.editor) {
-                this.editor.emit('fontChange', {
-                    family: value
-                });
-        }
-        }
     }   
 
     // 设置样式

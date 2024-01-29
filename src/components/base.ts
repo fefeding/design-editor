@@ -33,6 +33,7 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
                 cursor: 'pointer'        
             }
         });
+        
         this.addChild(this.target);
         
         // 变换改为控制主元素
@@ -42,9 +43,6 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
                 'rotateX', 'rotateY', 'translateX', 'translateY', 'skewX', 'skewY'
             ]
         });
-        
-        // 刷新样式
-        this.style.refresh();
     }
 
     // 当前控件的核心元素

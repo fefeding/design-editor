@@ -88,12 +88,15 @@
         }
     };
     // 字体发生改变，需要做check, 并加载字体生效
-    editor.on('fontChange', async (font) => {
-        if(editor.fonts.check(font.family)) return;// 已经加载，则跳过
-        const con = fonts[font.family];
-        if(con) {
-            const f = await editor.fonts.load(con.family, con.url);// 加载
-            console.log('load font', font.family, f.status);
+    editor.on('styleChange', async (style) => {
+        //console.log(style);
+        if(style.name === 'fontFamily') {
+            if(editor.fonts.check(style.value)) return;// 已经加载，则跳过
+            const con = fonts[style.value];
+            if(con) {
+                const f = await editor.fonts.load(con.family, con.url);// 加载
+                console.log('load font', style.value, f.status);
+            }
         }
     });
 

@@ -7,11 +7,14 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     constructor(option?: any);
     initOption(option: any): void;
     bindEvent(dom?: HTMLElement): void;
-    id: string;
-    type: string;
+    protected _id: string;
+    get id(): string;
+    protected _type: string;
+    get type(): string;
     private _children;
     get children(): IJElement<HTMLElement>[];
-    dom: T;
+    protected _dom: T;
+    get dom(): T;
     parent: IJElement | undefined;
     editor: IJEditor;
     event: JEvent;

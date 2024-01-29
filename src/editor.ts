@@ -82,6 +82,9 @@ export default class JEditor extends JBase implements IJEditor {
             this.selected = true;
             this.elementController.onDragStart(e);
         });
+
+        // 刷新样式
+        this.style.refresh();
     }
 
     // 外层用于定位的容器
@@ -156,9 +159,18 @@ export default class JEditor extends JBase implements IJEditor {
             this.selected = true;
             self.elementController.onDragStart(e);
         });
-        this.target.addChild(child, this.target);
+        // 监听样式改变
+        child.on('styleChange', (e) => {
+            this.emit('styleChange', e);
+        });
+        
         child.parent = this;// 把父设置成编辑器
         child.editor = this;
+        
+        // 刷新样式
+        child.style.refresh();
+
+        this.target.addChild(child, this.target);
     }
 
     // 移除
@@ -170,6 +182,7 @@ export default class JEditor extends JBase implements IJEditor {
         if(el instanceof JElement) {
             el.off('select');
             el.off('mousedown');
+            el.off('styleChange');
         }
         return this.target.removeChild(el);
     }
