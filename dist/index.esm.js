@@ -431,498 +431,530 @@ var eventemitter3 = {exports: {}};
 var eventemitter3Exports = eventemitter3.exports;
 var EventEmitter = /*@__PURE__*/getDefaultExportFromCjs(eventemitter3Exports);
 
+var StyleNamesMap = [];
 // 支持的样式属性列表
-var JElementStyleMap = /** @class */ (function (_super) {
-    __extends(JElementStyleMap, _super);
-    function JElementStyleMap() {
+var JElementStyleDeclaration = /** @class */ (function (_super) {
+    __extends(JElementStyleDeclaration, _super);
+    function JElementStyleDeclaration() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    return JElementStyleMap;
+    return JElementStyleDeclaration;
 }(EventEmitter));
 // 样式属性集合
-var JElementStyleProperty = /** @class */ (function (_super) {
-    __extends(JElementStyleProperty, _super);
+var JElementStyleProperty = /** @class */ (function () {
     function JElementStyleProperty() {
-        var _this = _super.apply(this, __spreadArray([], __read(arguments), false)) || this;
-        _this.accentColor = '';
-        _this.alignContent = '';
-        _this.alignItems = '';
-        _this.alignSelf = '';
-        _this.alignmentBaseline = '';
-        _this.all = '';
-        _this.animation = '';
-        _this.animationComposition = '';
-        _this.animationDelay = '';
-        _this.animationDirection = '';
-        _this.animationDuration = '';
-        _this.animationFillMode = '';
-        _this.animationIterationCount = '';
-        _this.animationName = '';
-        _this.animationPlayState = '';
-        _this.animationTimingFunction = '';
-        _this.appearance = '';
-        _this.aspectRatio = '';
-        _this.backdropFilter = '';
-        _this.backfaceVisibility = '';
-        _this.background = '';
-        _this.backgroundAttachment = '';
-        _this.backgroundBlendMode = '';
-        _this.backgroundClip = '';
-        _this.backgroundColor = '';
-        _this.backgroundImage = '';
-        _this.backgroundOrigin = '';
-        _this.backgroundPosition = '';
-        _this.backgroundPositionX = '';
-        _this.backgroundPositionY = '';
-        _this.backgroundRepeat = '';
-        _this.backgroundSize = '';
-        _this.baselineShift = '';
-        _this.blockSize = '';
-        _this.border = '';
-        _this.borderBlock = '';
-        _this.borderBlockColor = '';
-        _this.borderBlockEnd = '';
-        _this.borderBlockEndColor = '';
-        _this.borderBlockEndStyle = '';
-        _this.borderBlockEndWidth = '';
-        _this.borderBlockStart = '';
-        _this.borderBlockStartColor = '';
-        _this.borderBlockStartStyle = '';
-        _this.borderBlockStartWidth = '';
-        _this.borderBlockStyle = '';
-        _this.borderBlockWidth = '';
-        _this.borderBottom = '';
-        _this.borderBottomColor = '';
-        _this.borderBottomLeftRadius = '';
-        _this.borderBottomRightRadius = '';
-        _this.borderBottomStyle = '';
-        _this.borderBottomWidth = '';
-        _this.borderCollapse = '';
-        _this.borderColor = '';
-        _this.borderEndEndRadius = '';
-        _this.borderEndStartRadius = '';
-        _this.borderImage = '';
-        _this.borderImageOutset = '';
-        _this.borderImageRepeat = '';
-        _this.borderImageSlice = '';
-        _this.borderImageSource = '';
-        _this.borderImageWidth = '';
-        _this.borderInline = '';
-        _this.borderInlineColor = '';
-        _this.borderInlineEnd = '';
-        _this.borderInlineEndColor = '';
-        _this.borderInlineEndStyle = '';
-        _this.borderInlineEndWidth = '';
-        _this.borderInlineStart = '';
-        _this.borderInlineStartColor = '';
-        _this.borderInlineStartStyle = '';
-        _this.borderInlineStartWidth = '';
-        _this.borderInlineStyle = '';
-        _this.borderInlineWidth = '';
-        _this.borderLeft = '';
-        _this.borderLeftColor = '';
-        _this.borderLeftStyle = '';
-        _this.borderLeftWidth = '';
-        _this.borderRadius = '';
-        _this.borderRight = '';
-        _this.borderRightColor = '';
-        _this.borderRightStyle = '';
-        _this.borderRightWidth = '';
-        _this.borderSpacing = '';
-        _this.borderStartEndRadius = '';
-        _this.borderStartStartRadius = '';
-        _this.borderStyle = '';
-        _this.borderTop = '';
-        _this.borderTopColor = '';
-        _this.borderTopLeftRadius = '';
-        _this.borderTopRightRadius = '';
-        _this.borderTopStyle = '';
-        _this.borderTopWidth = '';
-        _this.borderWidth = '';
-        _this.bottom = '';
-        _this.boxShadow = '';
-        _this.boxSizing = '';
-        _this.breakAfter = '';
-        _this.breakBefore = '';
-        _this.breakInside = '';
-        _this.captionSide = '';
-        _this.caretColor = '';
-        _this.clear = '';
-        _this.clip = '';
-        _this.clipPath = '';
-        _this.clipRule = '';
-        _this.color = '';
-        _this.colorInterpolation = '';
-        _this.colorInterpolationFilters = '';
-        _this.colorScheme = '';
-        _this.columnCount = '';
-        _this.columnFill = '';
-        _this.columnGap = '';
-        _this.columnRule = '';
-        _this.columnRuleColor = '';
-        _this.columnRuleStyle = '';
-        _this.columnRuleWidth = '';
-        _this.columnSpan = '';
-        _this.columnWidth = '';
-        _this.columns = '';
-        _this.contain = '';
-        _this.containIntrinsicBlockSize = '';
-        _this.containIntrinsicHeight = '';
-        _this.containIntrinsicInlineSize = '';
-        _this.containIntrinsicSize = '';
-        _this.containIntrinsicWidth = '';
-        _this.container = '';
-        _this.containerName = '';
-        _this.containerType = '';
-        _this.content = '';
-        _this.counterIncrement = '';
-        _this.counterReset = '';
-        _this.counterSet = '';
-        _this.cssFloat = '';
-        _this.cssText = '';
-        _this.cursor = '';
-        _this.direction = '';
-        _this.display = '';
-        _this.dominantBaseline = '';
-        _this.emptyCells = '';
-        _this.fill = '';
-        _this.fillOpacity = '';
-        _this.fillRule = '';
-        _this.filter = '';
-        _this.flex = '';
-        _this.flexBasis = '';
-        _this.flexDirection = '';
-        _this.flexFlow = '';
-        _this.flexGrow = '';
-        _this.flexShrink = '';
-        _this.flexWrap = '';
-        _this.float = '';
-        _this.floodColor = '';
-        _this.floodOpacity = '';
-        _this.font = '';
-        _this.fontFamily = '';
-        _this.fontFeatureSettings = '';
-        _this.fontKerning = '';
-        _this.fontOpticalSizing = '';
-        _this.fontPalette = '';
-        _this.fontSize = '';
-        _this.fontSizeAdjust = '';
-        _this.fontStretch = '';
-        _this.fontStyle = '';
-        _this.fontSynthesis = '';
-        _this.fontSynthesisSmallCaps = '';
-        _this.fontSynthesisStyle = '';
-        _this.fontSynthesisWeight = '';
-        _this.fontVariant = '';
-        _this.fontVariantAlternates = '';
-        _this.fontVariantCaps = '';
-        _this.fontVariantEastAsian = '';
-        _this.fontVariantLigatures = '';
-        _this.fontVariantNumeric = '';
-        _this.fontVariantPosition = '';
-        _this.fontVariationSettings = '';
-        _this.fontWeight = '';
-        _this.forcedColorAdjust = '';
-        _this.gap = '';
-        _this.grid = '';
-        _this.gridArea = '';
-        _this.gridAutoColumns = '';
-        _this.gridAutoFlow = '';
-        _this.gridAutoRows = '';
-        _this.gridColumn = '';
-        _this.gridColumnEnd = '';
-        _this.gridColumnGap = '';
-        _this.gridColumnStart = '';
-        _this.gridGap = '';
-        _this.gridRow = '';
-        _this.gridRowEnd = '';
-        _this.gridRowGap = '';
-        _this.gridRowStart = '';
-        _this.gridTemplate = '';
-        _this.gridTemplateAreas = '';
-        _this.gridTemplateColumns = '';
-        _this.gridTemplateRows = '';
-        _this.height = '';
-        _this.hyphenateCharacter = '';
-        _this.hyphens = '';
-        _this.imageOrientation = '';
-        _this.imageRendering = '';
-        _this.inlineSize = '';
-        _this.inset = '';
-        _this.insetBlock = '';
-        _this.insetBlockEnd = '';
-        _this.insetBlockStart = '';
-        _this.insetInline = '';
-        _this.insetInlineEnd = '';
-        _this.insetInlineStart = '';
-        _this.isolation = '';
-        _this.justifyContent = '';
-        _this.justifyItems = '';
-        _this.justifySelf = '';
-        _this.left = '';
-        _this.letterSpacing = '';
-        _this.lightingColor = '';
-        _this.lineBreak = '';
-        _this.lineHeight = '';
-        _this.listStyle = '';
-        _this.listStyleImage = '';
-        _this.listStylePosition = '';
-        _this.listStyleType = '';
-        _this.margin = '';
-        _this.marginBlock = '';
-        _this.marginBlockEnd = '';
-        _this.marginBlockStart = '';
-        _this.marginBottom = '';
-        _this.marginInline = '';
-        _this.marginInlineEnd = '';
-        _this.marginInlineStart = '';
-        _this.marginLeft = '';
-        _this.marginRight = '';
-        _this.marginTop = '';
-        _this.marker = '';
-        _this.markerEnd = '';
-        _this.markerMid = '';
-        _this.markerStart = '';
-        _this.mask = '';
-        _this.maskClip = '';
-        _this.maskComposite = '';
-        _this.maskImage = '';
-        _this.maskMode = '';
-        _this.maskOrigin = '';
-        _this.maskPosition = '';
-        _this.maskRepeat = '';
-        _this.maskSize = '';
-        _this.maskType = '';
-        _this.mathStyle = '';
-        _this.maxBlockSize = '';
-        _this.maxHeight = '';
-        _this.maxInlineSize = '';
-        _this.maxWidth = '';
-        _this.minBlockSize = '';
-        _this.minHeight = '';
-        _this.minInlineSize = '';
-        _this.minWidth = '';
-        _this.mixBlendMode = '';
-        _this.objectFit = '';
-        _this.objectPosition = '';
-        _this.offset = '';
-        _this.offsetDistance = '';
-        _this.offsetPath = '';
-        _this.offsetRotate = '';
-        _this.opacity = '';
-        _this.order = '';
-        _this.orphans = '';
-        _this.outline = '';
-        _this.outlineColor = '';
-        _this.outlineOffset = '';
-        _this.outlineStyle = '';
-        _this.outlineWidth = '';
-        _this.overflow = '';
-        _this.overflowAnchor = '';
-        _this.overflowClipMargin = '';
-        _this.overflowWrap = '';
-        _this.overflowX = '';
-        _this.overflowY = '';
-        _this.overscrollBehavior = '';
-        _this.overscrollBehaviorBlock = '';
-        _this.overscrollBehaviorInline = '';
-        _this.overscrollBehaviorX = '';
-        _this.overscrollBehaviorY = '';
-        _this.padding = '';
-        _this.paddingBlock = '';
-        _this.paddingBlockEnd = '';
-        _this.paddingBlockStart = '';
-        _this.paddingBottom = '';
-        _this.paddingInline = '';
-        _this.paddingInlineEnd = '';
-        _this.paddingInlineStart = '';
-        _this.paddingLeft = '';
-        _this.paddingRight = '';
-        _this.paddingTop = '';
-        _this.page = '';
-        _this.pageBreakAfter = '';
-        _this.pageBreakBefore = '';
-        _this.pageBreakInside = '';
-        _this.paintOrder = '';
-        _this.perspective = '';
-        _this.perspectiveOrigin = '';
-        _this.placeContent = '';
-        _this.placeItems = '';
-        _this.placeSelf = '';
-        _this.pointerEvents = '';
-        _this.position = '';
-        _this.printColorAdjust = '';
-        _this.quotes = '';
-        _this.resize = '';
-        _this.right = '';
-        _this.rotate = '';
-        _this.rowGap = '';
-        _this.rubyPosition = '';
-        _this.scale = '';
-        _this.scrollBehavior = '';
-        _this.scrollMargin = '';
-        _this.scrollMarginBlock = '';
-        _this.scrollMarginBlockEnd = '';
-        _this.scrollMarginBlockStart = '';
-        _this.scrollMarginBottom = '';
-        _this.scrollMarginInline = '';
-        _this.scrollMarginInlineEnd = '';
-        _this.scrollMarginInlineStart = '';
-        _this.scrollMarginLeft = '';
-        _this.scrollMarginRight = '';
-        _this.scrollMarginTop = '';
-        _this.scrollPadding = '';
-        _this.scrollPaddingBlock = '';
-        _this.scrollPaddingBlockEnd = '';
-        _this.scrollPaddingBlockStart = '';
-        _this.scrollPaddingBottom = '';
-        _this.scrollPaddingInline = '';
-        _this.scrollPaddingInlineEnd = '';
-        _this.scrollPaddingInlineStart = '';
-        _this.scrollPaddingLeft = '';
-        _this.scrollPaddingRight = '';
-        _this.scrollPaddingTop = '';
-        _this.scrollSnapAlign = '';
-        _this.scrollSnapStop = '';
-        _this.scrollSnapType = '';
-        _this.scrollbarGutter = '';
-        _this.shapeImageThreshold = '';
-        _this.shapeMargin = '';
-        _this.shapeOutside = '';
-        _this.shapeRendering = '';
-        _this.stopColor = '';
-        _this.stopOpacity = '';
-        _this.stroke = '';
-        _this.strokeDasharray = '';
-        _this.strokeDashoffset = '';
-        _this.strokeLinecap = '';
-        _this.strokeLinejoin = '';
-        _this.strokeMiterlimit = '';
-        _this.strokeOpacity = '';
-        _this.strokeWidth = '';
-        _this.tabSize = '';
-        _this.tableLayout = '';
-        _this.textAlign = '';
-        _this.textAlignLast = '';
-        _this.textAnchor = '';
-        _this.textCombineUpright = '';
-        _this.textDecoration = '';
-        _this.textDecorationColor = '';
-        _this.textDecorationLine = '';
-        _this.textDecorationSkipInk = '';
-        _this.textDecorationStyle = '';
-        _this.textDecorationThickness = '';
-        _this.textEmphasis = '';
-        _this.textEmphasisColor = '';
-        _this.textEmphasisPosition = '';
-        _this.textEmphasisStyle = '';
-        _this.textIndent = '';
-        _this.textOrientation = '';
-        _this.textOverflow = '';
-        _this.textRendering = '';
-        _this.textShadow = '';
-        _this.textTransform = '';
-        _this.textUnderlineOffset = '';
-        _this.textUnderlinePosition = '';
-        _this.top = '';
-        _this.touchAction = '';
-        _this.transform = '';
-        _this.transformBox = '';
-        _this.transformOrigin = '';
-        _this.transformStyle = '';
-        _this.transition = '';
-        _this.transitionDelay = '';
-        _this.transitionDuration = '';
-        _this.transitionProperty = '';
-        _this.transitionTimingFunction = '';
-        _this.translate = '';
-        _this.unicodeBidi = '';
-        _this.userSelect = '';
-        _this.verticalAlign = '';
-        _this.visibility = '';
-        _this.webkitAlignContent = '';
-        _this.webkitAlignItems = '';
-        _this.webkitAlignSelf = '';
-        _this.webkitAnimation = '';
-        _this.webkitAnimationDelay = '';
-        _this.webkitAnimationDirection = '';
-        _this.webkitAnimationDuration = '';
-        _this.webkitAnimationFillMode = '';
-        _this.webkitAnimationIterationCount = '';
-        _this.webkitAnimationName = '';
-        _this.webkitAnimationPlayState = '';
-        _this.webkitAnimationTimingFunction = '';
-        _this.webkitAppearance = '';
-        _this.webkitBackfaceVisibility = '';
-        _this.webkitBackgroundClip = '';
-        _this.webkitBackgroundOrigin = '';
-        _this.webkitBackgroundSize = '';
-        _this.webkitBorderBottomLeftRadius = '';
-        _this.webkitBorderBottomRightRadius = '';
-        _this.webkitBorderRadius = '';
-        _this.webkitBorderTopLeftRadius = '';
-        _this.webkitBorderTopRightRadius = '';
-        _this.webkitBoxAlign = '';
-        _this.webkitBoxFlex = '';
-        _this.webkitBoxOrdinalGroup = '';
-        _this.webkitBoxOrient = '';
-        _this.webkitBoxPack = '';
-        _this.webkitBoxShadow = '';
-        _this.webkitBoxSizing = '';
-        _this.webkitFilter = '';
-        _this.webkitFlex = '';
-        _this.webkitFlexBasis = '';
-        _this.webkitFlexDirection = '';
-        _this.webkitFlexFlow = '';
-        _this.webkitFlexGrow = '';
-        _this.webkitFlexShrink = '';
-        _this.webkitFlexWrap = '';
-        _this.webkitJustifyContent = '';
-        _this.webkitLineClamp = '';
-        _this.webkitMask = '';
-        _this.webkitMaskBoxImage = '';
-        _this.webkitMaskBoxImageOutset = '';
-        _this.webkitMaskBoxImageRepeat = '';
-        _this.webkitMaskBoxImageSlice = '';
-        _this.webkitMaskBoxImageSource = '';
-        _this.webkitMaskBoxImageWidth = '';
-        _this.webkitMaskClip = '';
-        _this.webkitMaskComposite = '';
-        _this.webkitMaskImage = '';
-        _this.webkitMaskOrigin = '';
-        _this.webkitMaskPosition = '';
-        _this.webkitMaskRepeat = '';
-        _this.webkitMaskSize = '';
-        _this.webkitOrder = '';
-        _this.webkitPerspective = '';
-        _this.webkitPerspectiveOrigin = '';
-        _this.webkitTextFillColor = '';
-        _this.webkitTextSizeAdjust = '';
-        _this.webkitTextStroke = '';
-        _this.webkitTextStrokeColor = '';
-        _this.webkitTextStrokeWidth = '';
-        _this.webkitTransform = '';
-        _this.webkitTransformOrigin = '';
-        _this.webkitTransformStyle = '';
-        _this.webkitTransition = '';
-        _this.webkitTransitionDelay = '';
-        _this.webkitTransitionDuration = '';
-        _this.webkitTransitionProperty = '';
-        _this.webkitTransitionTimingFunction = '';
-        _this.webkitUserSelect = '';
-        _this.whiteSpace = '';
-        _this.widows = '';
-        _this.width = '';
-        _this.willChange = '';
-        _this.wordBreak = '';
-        _this.wordSpacing = '';
-        _this.wordWrap = '';
-        _this.writingMode = '';
-        _this.zIndex = '';
-        return _this;
+        this.accentColor = '';
+        this.alignContent = '';
+        this.alignItems = '';
+        this.alignSelf = '';
+        this.alignmentBaseline = '';
+        this.all = '';
+        this.animation = '';
+        this.animationComposition = '';
+        this.animationDelay = '';
+        this.animationDirection = '';
+        this.animationDuration = '';
+        this.animationFillMode = '';
+        this.animationIterationCount = '';
+        this.animationName = '';
+        this.animationPlayState = '';
+        this.animationTimingFunction = '';
+        this.appearance = '';
+        this.aspectRatio = '';
+        this.backdropFilter = '';
+        this.backfaceVisibility = '';
+        this.background = '';
+        this.backgroundAttachment = '';
+        this.backgroundBlendMode = '';
+        this.backgroundClip = '';
+        this.backgroundColor = '';
+        this.backgroundImage = '';
+        this.backgroundOrigin = '';
+        this.backgroundPosition = '';
+        this.backgroundPositionX = '';
+        this.backgroundPositionY = '';
+        this.backgroundRepeat = '';
+        this.backgroundSize = '';
+        this.baselineShift = '';
+        this.blockSize = '';
+        this.border = '';
+        this.borderBlock = '';
+        this.borderBlockColor = '';
+        this.borderBlockEnd = '';
+        this.borderBlockEndColor = '';
+        this.borderBlockEndStyle = '';
+        this.borderBlockEndWidth = '';
+        this.borderBlockStart = '';
+        this.borderBlockStartColor = '';
+        this.borderBlockStartStyle = '';
+        this.borderBlockStartWidth = '';
+        this.borderBlockStyle = '';
+        this.borderBlockWidth = '';
+        this.borderBottom = '';
+        this.borderBottomColor = '';
+        this.borderBottomLeftRadius = '';
+        this.borderBottomRightRadius = '';
+        this.borderBottomStyle = '';
+        this.borderBottomWidth = '';
+        this.borderCollapse = '';
+        this.borderColor = '';
+        this.borderEndEndRadius = '';
+        this.borderEndStartRadius = '';
+        this.borderImage = '';
+        this.borderImageOutset = '';
+        this.borderImageRepeat = '';
+        this.borderImageSlice = '';
+        this.borderImageSource = '';
+        this.borderImageWidth = '';
+        this.borderInline = '';
+        this.borderInlineColor = '';
+        this.borderInlineEnd = '';
+        this.borderInlineEndColor = '';
+        this.borderInlineEndStyle = '';
+        this.borderInlineEndWidth = '';
+        this.borderInlineStart = '';
+        this.borderInlineStartColor = '';
+        this.borderInlineStartStyle = '';
+        this.borderInlineStartWidth = '';
+        this.borderInlineStyle = '';
+        this.borderInlineWidth = '';
+        this.borderLeft = '';
+        this.borderLeftColor = '';
+        this.borderLeftStyle = '';
+        this.borderLeftWidth = '';
+        this.borderRadius = '';
+        this.borderRight = '';
+        this.borderRightColor = '';
+        this.borderRightStyle = '';
+        this.borderRightWidth = '';
+        this.borderSpacing = '';
+        this.borderStartEndRadius = '';
+        this.borderStartStartRadius = '';
+        this.borderStyle = '';
+        this.borderTop = '';
+        this.borderTopColor = '';
+        this.borderTopLeftRadius = '';
+        this.borderTopRightRadius = '';
+        this.borderTopStyle = '';
+        this.borderTopWidth = '';
+        this.borderWidth = '';
+        this.bottom = '';
+        this.boxShadow = '';
+        this.boxSizing = '';
+        this.breakAfter = '';
+        this.breakBefore = '';
+        this.breakInside = '';
+        this.captionSide = '';
+        this.caretColor = '';
+        this.clear = '';
+        this.clip = '';
+        this.clipPath = '';
+        this.clipRule = '';
+        this.color = '';
+        this.colorInterpolation = '';
+        this.colorInterpolationFilters = '';
+        this.colorScheme = '';
+        this.columnCount = '';
+        this.columnFill = '';
+        this.columnGap = '';
+        this.columnRule = '';
+        this.columnRuleColor = '';
+        this.columnRuleStyle = '';
+        this.columnRuleWidth = '';
+        this.columnSpan = '';
+        this.columnWidth = '';
+        this.columns = '';
+        this.contain = '';
+        this.containIntrinsicBlockSize = '';
+        this.containIntrinsicHeight = '';
+        this.containIntrinsicInlineSize = '';
+        this.containIntrinsicSize = '';
+        this.containIntrinsicWidth = '';
+        this.container = '';
+        this.containerName = '';
+        this.containerType = '';
+        this.content = '';
+        this.counterIncrement = '';
+        this.counterReset = '';
+        this.counterSet = '';
+        this.cssFloat = '';
+        this.cssText = '';
+        this.cursor = '';
+        this.direction = '';
+        this.display = '';
+        this.dominantBaseline = '';
+        this.emptyCells = '';
+        this.fill = '';
+        this.fillOpacity = '';
+        this.fillRule = '';
+        this.filter = '';
+        this.flex = '';
+        this.flexBasis = '';
+        this.flexDirection = '';
+        this.flexFlow = '';
+        this.flexGrow = '';
+        this.flexShrink = '';
+        this.flexWrap = '';
+        this.float = '';
+        this.floodColor = '';
+        this.floodOpacity = '';
+        this.font = '';
+        this.fontFamily = '';
+        this.fontFeatureSettings = '';
+        this.fontKerning = '';
+        this.fontOpticalSizing = '';
+        this.fontPalette = '';
+        this.fontSize = '';
+        this.fontSizeAdjust = '';
+        this.fontStretch = '';
+        this.fontStyle = '';
+        this.fontSynthesis = '';
+        this.fontSynthesisSmallCaps = '';
+        this.fontSynthesisStyle = '';
+        this.fontSynthesisWeight = '';
+        this.fontVariant = '';
+        this.fontVariantAlternates = '';
+        this.fontVariantCaps = '';
+        this.fontVariantEastAsian = '';
+        this.fontVariantLigatures = '';
+        this.fontVariantNumeric = '';
+        this.fontVariantPosition = '';
+        this.fontVariationSettings = '';
+        this.fontWeight = '';
+        this.forcedColorAdjust = '';
+        this.gap = '';
+        this.grid = '';
+        this.gridArea = '';
+        this.gridAutoColumns = '';
+        this.gridAutoFlow = '';
+        this.gridAutoRows = '';
+        this.gridColumn = '';
+        this.gridColumnEnd = '';
+        this.gridColumnGap = '';
+        this.gridColumnStart = '';
+        this.gridGap = '';
+        this.gridRow = '';
+        this.gridRowEnd = '';
+        this.gridRowGap = '';
+        this.gridRowStart = '';
+        this.gridTemplate = '';
+        this.gridTemplateAreas = '';
+        this.gridTemplateColumns = '';
+        this.gridTemplateRows = '';
+        this.height = '';
+        this.hyphenateCharacter = '';
+        this.hyphens = '';
+        this.imageOrientation = '';
+        this.imageRendering = '';
+        this.inlineSize = '';
+        this.inset = '';
+        this.insetBlock = '';
+        this.insetBlockEnd = '';
+        this.insetBlockStart = '';
+        this.insetInline = '';
+        this.insetInlineEnd = '';
+        this.insetInlineStart = '';
+        this.isolation = '';
+        this.justifyContent = '';
+        this.justifyItems = '';
+        this.justifySelf = '';
+        this.left = '';
+        this.letterSpacing = '';
+        this.lightingColor = '';
+        this.lineBreak = '';
+        this.lineHeight = '';
+        this.listStyle = '';
+        this.listStyleImage = '';
+        this.listStylePosition = '';
+        this.listStyleType = '';
+        this.margin = '';
+        this.marginBlock = '';
+        this.marginBlockEnd = '';
+        this.marginBlockStart = '';
+        this.marginBottom = '';
+        this.marginInline = '';
+        this.marginInlineEnd = '';
+        this.marginInlineStart = '';
+        this.marginLeft = '';
+        this.marginRight = '';
+        this.marginTop = '';
+        this.marker = '';
+        this.markerEnd = '';
+        this.markerMid = '';
+        this.markerStart = '';
+        this.mask = '';
+        this.maskClip = '';
+        this.maskComposite = '';
+        this.maskImage = '';
+        this.maskMode = '';
+        this.maskOrigin = '';
+        this.maskPosition = '';
+        this.maskRepeat = '';
+        this.maskSize = '';
+        this.maskType = '';
+        this.mathStyle = '';
+        this.maxBlockSize = '';
+        this.maxHeight = '';
+        this.maxInlineSize = '';
+        this.maxWidth = '';
+        this.minBlockSize = '';
+        this.minHeight = '';
+        this.minInlineSize = '';
+        this.minWidth = '';
+        this.mixBlendMode = '';
+        this.objectFit = '';
+        this.objectPosition = '';
+        this.offset = '';
+        this.offsetDistance = '';
+        this.offsetPath = '';
+        this.offsetRotate = '';
+        this.opacity = '';
+        this.order = '';
+        this.orphans = '';
+        this.outline = '';
+        this.outlineColor = '';
+        this.outlineOffset = '';
+        this.outlineStyle = '';
+        this.outlineWidth = '';
+        this.overflow = '';
+        this.overflowAnchor = '';
+        this.overflowClipMargin = '';
+        this.overflowWrap = '';
+        this.overflowX = '';
+        this.overflowY = '';
+        this.overscrollBehavior = '';
+        this.overscrollBehaviorBlock = '';
+        this.overscrollBehaviorInline = '';
+        this.overscrollBehaviorX = '';
+        this.overscrollBehaviorY = '';
+        this.padding = '';
+        this.paddingBlock = '';
+        this.paddingBlockEnd = '';
+        this.paddingBlockStart = '';
+        this.paddingBottom = '';
+        this.paddingInline = '';
+        this.paddingInlineEnd = '';
+        this.paddingInlineStart = '';
+        this.paddingLeft = '';
+        this.paddingRight = '';
+        this.paddingTop = '';
+        this.page = '';
+        this.pageBreakAfter = '';
+        this.pageBreakBefore = '';
+        this.pageBreakInside = '';
+        this.paintOrder = '';
+        this.perspective = '';
+        this.perspectiveOrigin = '';
+        this.placeContent = '';
+        this.placeItems = '';
+        this.placeSelf = '';
+        this.pointerEvents = '';
+        this.position = '';
+        this.printColorAdjust = '';
+        this.quotes = '';
+        this.resize = '';
+        this.right = '';
+        this.rotate = '';
+        this.rowGap = '';
+        this.rubyPosition = '';
+        this.scale = '';
+        this.scrollBehavior = '';
+        this.scrollMargin = '';
+        this.scrollMarginBlock = '';
+        this.scrollMarginBlockEnd = '';
+        this.scrollMarginBlockStart = '';
+        this.scrollMarginBottom = '';
+        this.scrollMarginInline = '';
+        this.scrollMarginInlineEnd = '';
+        this.scrollMarginInlineStart = '';
+        this.scrollMarginLeft = '';
+        this.scrollMarginRight = '';
+        this.scrollMarginTop = '';
+        this.scrollPadding = '';
+        this.scrollPaddingBlock = '';
+        this.scrollPaddingBlockEnd = '';
+        this.scrollPaddingBlockStart = '';
+        this.scrollPaddingBottom = '';
+        this.scrollPaddingInline = '';
+        this.scrollPaddingInlineEnd = '';
+        this.scrollPaddingInlineStart = '';
+        this.scrollPaddingLeft = '';
+        this.scrollPaddingRight = '';
+        this.scrollPaddingTop = '';
+        this.scrollSnapAlign = '';
+        this.scrollSnapStop = '';
+        this.scrollSnapType = '';
+        this.scrollbarGutter = '';
+        this.shapeImageThreshold = '';
+        this.shapeMargin = '';
+        this.shapeOutside = '';
+        this.shapeRendering = '';
+        this.stopColor = '';
+        this.stopOpacity = '';
+        this.stroke = '';
+        this.strokeDasharray = '';
+        this.strokeDashoffset = '';
+        this.strokeLinecap = '';
+        this.strokeLinejoin = '';
+        this.strokeMiterlimit = '';
+        this.strokeOpacity = '';
+        this.strokeWidth = '';
+        this.tabSize = '';
+        this.tableLayout = '';
+        this.textAlign = '';
+        this.textAlignLast = '';
+        this.textAnchor = '';
+        this.textCombineUpright = '';
+        this.textDecoration = '';
+        this.textDecorationColor = '';
+        this.textDecorationLine = '';
+        this.textDecorationSkipInk = '';
+        this.textDecorationStyle = '';
+        this.textDecorationThickness = '';
+        this.textEmphasis = '';
+        this.textEmphasisColor = '';
+        this.textEmphasisPosition = '';
+        this.textEmphasisStyle = '';
+        this.textIndent = '';
+        this.textOrientation = '';
+        this.textOverflow = '';
+        this.textRendering = '';
+        this.textShadow = '';
+        this.textTransform = '';
+        this.textUnderlineOffset = '';
+        this.textUnderlinePosition = '';
+        this.top = '';
+        this.touchAction = '';
+        this.transform = '';
+        this.transformBox = '';
+        this.transformOrigin = '';
+        this.transformStyle = '';
+        this.transition = '';
+        this.transitionDelay = '';
+        this.transitionDuration = '';
+        this.transitionProperty = '';
+        this.transitionTimingFunction = '';
+        this.translate = '';
+        this.unicodeBidi = '';
+        this.userSelect = '';
+        this.verticalAlign = '';
+        this.visibility = '';
+        this.webkitAlignContent = '';
+        this.webkitAlignItems = '';
+        this.webkitAlignSelf = '';
+        this.webkitAnimation = '';
+        this.webkitAnimationDelay = '';
+        this.webkitAnimationDirection = '';
+        this.webkitAnimationDuration = '';
+        this.webkitAnimationFillMode = '';
+        this.webkitAnimationIterationCount = '';
+        this.webkitAnimationName = '';
+        this.webkitAnimationPlayState = '';
+        this.webkitAnimationTimingFunction = '';
+        this.webkitAppearance = '';
+        this.webkitBackfaceVisibility = '';
+        this.webkitBackgroundClip = '';
+        this.webkitBackgroundOrigin = '';
+        this.webkitBackgroundSize = '';
+        this.webkitBorderBottomLeftRadius = '';
+        this.webkitBorderBottomRightRadius = '';
+        this.webkitBorderRadius = '';
+        this.webkitBorderTopLeftRadius = '';
+        this.webkitBorderTopRightRadius = '';
+        this.webkitBoxAlign = '';
+        this.webkitBoxFlex = '';
+        this.webkitBoxOrdinalGroup = '';
+        this.webkitBoxOrient = '';
+        this.webkitBoxPack = '';
+        this.webkitBoxShadow = '';
+        this.webkitBoxSizing = '';
+        this.webkitFilter = '';
+        this.webkitFlex = '';
+        this.webkitFlexBasis = '';
+        this.webkitFlexDirection = '';
+        this.webkitFlexFlow = '';
+        this.webkitFlexGrow = '';
+        this.webkitFlexShrink = '';
+        this.webkitFlexWrap = '';
+        this.webkitJustifyContent = '';
+        this.webkitLineClamp = '';
+        this.webkitMask = '';
+        this.webkitMaskBoxImage = '';
+        this.webkitMaskBoxImageOutset = '';
+        this.webkitMaskBoxImageRepeat = '';
+        this.webkitMaskBoxImageSlice = '';
+        this.webkitMaskBoxImageSource = '';
+        this.webkitMaskBoxImageWidth = '';
+        this.webkitMaskClip = '';
+        this.webkitMaskComposite = '';
+        this.webkitMaskImage = '';
+        this.webkitMaskOrigin = '';
+        this.webkitMaskPosition = '';
+        this.webkitMaskRepeat = '';
+        this.webkitMaskSize = '';
+        this.webkitOrder = '';
+        this.webkitPerspective = '';
+        this.webkitPerspectiveOrigin = '';
+        this.webkitTextFillColor = '';
+        this.webkitTextSizeAdjust = '';
+        this.webkitTextStroke = '';
+        this.webkitTextStrokeColor = '';
+        this.webkitTextStrokeWidth = '';
+        this.webkitTransform = '';
+        this.webkitTransformOrigin = '';
+        this.webkitTransformStyle = '';
+        this.webkitTransition = '';
+        this.webkitTransitionDelay = '';
+        this.webkitTransitionDuration = '';
+        this.webkitTransitionProperty = '';
+        this.webkitTransitionTimingFunction = '';
+        this.webkitUserSelect = '';
+        this.whiteSpace = '';
+        this.widows = '';
+        this.width = '';
+        this.willChange = '';
+        this.wordBreak = '';
+        this.wordSpacing = '';
+        this.wordWrap = '';
+        this.writingMode = '';
+        this.zIndex = '';
     }
     return JElementStyleProperty;
-}(JElementStyleMap));
+}());
+var JElementCssStyle = /** @class */ (function (_super) {
+    __extends(JElementCssStyle, _super);
+    function JElementCssStyle() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Object.defineProperty(JElementCssStyle.prototype, "names", {
+        // 所有样式名称
+        get: function () {
+            var e_1, _a;
+            if (!StyleNamesMap.length) {
+                var map = new JElementStyleProperty();
+                var keys = Object.getOwnPropertyNames(map);
+                try {
+                    for (var keys_1 = __values(keys), keys_1_1 = keys_1.next(); !keys_1_1.done; keys_1_1 = keys_1.next()) {
+                        var k = keys_1_1.value;
+                        if (typeof map[k] === 'string')
+                            StyleNamesMap.push(k);
+                    }
+                }
+                catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                finally {
+                    try {
+                        if (keys_1_1 && !keys_1_1.done && (_a = keys_1.return)) _a.call(keys_1);
+                    }
+                    finally { if (e_1) throw e_1.error; }
+                }
+            }
+            return StyleNamesMap;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    return JElementCssStyle;
+}(JElementStyleDeclaration));
 // 最外层容器默认样式
 var ContainerDefaultStyle = {
     position: 'absolute',
@@ -1370,7 +1402,6 @@ var Transform = /** @class */ (function (_super) {
     return Transform;
 }(EventEmitter));
 
-var StyleNamesMap = [];
 var NumberStyleMap = ['left', 'top', 'right', 'bottom', 'width', 'height'];
 var JElementStyle = /** @class */ (function (_super) {
     __extends(JElementStyle, _super);
@@ -1381,36 +1412,9 @@ var JElementStyle = /** @class */ (function (_super) {
         }
         return _this;
     }
-    Object.defineProperty(JElementStyle.prototype, "names", {
-        // 所有样式名称
-        get: function () {
-            var e_1, _a;
-            if (!StyleNamesMap.length) {
-                var map = new JElementStyleProperty();
-                var keys = Object.getOwnPropertyNames(map);
-                try {
-                    for (var keys_1 = __values(keys), keys_1_1 = keys_1.next(); !keys_1_1.done; keys_1_1 = keys_1.next()) {
-                        var k = keys_1_1.value;
-                        if (typeof map[k] === 'string')
-                            StyleNamesMap.push(k);
-                    }
-                }
-                catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                finally {
-                    try {
-                        if (keys_1_1 && !keys_1_1.done && (_a = keys_1.return)) _a.call(keys_1);
-                    }
-                    finally { if (e_1) throw e_1.error; }
-                }
-            }
-            return StyleNamesMap;
-        },
-        enumerable: false,
-        configurable: true
-    });
     // 把样式应用到元素或当前对象
     JElementStyle.prototype.apply = function (data, target) {
-        var e_2, _a;
+        var e_1, _a;
         if (target === void 0) { target = this; }
         try {
             for (var _b = __values(this.names), _c = _b.next(); !_c.done; _c = _b.next()) {
@@ -1427,12 +1431,12 @@ var JElementStyle = /** @class */ (function (_super) {
                 }
             }
         }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_2) throw e_2.error; }
+            finally { if (e_1) throw e_1.error; }
         }
         return target;
     };
@@ -1454,7 +1458,7 @@ var JElementStyle = /** @class */ (function (_super) {
     };
     // 转为json
     JElementStyle.prototype.toJSON = function () {
-        var e_3, _a;
+        var e_2, _a;
         var obj = {};
         try {
             for (var _b = __values(this.names), _c = _b.next(); !_c.done; _c = _b.next()) {
@@ -1464,12 +1468,12 @@ var JElementStyle = /** @class */ (function (_super) {
                 obj[name_2] = this[name_2];
             }
         }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_3) throw e_3.error; }
+            finally { if (e_2) throw e_2.error; }
         }
         return obj;
     };
@@ -1507,7 +1511,7 @@ var JElementStyle = /** @class */ (function (_super) {
         return proxy;
     };
     return JElementStyle;
-}(JElementStyleMap));
+}(JElementCssStyle));
 
 var SupportEventNames = [
     'mousedown', 'mouseup', 'mouseover', 'mousemove', 'mouseout', 'mousewheel', 'click', 'dblclick', 'keydown', 'keypress', 'keyup', 'blur', 'change', 'focus', 'drag', 'dragenter', 'dragleave', 'dragover', 'dragstart', 'drop'
@@ -1635,6 +1639,7 @@ var JEvent = /** @class */ (function () {
 var JElement = /** @class */ (function (_super) {
     __extends(JElement, _super);
     function JElement(option) {
+        if (option === void 0) { option = {}; }
         var _this = _super.call(this) || this;
         _this.id = '';
         // 类型名称
@@ -1652,6 +1657,8 @@ var JElement = /** @class */ (function (_super) {
         _this.type = _this.type || option.type || '';
         var nodeType = option.nodeType || 'div';
         _this.dom = document.createElement(nodeType);
+        if (option.editor)
+            _this.editor = option.editor;
         // 样式代理处理
         _this.style = JElementStyle.createProxy();
         _this.style.on('change', function (s) {
@@ -1906,7 +1913,7 @@ var JElement = /** @class */ (function (_super) {
             parent.dom.appendChild(child.dom);
             parent.children.push(child);
         }
-        else {
+        else if (child instanceof HTMLElement) {
             parent.dom.appendChild(child);
         }
     };
@@ -1918,7 +1925,8 @@ var JElement = /** @class */ (function (_super) {
     // 移除子元素
     JElement.prototype.removeChild = function (el) {
         // @ts-ignore
-        this.dom.removeChild(el.dom || el);
+        if (el.dom && el.dom.parentElement === this.dom)
+            this.dom.removeChild(el.dom || el);
         for (var i = this.children.length - 1; i > -1; i--) {
             if (this.children[i] === el)
                 return this.children.splice(i, 1);
@@ -1987,6 +1995,7 @@ var JElement = /** @class */ (function (_super) {
 var JBaseComponent = /** @class */ (function (_super) {
     __extends(JBaseComponent, _super);
     function JBaseComponent(option) {
+        if (option === void 0) { option = {}; }
         var _this = this;
         option.style = option.style || {};
         // position和overflow预设的值优先级最高
@@ -2056,6 +2065,7 @@ var JBaseComponent = /** @class */ (function (_super) {
 var JText = /** @class */ (function (_super) {
     __extends(JText, _super);
     function JText(option) {
+        if (option === void 0) { option = {}; }
         var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'div' })) || this;
         if (option.text)
             _this.text = option.text;
@@ -2082,6 +2092,7 @@ var JText = /** @class */ (function (_super) {
 var JImage = /** @class */ (function (_super) {
     __extends(JImage, _super);
     function JImage(option) {
+        if (option === void 0) { option = {}; }
         var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'img' })) || this;
         _this.target.dom.onload = function (e) {
             _this.emit('load', e);
@@ -2490,8 +2501,8 @@ var JControllerComponent = /** @class */ (function (_super) {
             y: util.toNumber(this.top) + util.toNumber(this.height) / 2,
         };
         // 编辑器坐标
-        var pos1 = util.toDomPosition(oldPosition, this.editor.dom);
-        var pos2 = util.toDomPosition(newPosition, this.editor.dom);
+        var pos1 = util.toDomPosition(oldPosition, this.editor.target.dom);
+        var pos2 = util.toDomPosition(newPosition, this.editor.target.dom);
         // 因为center是相对于编辑器的，所以事件坐标也需要转到编辑器
         var cx1 = pos1.x - center.x;
         var cy1 = pos1.y - center.y;
@@ -2603,6 +2614,7 @@ var JControllerComponent = /** @class */ (function (_super) {
     JControllerComponent.prototype.unbind = function (target) {
         if (this.target === target) {
             this.reset(false);
+            this.visible = false;
         }
     };
     return JControllerComponent;
@@ -2625,10 +2637,7 @@ var JEditor = /** @class */ (function (_super) {
         ];
         _this = _super.call(this, option) || this;
         // 所有支持的类型
-        _this.shapes = {
-            'image': JImage,
-            'text': JText
-        };
+        _this.shapes = new Map();
         if (typeof option.container === 'string')
             option.container = document.getElementById(option.container);
         _this.view = new JElement({
@@ -2654,6 +2663,10 @@ var JEditor = /** @class */ (function (_super) {
         if (option.container)
             option.container.appendChild(_this.view.dom);
         _this.view.addChild(_this.dom);
+        // @ts-ignore
+        _this.regShape('image', JImage);
+        // @ts-ignore
+        _this.regShape('text', JText);
         _this.init(option);
         _this.bindEvent(_this.view.dom);
         return _this;
@@ -2664,7 +2677,7 @@ var JEditor = /** @class */ (function (_super) {
         if (option.style.containerBackgroundColor)
             this.dom.style.backgroundColor = option.style.containerBackgroundColor;
         // 生成控制器
-        this.ElementController = new JControllerComponent({
+        this.elementController = new JControllerComponent({
             editor: this,
             visible: false
         });
@@ -2679,7 +2692,7 @@ var JEditor = /** @class */ (function (_super) {
         });
         this.on('mousedown', function (e) {
             this.selected = true;
-            this.ElementController.onDragStart(e);
+            this.elementController.onDragStart(e);
         });
     };
     Object.defineProperty(JEditor.prototype, "children", {
@@ -2723,12 +2736,12 @@ var JEditor = /** @class */ (function (_super) {
     // 选中某个元素
     JEditor.prototype.select = function (el) {
         if (el.selected) {
-            this.ElementController.bind(el);
             // 选把所有已选择的取消
             this.selectedElements.every(function (p) { return p !== el && p.selected && (p.selected = false); });
+            this.elementController.bind(el);
         }
         else
-            this.ElementController.unbind(el);
+            this.elementController.unbind(el);
     };
     JEditor.prototype.resize = function (width, height) {
         var _this = this;
@@ -2757,9 +2770,11 @@ var JEditor = /** @class */ (function (_super) {
         });
         child.on('mousedown', function (e) {
             this.selected = true;
-            self.ElementController.onDragStart(e);
+            self.elementController.onDragStart(e);
         });
-        return this.target.addChild(child);
+        this.target.addChild(child, this.target);
+        child.parent = this; // 把父设置成编辑器
+        child.editor = this;
     };
     // 移除
     JEditor.prototype.removeChild = function (el) {
@@ -2791,7 +2806,7 @@ var JEditor = /** @class */ (function (_super) {
             var el = this.children[i];
             this.removeChild(el);
         }
-        this.ElementController.visible = false;
+        this.elementController.visible = false;
     };
     // 缩放
     JEditor.prototype.scale = function (x, y) {
@@ -2801,19 +2816,21 @@ var JEditor = /** @class */ (function (_super) {
         this.transform.scaleX = x;
         this.transform.scaleY = y;
     };
+    // 注册自定义组件
     JEditor.prototype.regShape = function (name, shape) {
-        if (this.shapes[name])
+        if (this.shapes.has(name))
             throw Error("\u5143\u7D20\u7C7B\u578B".concat(name, "\u5DF2\u7ECF\u5B58\u5728"));
-        this.shapes[name] = shape;
+        this.shapes.set(name, shape);
+        return shape;
     };
     // 创建元素
     JEditor.prototype.createShape = function (type, option) {
         if (option === void 0) { option = {}; }
-        var shape = typeof type === 'string' ? this.shapes[type] : type;
+        var shape = typeof type === 'string' ? this.shapes.get(type) : type;
         if (!shape) {
             throw Error("".concat(type, "\u4E0D\u5B58\u5728\u7684\u5143\u7D20\u7C7B\u578B"));
         }
-        var el = new shape(__assign(__assign({}, option), { type: type }));
+        var el = new shape(__assign(__assign({}, option), { editor: this, type: type }));
         return el;
     };
     // 创建图片元素

@@ -1,19 +1,21 @@
 import EventEmiter from 'eventemitter3';
 import JTransform from '../constant/transform';
-import JStyle from './style';
 import JEvent from '../core/event';
-export default class JElement<T extends HTMLElement = HTMLElement> extends EventEmiter {
-    constructor(option: any);
+import JElementCssStyle from '../constant/styleMap';
+import { IJElement, IJEditor } from '../constant/types';
+export default class JElement<T extends HTMLElement = HTMLElement> extends EventEmiter implements IJElement {
+    constructor(option?: any);
     initOption(option: any): void;
     bindEvent(dom?: HTMLElement): void;
     id: string;
     type: string;
     private _children;
-    get children(): JElement<HTMLElement>[];
+    get children(): IJElement<HTMLElement>[];
     dom: T;
-    parent: JElement | undefined;
+    parent: IJElement | undefined;
+    editor: IJEditor;
     event: JEvent;
-    style: JStyle;
+    style: JElementCssStyle;
     get x(): number | string;
     set x(v: number | string);
     get y(): number | string;
@@ -46,10 +48,10 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     attr(name: string, value: string | number | undefined): any;
     move(dx: any, dy: any): void;
     resize(w: any, h: any): void;
-    addChild(child: JElement | HTMLElement, parent?: JElement): JElement<HTMLElement>;
+    addChild(child: IJElement | HTMLElement, parent?: IJElement): IJElement<HTMLElement>;
     remove(): void;
-    removeChild(el: JElement | HTMLElement): JElement<HTMLElement>[];
-    toJSON(props?: any[], ig?: (p: JElement) => boolean): {
+    removeChild(el: IJElement | HTMLElement): IJElement<HTMLElement>[];
+    toJSON(props?: any[], ig?: (p: IJElement) => boolean): {
         children: any[];
     };
     toString(): string;

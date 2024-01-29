@@ -1,8 +1,8 @@
 import Base from './base';
-import JElement from '../core/element';
+import { IJBaseComponent } from 'src/constant/types';
 
-export default class JImage extends Base<HTMLImageElement> {
-    constructor(option) {
+export default class JImage extends Base<HTMLImageElement> implements IJBaseComponent {
+    constructor(option={} as any) {
         super({
             ...option,
             nodeType: 'img'

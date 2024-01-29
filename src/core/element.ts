@@ -4,10 +4,12 @@ import JTransform from '../constant/transform';
 import JStyle from './style';
 import util from '../lib/util';
 import JEvent from '../core/event';
+import JElementCssStyle from '../constant/styleMap';
+import { IJElement, IJEditor } from '../constant/types';
 
-export default class JElement<T extends HTMLElement = HTMLElement> extends EventEmiter {
+export default class JElement<T extends HTMLElement = HTMLElement> extends EventEmiter  implements IJElement{
 
-    constructor(option) {
+    constructor(option = {} as any) {
         super();
 
         // 复制属性
@@ -21,7 +23,9 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         this.type = this.type || option.type || '';
 
         const nodeType = option.nodeType || 'div';
-        this.dom = document.createElement(nodeType);        
+        this.dom = document.createElement(nodeType);   
+        
+        if(option.editor) this.editor = option.editor;
 
         // 样式代理处理
         this.style = JStyle.createProxy();
@@ -69,19 +73,23 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     // 类型名称
     type = '';
     // 子元素
-    private _children = [] as Array<JElement>;
+    private _children = [] as Array<IJElement>;
     get children() {
         return this._children;
     }
     // 控件最外层的容器
     dom: T;
     // 父元素
-    parent: JElement | undefined;
+    parent: IJElement | undefined;
+
+    // 当前编辑器
+    editor: IJEditor;
+
     // 事件处理
     event: JEvent;
 
     // 样式代理
-    style: JStyle;
+    style: JElementCssStyle;
 
     // 坐标X
     get x() {
@@ -220,7 +228,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     }
 
     // 新增子元素
-    addChild(child: JElement|HTMLElement, parent: JElement = this) {
+    addChild(child: IJElement|HTMLElement, parent: IJElement = this) {
         if(Array.isArray(child)) {
             for(const c of child) {
                 parent.addChild(c);
@@ -232,7 +240,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
             parent.dom.appendChild(child.dom);
             parent.children.push(child);
         }
-        else {
+        else if(child instanceof HTMLElement) {
             parent.dom.appendChild(child);
         }
     }
@@ -243,9 +251,9 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     }
 
     // 移除子元素
-    removeChild(el: JElement|HTMLElement) {
+    removeChild(el: IJElement|HTMLElement) {
         // @ts-ignore
-        this.dom.removeChild(el.dom || el);
+        if(el.dom && el.dom.parentElement === this.dom) this.dom.removeChild(el.dom || el);
 
         for(let i=this.children.length-1;i>-1; i--) {
             if(this.children[i] === el) return this.children.splice(i, 1);
@@ -255,7 +263,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     }
 
     // 转为json
-    toJSON(props=[], ig=(p:JElement)=>true) {
+    toJSON(props=[], ig=(p: IJElement)=>true) {
         const fields = ['left', 'top', 'width', 'height', 'rotation', 'type', 'style', 'transform', 'id', ...props];
         const obj = {
             children: []

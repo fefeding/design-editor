@@ -1,6 +1,7 @@
 import Base from './base';
-export default class JText extends Base<HTMLDivElement> {
-    constructor(option: any);
+import { IJBaseComponent } from '../constant/types';
+export default class JText extends Base<HTMLDivElement> implements IJBaseComponent {
+    constructor(option?: any);
     get text(): string;
     set text(v: string);
     toJSON(props?: any[]): {

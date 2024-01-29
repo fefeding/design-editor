@@ -1,9 +1,10 @@
 
+import { IJBaseComponent, IJElement } from '../constant/types';
 import { ContainerDefaultStyle } from '../constant/styleMap';
 import JElement from '../core/element';
 
-export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends JElement<T> {
-    constructor(option) {
+export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends JElement<T> implements IJBaseComponent {
+    constructor(option = {} as any) {
         option.style = option.style || {};
         // position和overflow预设的值优先级最高
         option.style = Object.assign({...ContainerDefaultStyle}, option.style, {
@@ -47,7 +48,7 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
     }
 
     // 当前控件的核心元素
-    target: JElement<T>;
+    target: IJElement<T>;
 
     // 选中
     private _selected = false;
@@ -72,7 +73,7 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
 
     toJSON(props = []) {
         // 转json忽略渲染组件
-        return super.toJSON(props, (el:JElement)=>{
+        return super.toJSON(props, (el:IJElement)=>{
             return el !== this.target;
         });
     }

@@ -1,6 +1,7 @@
 
 import util from '../lib/util';
 import JElement from '../core/element';
+import { IJControllerItem, IJControllerComponent, IJBaseComponent, IJEditor } from '../constant/types';
 
 // 鼠标指针
 const GCursors = {
@@ -17,7 +18,7 @@ const GCursors = {
 };
 
 // 控制元素移动和矩阵变换
-export class JControllerItem extends JElement<HTMLDivElement> {
+export class JControllerItem extends JElement<HTMLDivElement> implements IJControllerItem {
     constructor(option) {
 
         option.style = option.style || {};
@@ -57,7 +58,7 @@ export class JControllerItem extends JElement<HTMLDivElement> {
     dir: string = '';
     size: number = 8;
     // 当前编辑器
-    editor: JElement;
+    editor: IJEditor;
 
     protected _isMoving = false;
     get isMoving() {
@@ -134,7 +135,7 @@ export class JControllerItem extends JElement<HTMLDivElement> {
 }
 
 // 元素大小位置控制器
-export default class JControllerComponent extends JControllerItem {
+export default class JControllerComponent extends JControllerItem implements IJControllerComponent {
     constructor(option) {
         option.zIndex = 100000;
         option.style = option.style || {};
@@ -306,7 +307,7 @@ export default class JControllerComponent extends JControllerItem {
     rotateItem: JControllerItem;
     skewItem: JControllerItem;
 
-    target: JElement;
+    target: IJBaseComponent;
     // 选择框边距
     paddingSize = 1;
 
@@ -463,8 +464,8 @@ export default class JControllerComponent extends JControllerItem {
             y: util.toNumber(this.top) + util.toNumber(this.height)/2,
         };
         // 编辑器坐标
-        const pos1 = util.toDomPosition(oldPosition, this.editor.dom);
-        const pos2 = util.toDomPosition(newPosition, this.editor.dom);
+        const pos1 = util.toDomPosition(oldPosition, this.editor.target.dom);
+        const pos2 = util.toDomPosition(newPosition, this.editor.target.dom);
 
         // 因为center是相对于编辑器的，所以事件坐标也需要转到编辑器
         const cx1 = pos1.x - center.x;
@@ -542,7 +543,7 @@ export default class JControllerComponent extends JControllerItem {
     }
 
     // 绑定到操作的对象
-    bind(target: JElement) {
+    bind(target: IJBaseComponent) {
         this.isEditor = target === this.editor;
         this.reset(this.isEditor);
 
@@ -575,9 +576,10 @@ export default class JControllerComponent extends JControllerItem {
         });
     }
     // 解除绑定
-    unbind(target: JElement) {
+    unbind(target: IJBaseComponent) {
         if(this.target === target) {
            this.reset(false);
+           this.visible = false;
         }
     }
 }

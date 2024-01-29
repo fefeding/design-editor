@@ -28,6 +28,7 @@ import Base from './base';
 var JText = /** @class */ (function (_super) {
     __extends(JText, _super);
     function JText(option) {
+        if (option === void 0) { option = {}; }
         var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'div' })) || this;
         if (option.text)
             _this.text = option.text;

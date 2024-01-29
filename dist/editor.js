@@ -58,10 +58,7 @@ var JEditor = /** @class */ (function (_super) {
         ];
         _this = _super.call(this, option) || this;
         // 所有支持的类型
-        _this.shapes = {
-            'image': JImage,
-            'text': JText
-        };
+        _this.shapes = new Map();
         if (typeof option.container === 'string')
             option.container = document.getElementById(option.container);
         _this.view = new JElement({
@@ -87,6 +84,10 @@ var JEditor = /** @class */ (function (_super) {
         if (option.container)
             option.container.appendChild(_this.view.dom);
         _this.view.addChild(_this.dom);
+        // @ts-ignore
+        _this.regShape('image', JImage);
+        // @ts-ignore
+        _this.regShape('text', JText);
         _this.init(option);
         _this.bindEvent(_this.view.dom);
         return _this;
@@ -97,7 +98,7 @@ var JEditor = /** @class */ (function (_super) {
         if (option.style.containerBackgroundColor)
             this.dom.style.backgroundColor = option.style.containerBackgroundColor;
         // 生成控制器
-        this.ElementController = new JController({
+        this.elementController = new JController({
             editor: this,
             visible: false
         });
@@ -112,7 +113,7 @@ var JEditor = /** @class */ (function (_super) {
         });
         this.on('mousedown', function (e) {
             this.selected = true;
-            this.ElementController.onDragStart(e);
+            this.elementController.onDragStart(e);
         });
     };
     Object.defineProperty(JEditor.prototype, "children", {
@@ -155,13 +156,12 @@ var JEditor = /** @class */ (function (_super) {
     };
     // 选中某个元素
     JEditor.prototype.select = function (el) {
-        if (el.selected) {
-            this.ElementController.bind(el);
-            // 选把所有已选择的取消
-            this.selectedElements.every(function (p) { return p !== el && p.selected && (p.selected = false); });
-        }
+        // 选把所有已选择的取消
+        this.selectedElements.every(function (p) { return p !== el && p.selected && (p.selected = false); });
+        if (el.selected)
+            this.elementController.bind(el);
         else
-            this.ElementController.unbind(el);
+            this.elementController.unbind(el);
     };
     JEditor.prototype.resize = function (width, height) {
         var _this = this;
@@ -190,9 +190,9 @@ var JEditor = /** @class */ (function (_super) {
         });
         child.on('mousedown', function (e) {
             this.selected = true;
-            self.ElementController.onDragStart(e);
+            self.elementController.onDragStart(e);
         });
-        return this.target.addChild(child);
+        return this.target.addChild(child, this);
     };
     // 移除
     JEditor.prototype.removeChild = function (el) {
@@ -224,7 +224,7 @@ var JEditor = /** @class */ (function (_super) {
             var el = this.children[i];
             this.removeChild(el);
         }
-        this.ElementController.visible = false;
+        this.elementController.visible = false;
     };
     // 缩放
     JEditor.prototype.scale = function (x, y) {
@@ -234,15 +234,17 @@ var JEditor = /** @class */ (function (_super) {
         this.transform.scaleX = x;
         this.transform.scaleY = y;
     };
+    // 注册自定义组件
     JEditor.prototype.regShape = function (name, shape) {
-        if (this.shapes[name])
+        if (this.shapes.has(name))
             throw Error("\u5143\u7D20\u7C7B\u578B".concat(name, "\u5DF2\u7ECF\u5B58\u5728"));
-        this.shapes[name] = shape;
+        this.shapes.set(name, shape);
+        return shape;
     };
     // 创建元素
     JEditor.prototype.createShape = function (type, option) {
         if (option === void 0) { option = {}; }
-        var shape = typeof type === 'string' ? this.shapes[type] : type;
+        var shape = typeof type === 'string' ? this.shapes.get(type) : type;
         if (!shape) {
             throw Error("".concat(type, "\u4E0D\u5B58\u5728\u7684\u5143\u7D20\u7C7B\u578B"));
         }

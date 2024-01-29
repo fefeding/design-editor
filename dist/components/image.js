@@ -28,6 +28,7 @@ import Base from './base';
 var JImage = /** @class */ (function (_super) {
     __extends(JImage, _super);
     function JImage(option) {
+        if (option === void 0) { option = {}; }
         var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'img' })) || this;
         _this.target.dom.onload = function (e) {
             _this.emit('load', e);

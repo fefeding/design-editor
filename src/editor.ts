@@ -4,8 +4,9 @@ import JImage from './components/image';
 import JElement from './core/element';
 import JController from './components/controller';
 import util from './lib/util';
+import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent } from './constant/types';
 
-export default class JEditor extends JBase {
+export default class JEditor extends JBase implements IJEditor {
 
     constructor(option={} as any) {  
         option.style = option.style||{};
@@ -44,6 +45,11 @@ export default class JEditor extends JBase {
         });
         if(option.container) option.container.appendChild(this.view.dom); 
         this.view.addChild(this.dom);
+        
+        // @ts-ignore
+        this.regShape('image', JImage);
+        // @ts-ignore
+        this.regShape('text', JText);
 
         this.init(option);  
 
@@ -56,7 +62,7 @@ export default class JEditor extends JBase {
         if(option.style.containerBackgroundColor) this.dom.style.backgroundColor = option.style.containerBackgroundColor;
 
         // 生成控制器
-        this.ElementController = new JController({
+        this.elementController = new JController({
             editor: this,
             visible: false
         });
@@ -78,7 +84,7 @@ export default class JEditor extends JBase {
         });
         this.on('mousedown', function(e) {
             this.selected = true;
-            this.ElementController.onDragStart(e);
+            this.elementController.onDragStart(e);
         });
     }
 
@@ -86,13 +92,10 @@ export default class JEditor extends JBase {
     view: JElement<HTMLDivElement>;
 
     // 所有支持的类型
-    shapes = {
-        'image': JImage,
-        'text': JText
-    } as  { [key: string]: typeof JBase};
+    protected shapes = new Map<string, IJBaseComponent>();
 
     // 元素控帛器
-    ElementController: JController;
+    elementController: IJControllerComponent;
 
     // 重写子集为target
     get children() {
@@ -115,13 +118,13 @@ export default class JEditor extends JBase {
     }
 
     // 选中某个元素
-    select(el: JBase) {
+    select(el: IJBaseComponent) {
         if(el.selected) {
-            this.ElementController.bind(el);
             // 选把所有已选择的取消
             this.selectedElements.every(p=> p !== el && p.selected && (p.selected = false));
+            this.elementController.bind(el);
         }
-        else this.ElementController.unbind(el);
+        else this.elementController.unbind(el);
     }
 
     resize(width=this.width, height=this.height) {
@@ -143,7 +146,7 @@ export default class JEditor extends JBase {
     }
 
     // 添加元素到画布
-    addChild(child: JBase) {
+    addChild(child: IJBaseComponent) {
         if(child === this.target) {
             return super.addChild(child);
         }
@@ -153,13 +156,15 @@ export default class JEditor extends JBase {
         });
         child.on('mousedown', function(e) {
             this.selected = true;
-            self.ElementController.onDragStart(e);
+            self.elementController.onDragStart(e);
         });
-        return this.target.addChild(child);
+        this.target.addChild(child, this.target);
+        child.parent = this;// 把父设置成编辑器
+        child.editor = this;
     }
 
     // 移除
-    removeChild(el: JElement|HTMLElement) {
+    removeChild(el: IJElement|HTMLElement) {
         if(el === this.target) {
             //console.warn('不能移除自已');
             return;
@@ -191,7 +196,7 @@ export default class JEditor extends JBase {
             const el = this.children[i];
             this.removeChild(el);
         }
-        this.ElementController.visible = false;
+        this.elementController.visible = false;
     }
 
     // 缩放
@@ -201,19 +206,22 @@ export default class JEditor extends JBase {
         this.transform.scaleY = y;
     }
 
-    regShape(name, shape) {
-        if(this.shapes[name]) throw Error(`元素类型${name}已经存在`);
-        this.shapes[name] = shape;
+    // 注册自定义组件
+    regShape(name: string, shape: IJBaseComponent) {
+        if(this.shapes.has(name)) throw Error(`元素类型${name}已经存在`);
+        this.shapes.set(name, shape);
+        return shape;
     }
 
     // 创建元素
     createShape(type, option={}) {
-        const shape = typeof type === 'string'? this.shapes[type]: type;
+        const shape = typeof type === 'string'? this.shapes.get(type): type;
         if(!shape) {
             throw Error(`${type}不存在的元素类型`);
         }
         const el = new shape({
             ...option,
+            editor: this,
             type,
         });
         return el;
