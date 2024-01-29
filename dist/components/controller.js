@@ -433,9 +433,11 @@ var JControllerComponent = /** @class */ (function (_super) {
             x: util.toNumber(this.left) + util.toNumber(this.width) / 2,
             y: util.toNumber(this.top) + util.toNumber(this.height) / 2,
         };
+        console.log(this.left, this.top, center, oldPosition, newPosition, this.editor.left, this.editor.top);
         // 编辑器坐标
-        var pos1 = util.toDomPosition(oldPosition, this.editor.dom);
-        var pos2 = util.toDomPosition(newPosition, this.editor.dom);
+        var pos1 = util.toDomPosition(oldPosition, this.editor.target.dom);
+        var pos2 = util.toDomPosition(newPosition, this.editor.target.dom);
+        console.log(this.left, this.top, center, pos1, pos2);
         // 因为center是相对于编辑器的，所以事件坐标也需要转到编辑器
         var cx1 = pos1.x - center.x;
         var cy1 = pos1.y - center.y;
@@ -549,6 +551,7 @@ var JControllerComponent = /** @class */ (function (_super) {
     JControllerComponent.prototype.unbind = function (target) {
         if (this.target === target) {
             this.reset(false);
+            this.visible = false;
         }
     };
     return JControllerComponent;

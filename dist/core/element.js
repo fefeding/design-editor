@@ -76,6 +76,8 @@ var JElement = /** @class */ (function (_super) {
         _this.type = _this.type || option.type || '';
         var nodeType = option.nodeType || 'div';
         _this.dom = document.createElement(nodeType);
+        if (option.editor)
+            _this.editor = option.editor;
         // 样式代理处理
         _this.style = JStyle.createProxy();
         _this.style.on('change', function (s) {
@@ -280,6 +282,17 @@ var JElement = /** @class */ (function (_super) {
                 value = "url(".concat(value, ")");
         }
         util.css(this.dom, name, value);
+        // 字体依赖事件
+        if (name === 'fontFamily') {
+            /*this.emit('fontChange', {
+                fontFamily: value
+            });*/
+            if (this.editor) {
+                this.editor.emit('fontChange', {
+                    family: value
+                });
+            }
+        }
     };
     // 设置样式
     JElement.prototype.css = function (name, value) {
@@ -342,7 +355,8 @@ var JElement = /** @class */ (function (_super) {
     // 移除子元素
     JElement.prototype.removeChild = function (el) {
         // @ts-ignore
-        this.dom.removeChild(el.dom || el);
+        if (el.dom && el.dom.parentElement === this.dom)
+            this.dom.removeChild(el.dom || el);
         for (var i = this.children.length - 1; i > -1; i--) {
             if (this.children[i] === el)
                 return this.children.splice(i, 1);

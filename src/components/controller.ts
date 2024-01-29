@@ -463,9 +463,14 @@ export default class JControllerComponent extends JControllerItem implements IJC
             x: util.toNumber(this.left) + util.toNumber(this.width)/2,
             y: util.toNumber(this.top) + util.toNumber(this.height)/2,
         };
+
+        console.log(this.left, this.top, center, oldPosition, newPosition, this.editor.left, this.editor.top)
+
         // 编辑器坐标
         const pos1 = util.toDomPosition(oldPosition, this.editor.target.dom);
         const pos2 = util.toDomPosition(newPosition, this.editor.target.dom);
+
+        console.log(this.left, this.top, center, pos1, pos2)
 
         // 因为center是相对于编辑器的，所以事件坐标也需要转到编辑器
         const cx1 = pos1.x - center.x;

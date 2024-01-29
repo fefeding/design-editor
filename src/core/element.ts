@@ -197,7 +197,20 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         if(name === 'backgroundImage' && value) {
             if(!/^\s*url\(/.test(value)) value = `url(${value})`;
         }
+        
         util.css(this.dom, name, value);
+
+        // 字体依赖事件
+        if(name === 'fontFamily') {
+            /*this.emit('fontChange', {
+                fontFamily: value
+            });*/
+            if(this.editor) {
+                this.editor.emit('fontChange', {
+                    family: value
+                });
+        }
+        }
     }   
 
     // 设置样式

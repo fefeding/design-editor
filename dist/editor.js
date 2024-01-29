@@ -40,6 +40,7 @@ import JText from './components/text';
 import JImage from './components/image';
 import JElement from './core/element';
 import JController from './components/controller';
+import JFonts from './core/fonts';
 import util from './lib/util';
 var JEditor = /** @class */ (function (_super) {
     __extends(JEditor, _super);
@@ -71,13 +72,8 @@ var JEditor = /** @class */ (function (_super) {
                 'height': '100%',
             }
         });
-        /*// 变换改为控制主元素
-        this.transform.bind({
-            target: this.view,
-            watchProps: [
-                'scaleX', 'scaleY'
-            ]
-        });*/
+        // 字体管理实例
+        _this.fonts = new JFonts();
         _this.target.css({
             'overflow': 'hidden'
         });
@@ -156,10 +152,11 @@ var JEditor = /** @class */ (function (_super) {
     };
     // 选中某个元素
     JEditor.prototype.select = function (el) {
-        // 选把所有已选择的取消
-        this.selectedElements.every(function (p) { return p !== el && p.selected && (p.selected = false); });
-        if (el.selected)
+        if (el.selected) {
+            // 选把所有已选择的取消
+            this.selectedElements.every(function (p) { return p !== el && p.selected && (p.selected = false); });
             this.elementController.bind(el);
+        }
         else
             this.elementController.unbind(el);
     };
@@ -192,7 +189,9 @@ var JEditor = /** @class */ (function (_super) {
             this.selected = true;
             self.elementController.onDragStart(e);
         });
-        return this.target.addChild(child, this);
+        this.target.addChild(child, this.target);
+        child.parent = this; // 把父设置成编辑器
+        child.editor = this;
     };
     // 移除
     JEditor.prototype.removeChild = function (el) {
@@ -248,7 +247,7 @@ var JEditor = /** @class */ (function (_super) {
         if (!shape) {
             throw Error("".concat(type, "\u4E0D\u5B58\u5728\u7684\u5143\u7D20\u7C7B\u578B"));
         }
-        var el = new shape(__assign(__assign({}, option), { type: type }));
+        var el = new shape(__assign(__assign({}, option), { editor: this, type: type }));
         return el;
     };
     // 创建图片元素

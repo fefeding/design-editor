@@ -3,6 +3,22 @@ import JTransform from './transform';
 import JElementCssStyle from './styleMap';
 import EventEmitter from 'eventemitter3';
 
+export interface IJFontData {
+    label: string;
+    family: string;
+    url: string;
+    get status(): FontFaceLoadStatus;
+    load(): Promise<IJFontData>;
+}
+
+export interface IJFonts {
+    fonts: Map<string, IJFontData>;
+    // 获取已加载的字体
+    get(name: string): IJFontData | null ;
+    check(name: string): boolean;
+    load(name: string, url: string): Promise<IJFontData>;
+}
+
 export interface IJEvent {
     init(handler: EventListenerOrEventListenerObject, target?: HTMLElement): void;
     target: HTMLElement;
@@ -149,6 +165,7 @@ export interface IJControllerComponent extends IJControllerItem {
 export interface IJEditor extends IJBaseComponent {
     view: IJElement<HTMLDivElement>;
     elementController: IJControllerComponent;
+    fonts: IJFonts; // 字体管理器
     get selectedElements(): Array<IJBaseComponent>;
     bindEvent(dom?: HTMLElement): void;
     select(el: IJBaseComponent): void;

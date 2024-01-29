@@ -3,8 +3,9 @@ import JText from './components/text';
 import JImage from './components/image';
 import JElement from './core/element';
 import JController from './components/controller';
+import JFonts from './core/fonts';
 import util from './lib/util';
-import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent } from './constant/types';
+import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent, IJFonts, IJFontData } from './constant/types';
 
 export default class JEditor extends JBase implements IJEditor {
 
@@ -32,13 +33,8 @@ export default class JEditor extends JBase implements IJEditor {
                 'height': '100%',
             }
         });
-        /*// 变换改为控制主元素
-        this.transform.bind({
-            target: this.view,
-            watchProps: [
-                'scaleX', 'scaleY'
-            ]
-        });*/
+        // 字体管理实例
+        this.fonts = new JFonts();
         
         this.target.css({
             'overflow': 'hidden'
@@ -96,6 +92,8 @@ export default class JEditor extends JBase implements IJEditor {
 
     // 元素控帛器
     elementController: IJControllerComponent;
+
+    fonts: IJFonts; // 字体管理器
 
     // 重写子集为target
     get children() {

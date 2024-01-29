@@ -1,8 +1,6 @@
 
 import EventEmiter from 'eventemitter3';
 
-const StyleNamesMap = [] as Array<string>;
-
 // 支持的样式属性列表
 export class JElementStyleDeclaration extends EventEmiter {
     accentColor?: string;
@@ -897,16 +895,19 @@ export class JElementStyleProperty {
 }
 
 export default abstract class JElementCssStyle extends JElementStyleDeclaration {
+    static styleNamesMap = [] as Array<string>;
     // 所有样式名称
     get names() {
-        if(!StyleNamesMap.length) {
+        
+        if(!JElementCssStyle.styleNamesMap.length) {
             const map = new JElementStyleProperty();
             const keys = Object.getOwnPropertyNames(map);
             for(const k of keys) {
-                if(typeof map[k] === 'string') StyleNamesMap.push(k);
+                const t = typeof map[k];
+                if(t === 'string' || t === 'number') JElementCssStyle.styleNamesMap.push(k);
             }
         }
-        return StyleNamesMap;
+        return JElementCssStyle.styleNamesMap;
     }
 
     // 把样式应用到元素或当前对象

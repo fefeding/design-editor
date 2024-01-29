@@ -888,6 +888,7 @@ export declare class JElementStyleProperty {
     zIndex: string;
 }
 export default abstract class JElementCssStyle extends JElementStyleDeclaration {
+    static styleNamesMap: string[];
     get names(): string[];
     abstract apply(data: JElementStyleDeclaration, target?: CSSStyleDeclaration | JElementStyleDeclaration): any;
     abstract applyTo(element: HTMLElement): any;

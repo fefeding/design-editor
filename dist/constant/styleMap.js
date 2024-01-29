@@ -25,7 +25,6 @@ var __values = (this && this.__values) || function(o) {
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 import EventEmiter from 'eventemitter3';
-var StyleNamesMap = [];
 // 支持的样式属性列表
 var JElementStyleDeclaration = /** @class */ (function (_super) {
     __extends(JElementStyleDeclaration, _super);
@@ -526,14 +525,15 @@ var JElementCssStyle = /** @class */ (function (_super) {
         // 所有样式名称
         get: function () {
             var e_1, _a;
-            if (!StyleNamesMap.length) {
+            if (!JElementCssStyle.styleNamesMap.length) {
                 var map = new JElementStyleProperty();
                 var keys = Object.getOwnPropertyNames(map);
                 try {
                     for (var keys_1 = __values(keys), keys_1_1 = keys_1.next(); !keys_1_1.done; keys_1_1 = keys_1.next()) {
                         var k = keys_1_1.value;
-                        if (typeof map[k] === 'string')
-                            StyleNamesMap.push(k);
+                        var t = typeof map[k];
+                        if (t === 'string' || t === 'number')
+                            JElementCssStyle.styleNamesMap.push(k);
                     }
                 }
                 catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -544,11 +544,12 @@ var JElementCssStyle = /** @class */ (function (_super) {
                     finally { if (e_1) throw e_1.error; }
                 }
             }
-            return StyleNamesMap;
+            return JElementCssStyle.styleNamesMap;
         },
         enumerable: false,
         configurable: true
     });
+    JElementCssStyle.styleNamesMap = [];
     return JElementCssStyle;
 }(JElementStyleDeclaration));
 export default JElementCssStyle;
