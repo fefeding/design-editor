@@ -66,8 +66,8 @@ export default class JElementStyle extends JElementCssStyle {
                 const v = target[p];
                 // 数字样式，处理px问题
                 if(typeof p === 'string' && NumberStyleMap.includes(p)) {
-                    if(v === '0') return 0;
-                    if(util.isPXNumber(v)) return parseFloat(v);
+                    if(v === '0' || typeof v === 'undefined') return 0;
+                    if(util.isPXNumber(v)) return util.toNumber(v);
                 }
                 return v;
             },
