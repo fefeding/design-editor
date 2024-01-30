@@ -1,4 +1,3 @@
-import util from "../lib/util";
 
 const SupportEventNames = [
     'mousedown','mouseup','mouseover','mousemove','mouseout','mousewheel','click','dblclick','keydown','keypress','keyup','blur','change','focus','drag','dragenter','dragleave','dragover','dragstart','drop'
@@ -70,43 +69,5 @@ export default class JEvent {
             target['on' + name] = null;
         }
         return this;
-    }
-    /**
-     * 获取元素事件触发的位置
-     *
-     * @method getEventPosition
-     * @static
-     * @param {eventArg} evt 当前触发事件的参数
-     * @return {point} 事件触发的位置 
-     */
-    getEventPosition (evt: MouseEvent, target?: any) {
-        
-        let isTouch = false;
-        if(evt instanceof TouchEvent) {
-            const touches = evt.changedTouches || evt.targetTouches || evt.touches;
-            // @ts-ignore
-            evt = touches[0];//兼容touch事件
-            isTouch = true;
-        }
-        let px = evt.pageX || evt.x;
-        if(typeof px == 'undefined')  px = evt.clientX + (document.documentElement.scrollLeft || document.body.scrollLeft);    
-        let py = evt.pageY || evt.y;
-        if(typeof py == 'undefined')  py = evt.clientY + (document.documentElement.scrollTop || document.body.scrollTop);
-
-        let ox = evt.offsetX;
-        let oy = evt.offsetY;
-        if((typeof ox === 'undefined' && typeof oy === 'undefined') || target) {
-            let p = util.getElementPosition((target||evt.target) as HTMLElement);
-            ox= px - p.x;
-            oy = py - p.y;
-        }
-
-        return {
-            x: ox,
-            y: oy,
-            pageX: px,
-            pageY: py,
-            isTouch: isTouch,
-        };
     }
 }
