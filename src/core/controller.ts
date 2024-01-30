@@ -2,21 +2,7 @@
 import util from '../lib/util';
 import JElement from './element';
 import { IJControllerItem, IJControllerComponent, IJBaseComponent, IJEditor } from '../constant/types';
-import { topZIndex } from '../constant/styleMap';
-
-// 鼠标指针
-const GCursors = {
-    'l': 'w-resize',
-    'lt': 'nw-resize',
-    't': 'n-resize',
-    'tr': 'ne-resize',
-    'r': 'e-resize',
-    'rb': 'se-resize',
-    'b': 's-resize',
-    'lb': 'sw-resize',
-    'rotate': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAgVBMVEUAAAAiK9MjKdUfKNYjKdUiKNYiKdUeHuAjKNYjKNYiKNYyMswiKNYiKNYiKNYiKNYhKNYiKdUiKNYiKNYjKdUjKNYgJ9cjJdYiKNYiKNYiKdUhJ9cjKNYiKdUdLNMrK9MiKNYiKNYiKdUiKNYjKNYjKdUjKdUjKNYjKdUjKdUjKdaUW7eVAAAAKnRSTlMAFdMY1/v4CPXo4wXuyLh6RfKRjWpAJxykb1tSTjARC8OslYVgOivQrqey7caqAAABM0lEQVRIx+2U6W6DMBCEDdSE+2wg950e3/s/YGOBQI0hMf+qKvODHYsZe9derXjh32C2PsU+BIcyCw3kVhnRIUj3z/TvEcTp1RGizs42BJvH+kqSbPtlFkP52LFc353oshCTMM8pJzpchuuwrLEs8fdDes9zRhwH0gG9DbY1khR+OKQfd9hkuv4Nbp/hrFIKXe+ANebIiHW9gJbod2fhN7zTq+Shpb/3UusQ2fGeuMw6rtBv1vxraX9UgNNwPV1l0NONmbdMd7jUenkFqRhzyKEr3/DZENNHDSOuKpq3zZlEBfPG3EVcVDRv/RX5VkzCAv9jkiFMyO+GwHb1eOgt4Kvq104hverJIMshea/CG61X3y6yeDb7nJMHyChwVTia1LS7HAMJ+MmyNp/gO2cmXvjD+AHprhpoJKiYYAAAAABJRU5ErkJggg==',
-    'skew': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAdVBMVEUAAABlY/97e/9kYv9kY/9nZ/9lY/9kYv9kY/9kYv9kY/9lY/9kYv9kY/9pYP9oYP9kYv9kYv9kY/9kYv9iYv9nY/9kYv9lYv9kYv9lYv9lY/9kYv9lYv9kY/9kYv9lZf9lY/9kYv9kYv9lYv9kYv9lY/9lY/+ktQNRAAAAJnRSTlMA/ATv3xHmW/V0TtO3khcNy8XBUh8U6ti+ppt5bksnGTqygmNEZ0ctpdUAAAEmSURBVEjH7VPbloIwDKSloAUqF6kgd123//+Ja+jSSpGqD74xbynJycxkcDZs+BIOAa2ygrgIuaQoKxocbN03FooFQnZ73u1RIlZQUG/ZvzsJC9zGaOeZkEAJa9ou9zD28q5tWIKERDZb0kvu+3MQm5vj4LyXWh7k42Rce/VW1F1d+J5g9fILddmv29eX0PGj6vReRdhmOI7uLakqgWTnWNGBRFWBo7l9IAeRqgKGFzulCzirjyZAxGRb6/tHM2GREq1VC7eWtvpCoN3M1nq0NX3gwAt9OBiACfNwZKaSRyoaVST0xJBN0UjNMzVG+NCog0zho0tP4noebwKP/2zq+Ll5AwuNAYpEyIZXv+hJU3I4d17iiKToN6Fs/WDgg34djQ0bvo4/naYvgs8xmvwAAAAASUVORK5CYII='
-};
+import { topZIndex, ControlerCursors } from '../constant/styleMap';
 
 // 控制元素移动和矩阵变换
 export class JControllerItem extends JElement<HTMLDivElement> implements IJControllerItem {
@@ -31,7 +17,7 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
 
         this.dir = option.dir || '';
         this.size = option.size || 8;
-        this.style.cursor = this.style.cursor || GCursors[this.dir];
+        this.style.cursor = this.style.cursor || ControlerCursors[this.dir];
         this.data.width = this.data.height = this.size;
 
         this.editor = option.editor;
@@ -52,7 +38,10 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
             });
         }
         this.on('mousedown', (e) => {
-            this.onDragStart(e);
+            // 如果是左健
+            if(e.button === 0) {
+                this.onDragStart(e);
+            }
         });
     }
 
@@ -134,7 +123,7 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
         
         // 先简单处理
         if(!rotation || (rotation > -Math.PI/6 && rotation< Math.PI/6)) {
-            this.style.cursor = GCursors[this.dir];
+            this.style.cursor = ControlerCursors[this.dir];
         }
         else {
             this.style.cursor = 'move';
@@ -157,9 +146,16 @@ export default class JControllerComponent extends JControllerItem implements IJC
         this.editor.dom.appendChild(this.dom);
 
         // 双击事件透传给操作杆绑定的对象
-        this.on('dblclick', (e) => {
+        this.on('dblclick mousedown', (e) => {
             if(this.target) {
-                this.target.emit('dblclick', e);
+                if(e.type === 'dblclick') this.target.emit('dblclick', e);
+                else if(e.type === 'mousedown') {
+                    // 右健则取消选择
+                    if(e.button === 2) {
+                        this.target.selected = false;
+                        e.preventDefault();
+                    }
+                }
             }
         });
     }
@@ -277,7 +273,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
                 cursor: `pointer`,
                 ...option.itemStyle,
                 'backgroundSize': '100%',
-                backgroundImage: GCursors.rotate
+                backgroundImage: ControlerCursors.rotate
             },
             transform: {
                 translateX: '-50%',
@@ -295,7 +291,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
                 cursor: `pointer`,
                 ...option.itemStyle,
                 'backgroundSize': '100%',
-                backgroundImage: GCursors.skew
+                backgroundImage: ControlerCursors.skew
             },
             transform: {
                 translateX: '-50%',

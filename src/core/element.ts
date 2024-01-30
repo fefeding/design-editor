@@ -105,7 +105,13 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     bindEvent(dom?: HTMLElement) {
         // 事件托管
         this.event = new JEvent(dom || this.dom);
-        this.event.init((e: Event) => {
+        this.event.init((e: Event|MouseEvent) => {
+            if(e.type === 'mousedown') {
+                // 右健则取消选择
+                if(e instanceof MouseEvent && e.button === 2) {
+                    e.preventDefault();
+                }
+            }
             this.emit(e.type, e);
         });
     }
