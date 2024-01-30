@@ -824,6 +824,7 @@ export class JElementStyleDeclaration extends EventEmiter implements IJElementSt
     zIndex?: string|number;
 }
 
+export type IElementStyleDeclaration = Omit<JElementStyleDeclaration, keyof EventEmiter>;
 
 // 样式属性集合
 export class JElementStyleProperty {
