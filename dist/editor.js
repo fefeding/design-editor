@@ -100,10 +100,11 @@ var JEditor = /** @class */ (function (_super) {
         });
         var styleNode = document.createElement('style');
         styleNode.innerHTML = ".j-design-editor-container {\n                                    border: 0;\n                                }\n                                .j-design-editor-container:hover {\n                                    box-shadow: 0 0 1px 1px rgba(255,255,255,0.5);\n                                }";
-        this.view.addChild(styleNode);
-        if (option.width && option.height) {
-            this.resize(option.width, option.height);
-        }
+        this.dom.appendChild(styleNode);
+        // 字体加载成功，同时加入到dom结构中
+        this.fonts.on('load', function (font) {
+            styleNode.append(font.toHtml());
+        });
         this.on('select', function (e) {
             _this.select(_this); // 选中自已
         });
@@ -113,6 +114,7 @@ var JEditor = /** @class */ (function (_super) {
         });
         // 刷新样式
         this.style.refresh();
+        this.resize(); // 触发一次大小改变
     };
     Object.defineProperty(JEditor.prototype, "children", {
         // 重写子集为target
@@ -260,12 +262,6 @@ var JEditor = /** @class */ (function (_super) {
         var el = new shape(__assign(__assign({}, option), { editor: this, type: type }));
         return el;
     };
-    // 创建图片元素
-    JEditor.prototype.createImage = function (url, option) {
-        if (option === void 0) { option = {}; }
-        var img = this.createShape('image', __assign(__assign({}, option), { url: url }));
-        return img;
-    };
     JEditor.prototype.fromJSON = function (data) {
         var e_2, _a;
         this.clear();
@@ -274,7 +270,7 @@ var JEditor = /** @class */ (function (_super) {
         if (data.style) {
             this.style.apply(data.style); // 应用样式
         }
-        this.resize(data.width, data.height);
+        this.resize(data.width || data.data.width, data.height || data.data.height);
         try {
             for (var _b = __values(data.children), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var c = _c.value;

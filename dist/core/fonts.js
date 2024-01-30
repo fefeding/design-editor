@@ -1,3 +1,18 @@
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -34,6 +49,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+import EventEmiter from '../constant/eventEmitter';
 var JFontData = /** @class */ (function () {
     function JFontData(family, url) {
         this.family = family;
@@ -57,7 +73,7 @@ var JFontData = /** @class */ (function () {
                     case 0:
                         this.url = url || this.url;
                         if (!this.font)
-                            this.font = new FontFace(this.family, this.url);
+                            this.font = new FontFace(this.family, "url(\"".concat(this.url, "\")"));
                         return [4 /*yield*/, this.font.load()];
                     case 1:
                         f = _a.sent();
@@ -67,14 +83,20 @@ var JFontData = /** @class */ (function () {
             });
         });
     };
+    JFontData.prototype.toHtml = function () {
+        return "@font-face {font-family: \"".concat(this.family, "\"; src: url(\"").concat(this.url, "\")}");
+    };
     return JFontData;
 }());
 export { JFontData };
-var JFonts = /** @class */ (function () {
+var JFonts = /** @class */ (function (_super) {
+    __extends(JFonts, _super);
     function JFonts(fontSet) {
         if (fontSet === void 0) { fontSet = new Map(); }
-        this.fonts = fontSet;
-        this.init();
+        var _this = _super.call(this) || this;
+        _this.fonts = fontSet;
+        _this.init();
+        return _this;
     }
     JFonts.prototype.init = function () {
         if (document.fonts) {
@@ -93,17 +115,22 @@ var JFonts = /** @class */ (function () {
     // 加载字体
     JFonts.prototype.load = function (name, url) {
         return __awaiter(this, void 0, void 0, function () {
-            var font;
+            var font, f;
             return __generator(this, function (_a) {
-                font = this.get(name);
-                if (font)
-                    return [2 /*return*/, font];
-                else {
-                    font = new JFontData(name, "url(\"".concat(url, "\")"));
-                    this.fonts.set(name, font);
-                    return [2 /*return*/, font.load()];
+                switch (_a.label) {
+                    case 0:
+                        font = this.get(name);
+                        if (!font) return [3 /*break*/, 1];
+                        return [2 /*return*/, font];
+                    case 1:
+                        font = new JFontData(name, url);
+                        this.fonts.set(name, font);
+                        return [4 /*yield*/, font.load()];
+                    case 2:
+                        f = _a.sent();
+                        this.emit('load', f); // 加载字本事件
+                        return [2 /*return*/, f];
                 }
-                return [2 /*return*/];
             });
         });
     };
@@ -121,5 +148,5 @@ var JFonts = /** @class */ (function () {
         return !!font;
     };
     return JFonts;
-}());
+}(EventEmiter));
 export default JFonts;

@@ -19,19 +19,21 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
             ...option,
             nodeType: 'div',
             className: 'j-design-editor-container',
+            isComponent: true
         });
         option.target = option.target || {};
         // 生成当前控制的元素
         this.target = new JElement<T>({
             ...option,
             visible: true,
+            data: {},
             // 不响应本身的变换，只响应父级的
             transformWatchProps: [],
-            width: '100%',
-            height: '100%',
             style: {
                 display: 'block',   
-                cursor: 'pointer'        
+                cursor: 'pointer',  
+                width: '100%',
+                height: '100%',     
             }
         });
         
@@ -44,6 +46,8 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
                 'rotateX', 'rotateY', 'translateX', 'translateY', 'skewX', 'skewY'
             ]
         });
+
+        //this.initData(option);// 初始化数据
     }
 
     // 当前控件的核心元素

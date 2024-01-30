@@ -8,9 +8,10 @@ export interface IJFontData {
     url: string;
     get status(): FontFaceLoadStatus;
     load(): Promise<IJFontData>;
+    toHtml(): string;
 }
 
-export interface IJFonts {
+export interface IJFonts extends EventEmitter {
     fonts: Map<string, IJFontData>;
     // 获取已加载的字体
     get(name: string): IJFontData | null ;
@@ -203,7 +204,6 @@ export interface IJEditor extends IJBaseComponent {
     scale(x: any, y?: any): void;
     regShape(name: string, shape: IJBaseComponent): IJBaseComponent;
     createShape(type: any, option?: {}): any;
-    createImage(url: any, option?: {}): any;
     fromJSON(data: any): void;
 }
 

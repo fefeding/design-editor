@@ -13,13 +13,6 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     constructor(option = {} as any) {
         super();
 
-        // 复制属性
-        for(const k in option) {
-            const v = option[k];
-            if(typeof k !== 'string' || (typeof v !== 'string' || typeof v !== 'number')) continue;
-            this[k] = v;
-        }
-
         this._id = this.id || option.id || uuidv4().replace(/-/g, '');
         this._type = this.type || option.type || '';
 
@@ -38,7 +31,6 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
                 target: this
             });
         });
-        if(option.style) this.style.apply(option.style);
 
         // 变换控制的是核心元素
         this.transform = JTransform.createProxy(option.transform, {
@@ -46,27 +38,26 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
             // 如果指定了只响应某几个属性
             watchProps: option.transformWatchProps
         });
+        const dataType = option.dataType || JElementData;
+        this.data = JElementData.createProxy(new dataType());
 
-        this.initData(option, option.dataType);
+        // 如果是组件，不在这里进行数据初始化调用
+        this.initData(option);
 
-        if(option.editable === false) this.editable = false;
         if(option.className) this.className = option.className;
         
         this.bindEvent();// 事件绑定
     }
     // 初始化一些基础属性
-    initData(option, type=JElementData) {
-        this.data = JElementData.createProxy(new type());
+    initData(option) {
         // 属性变化映射到style
         this.data.watch([
-            'x', 'y', 'left', 'top', 'width', 'height', 'zIndex', 'visible'
+            'left', 'top', 'width', 'height', 'zIndex', 'visible'
         ], {
             set: (item) => {
                 if(item.name === 'visible') {
                     this.style.display = item.value? 'block': 'none';
                 }
-                else if(item.name === 'x') this.data.left = item.value;
-                else if(item.name === 'y') this.data.top = item.value;
                 else if(item.name === 'rotation') {
                     this.transform.rotateZ = item.value;
                 }
@@ -76,9 +67,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
                 else this.style[item.name] = item.value;
             },
             get: (name: string) => {
-                if(name === 'x') return this.data.left;
-                else if(name === 'y') return this.data.top;
-                else if(name === 'width') {
+                if(name === 'width') {
                     let w = this.style.width || 0;
                     if((!w || w === 'auto') && this.dom && this.dom.clientWidth) return this.dom.clientWidth;
                     return w;
@@ -100,16 +89,10 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
                 return this.style[name];
             }
         });
-        this.data.x = option.x || option.left || this.data.x || 0;
-        this.data.y = option.y || option.top || this.data.y || 0;
-
-        this.data.width = option.width || option.width || this.data.width || 1;
-        this.data.height = option.height || option.height || this.data.height || 1;
-
-        if(typeof option.rotation !== 'undefined') this.data.rotation = option.rotation;
-        if(typeof option.angle !== 'undefined') this.data.angle = option.angle;
-        if(typeof option.zIndex !== 'undefined') this.data.zIndex = option.zIndex;
-        if(typeof option.visible !== 'undefined') this.data.visible = !!option.visible;
+        
+        if(option.style) this.style.apply(option.style);
+        if(option.editable === false) this.editable = false;
+        if(option.visible === false) this.visible = false;
 
         if(option.data) {
             this.data.from(option.data);
@@ -164,6 +147,13 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     set className(v: string) {
         this.dom.className = v;
     }  
+
+    get visible() {
+        return this.data.visible;
+    }
+    set visible(v: boolean) {
+        this.data.visible = v;
+    }
     // 是否可编辑
     editable: boolean = true;
 
@@ -175,7 +165,6 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         if(name === 'backgroundImage' && value) {
             if(!/^\s*url\(/.test(value)) value = `url(${value})`;
         }
-        
         util.css(this.dom, name, value);
     }   
 

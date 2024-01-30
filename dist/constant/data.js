@@ -123,7 +123,7 @@ var JData = /** @class */ (function (_super) {
     };
     JData.prototype.from = function (data) {
         if (this.data)
-            Object.assign(this.data, data);
+            Object.assign(this, data);
         return this;
     };
     JData.prototype.toJSON = function () {

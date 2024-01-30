@@ -1,4 +1,5 @@
 import { IJFonts, IJFontData } from '../constant/types';
+import EventEmiter from '../constant/eventEmitter';
 export declare class JFontData implements IJFontData {
     constructor(family: string, url?: string);
     family: string;
@@ -7,8 +8,9 @@ export declare class JFontData implements IJFontData {
     font?: FontFace;
     get status(): FontFaceLoadStatus;
     load(url?: string): Promise<IJFontData>;
+    toHtml(): string;
 }
-export default class JFonts implements IJFonts {
+export default class JFonts extends EventEmiter implements IJFonts {
     constructor(fontSet?: Map<string, JFontData>);
     fonts: Map<string, IJFontData>;
     init(): void;

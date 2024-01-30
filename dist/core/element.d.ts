@@ -5,7 +5,7 @@ import { IJElement, ITransform, IJEditor } from '../constant/types';
 import { JElementData } from '../constant/data';
 export default class JElement<T extends HTMLElement = HTMLElement> extends EventEmiter implements IJElement {
     constructor(option?: any);
-    initData(option: any, type?: typeof JElementData): void;
+    initData(option: any): void;
     bindEvent(dom?: HTMLElement): void;
     protected _id: string;
     get id(): string;
@@ -22,6 +22,8 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     data: JElementData;
     get className(): string;
     set className(v: string);
+    get visible(): boolean;
+    set visible(v: boolean);
     editable: boolean;
     transform: ITransform;
     setDomStyle(name: string, value: string): void;

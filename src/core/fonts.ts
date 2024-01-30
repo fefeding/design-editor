@@ -1,4 +1,5 @@
 import { IJFonts, IJFontData } from '../constant/types';
+import EventEmiter from '../constant/eventEmitter';
 
 export class JFontData implements IJFontData {
     constructor(family: string, url?: string) {
@@ -19,16 +20,21 @@ export class JFontData implements IJFontData {
     
     async load(url=this.url): Promise<IJFontData> {
         this.url = url || this.url;
-        if(!this.font) this.font = new FontFace(this.family, this.url);
+        if(!this.font) this.font = new FontFace(this.family, `url("${this.url}")`);
         const f = await this.font.load();
         document.fonts.add(f);// 生效
         return this;
     }
+
+    toHtml() {
+        return `@font-face {font-family: "${this.family}"; src: url("${this.url}")}`;
+    }
 }
 
 
-export default class JFonts implements IJFonts {
+export default class JFonts extends EventEmiter implements IJFonts {
     constructor(fontSet = new Map<string, JFontData>()) {
+        super();
         this.fonts = fontSet;
         this.init();
     }
@@ -55,9 +61,11 @@ export default class JFonts implements IJFonts {
         let font = this.get(name);
         if(font) return font;
         else {
-            font = new JFontData(name, `url("${url}")`);
+            font = new JFontData(name, url);
             this.fonts.set(name, font);
-            return font.load();
+            const f = await font.load();
+            this.emit('load', f);// 加载字本事件
+            return f;
         }
     }
 

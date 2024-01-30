@@ -70,11 +70,12 @@ export default class JEditor extends JBase implements IJEditor {
                                 .j-design-editor-container:hover {
                                     box-shadow: 0 0 1px 1px rgba(255,255,255,0.5);
                                 }`;
-        this.view.addChild(styleNode);
-
-        if(option.width && option.height) {
-            this.resize(option.width, option.height);
-        }
+        this.dom.appendChild(styleNode);
+        // 字体加载成功，同时加入到dom结构中
+        this.fonts.on('load', (font) => {
+            styleNode.append(font.toHtml());
+        });
+        
         this.on('select', (e) => {
             this.select(this);// 选中自已
         });
@@ -85,6 +86,7 @@ export default class JEditor extends JBase implements IJEditor {
 
         // 刷新样式
         this.style.refresh();
+        this.resize();// 触发一次大小改变
     }
 
     // 外层用于定位的容器
@@ -238,22 +240,13 @@ export default class JEditor extends JBase implements IJEditor {
         return el;
     }
 
-    // 创建图片元素
-    createImage(url, option={}) {
-        const img = this.createShape('image', {
-            ...option,
-            url,
-        });
-        return img;
-    }
-
     fromJSON(data) {
         this.clear();
         if(typeof data === 'string') data = JSON.parse(data);
         if(data.style) {
             this.style.apply(data.style);// 应用样式
         }
-        this.resize(data.width, data.height);
+        this.resize(data.width || data.data.width, data.height || data.data.height);
 
         for(const c of data.children) {
             if(!c.type) continue;

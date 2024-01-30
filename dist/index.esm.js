@@ -1068,8 +1068,8 @@ var ContainerDefaultStyle = {
     position: 'absolute',
     left: '0',
     top: '0',
-    width: '10px',
-    height: '10px',
+    width: 'auto',
+    height: 'auto',
     right: 'auto',
     bottom: 'auto',
     padding: '0',
@@ -1868,7 +1868,7 @@ var JData = /** @class */ (function (_super) {
     };
     JData.prototype.from = function (data) {
         if (this.data)
-            Object.assign(this.data, data);
+            Object.assign(this, data);
         return this;
     };
     JData.prototype.toJSON = function () {
@@ -1950,13 +1950,6 @@ var JElement = /** @class */ (function (_super) {
         _this._children = [];
         // 是否可编辑
         _this.editable = true;
-        // 复制属性
-        for (var k in option) {
-            var v = option[k];
-            if (typeof k !== 'string' || (typeof v !== 'string' || typeof v !== 'number'))
-                continue;
-            _this[k] = v;
-        }
         _this._id = _this.id || option.id || v4().replace(/-/g, '');
         _this._type = _this.type || option.type || '';
         var nodeType = option.nodeType || 'div';
@@ -1969,39 +1962,32 @@ var JElement = /** @class */ (function (_super) {
             _this.setDomStyle(s.name, s.value);
             _this.emit('styleChange', __assign(__assign({}, s), { target: _this }));
         });
-        if (option.style)
-            _this.style.apply(option.style);
         // 变换控制的是核心元素
         _this.transform = Transform.createProxy(option.transform, {
             target: _this,
             // 如果指定了只响应某几个属性
             watchProps: option.transformWatchProps
         });
-        _this.initData(option, option.dataType);
-        if (option.editable === false)
-            _this.editable = false;
+        var dataType = option.dataType || JElementData;
+        _this.data = JElementData.createProxy(new dataType());
+        // 如果是组件，不在这里进行数据初始化调用
+        _this.initData(option);
         if (option.className)
             _this.className = option.className;
         _this.bindEvent(); // 事件绑定
         return _this;
     }
     // 初始化一些基础属性
-    JElement.prototype.initData = function (option, type) {
+    JElement.prototype.initData = function (option) {
         var _this = this;
-        if (type === void 0) { type = JElementData; }
-        this.data = JElementData.createProxy(new type());
         // 属性变化映射到style
         this.data.watch([
-            'x', 'y', 'left', 'top', 'width', 'height', 'zIndex', 'visible'
+            'left', 'top', 'width', 'height', 'zIndex', 'visible'
         ], {
             set: function (item) {
                 if (item.name === 'visible') {
                     _this.style.display = item.value ? 'block' : 'none';
                 }
-                else if (item.name === 'x')
-                    _this.data.left = item.value;
-                else if (item.name === 'y')
-                    _this.data.top = item.value;
                 else if (item.name === 'rotation') {
                     _this.transform.rotateZ = item.value;
                 }
@@ -2012,11 +1998,7 @@ var JElement = /** @class */ (function (_super) {
                     _this.style[item.name] = item.value;
             },
             get: function (name) {
-                if (name === 'x')
-                    return _this.data.left;
-                else if (name === 'y')
-                    return _this.data.top;
-                else if (name === 'width') {
+                if (name === 'width') {
                     var w = _this.style.width || 0;
                     if ((!w || w === 'auto') && _this.dom && _this.dom.clientWidth)
                         return _this.dom.clientWidth;
@@ -2040,18 +2022,12 @@ var JElement = /** @class */ (function (_super) {
                 return _this.style[name];
             }
         });
-        this.data.x = option.x || option.left || this.data.x || 0;
-        this.data.y = option.y || option.top || this.data.y || 0;
-        this.data.width = option.width || option.width || this.data.width || 1;
-        this.data.height = option.height || option.height || this.data.height || 1;
-        if (typeof option.rotation !== 'undefined')
-            this.data.rotation = option.rotation;
-        if (typeof option.angle !== 'undefined')
-            this.data.angle = option.angle;
-        if (typeof option.zIndex !== 'undefined')
-            this.data.zIndex = option.zIndex;
-        if (typeof option.visible !== 'undefined')
-            this.data.visible = !!option.visible;
+        if (option.style)
+            this.style.apply(option.style);
+        if (option.editable === false)
+            this.editable = false;
+        if (option.visible === false)
+            this.visible = false;
         if (option.data) {
             this.data.from(option.data);
         }
@@ -2099,6 +2075,16 @@ var JElement = /** @class */ (function (_super) {
         },
         set: function (v) {
             this.dom.className = v;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(JElement.prototype, "visible", {
+        get: function () {
+            return this.data.visible;
+        },
+        set: function (v) {
+            this.data.visible = v;
         },
         enumerable: false,
         configurable: true
@@ -2253,16 +2239,18 @@ var JBaseComponent = /** @class */ (function (_super) {
             // 外层只响应Z轴旋转
             transformWatchProps: [
                 'rotateZ', 'scaleX', 'scaleY'
-            ] }, option), { nodeType: 'div', className: 'j-design-editor-container' })) || this;
+            ] }, option), { nodeType: 'div', className: 'j-design-editor-container', isComponent: true })) || this;
         // 选中
         _this._selected = false;
         option.target = option.target || {};
         // 生成当前控制的元素
-        _this.target = new JElement(__assign(__assign({}, option), { visible: true, 
+        _this.target = new JElement(__assign(__assign({}, option), { visible: true, data: {}, 
             // 不响应本身的变换，只响应父级的
-            transformWatchProps: [], width: '100%', height: '100%', style: {
+            transformWatchProps: [], style: {
                 display: 'block',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                width: '100%',
+                height: '100%',
             } }));
         _this.addChild(_this.target);
         // 变换改为控制主元素
@@ -2273,6 +2261,7 @@ var JBaseComponent = /** @class */ (function (_super) {
             ]
         });
         return _this;
+        //this.initData(option);// 初始化数据
     }
     Object.defineProperty(JBaseComponent.prototype, "selected", {
         get: function () {
@@ -2979,7 +2968,7 @@ var JFontData = /** @class */ (function () {
                     case 0:
                         this.url = url || this.url;
                         if (!this.font)
-                            this.font = new FontFace(this.family, this.url);
+                            this.font = new FontFace(this.family, "url(\"".concat(this.url, "\")"));
                         return [4 /*yield*/, this.font.load()];
                     case 1:
                         f = _a.sent();
@@ -2989,13 +2978,19 @@ var JFontData = /** @class */ (function () {
             });
         });
     };
+    JFontData.prototype.toHtml = function () {
+        return "@font-face {font-family: \"".concat(this.family, "\"; src: url(\"").concat(this.url, "\")}");
+    };
     return JFontData;
 }());
-var JFonts = /** @class */ (function () {
+var JFonts = /** @class */ (function (_super) {
+    __extends(JFonts, _super);
     function JFonts(fontSet) {
         if (fontSet === void 0) { fontSet = new Map(); }
-        this.fonts = fontSet;
-        this.init();
+        var _this = _super.call(this) || this;
+        _this.fonts = fontSet;
+        _this.init();
+        return _this;
     }
     JFonts.prototype.init = function () {
         if (document.fonts) {
@@ -3014,15 +3009,21 @@ var JFonts = /** @class */ (function () {
     // 加载字体
     JFonts.prototype.load = function (name, url) {
         return __awaiter(this, void 0, void 0, function () {
-            var font;
+            var font, f;
             return __generator(this, function (_a) {
-                font = this.get(name);
-                if (font)
-                    return [2 /*return*/, font];
-                else {
-                    font = new JFontData(name, "url(\"".concat(url, "\")"));
-                    this.fonts.set(name, font);
-                    return [2 /*return*/, font.load()];
+                switch (_a.label) {
+                    case 0:
+                        font = this.get(name);
+                        if (!font) return [3 /*break*/, 1];
+                        return [2 /*return*/, font];
+                    case 1:
+                        font = new JFontData(name, url);
+                        this.fonts.set(name, font);
+                        return [4 /*yield*/, font.load()];
+                    case 2:
+                        f = _a.sent();
+                        this.emit('load', f); // 加载字本事件
+                        return [2 /*return*/, f];
                 }
             });
         });
@@ -3041,7 +3042,7 @@ var JFonts = /** @class */ (function () {
         return !!font;
     };
     return JFonts;
-}());
+}(EventEmitter));
 
 var JEditor = /** @class */ (function (_super) {
     __extends(JEditor, _super);
@@ -3101,10 +3102,11 @@ var JEditor = /** @class */ (function (_super) {
         });
         var styleNode = document.createElement('style');
         styleNode.innerHTML = ".j-design-editor-container {\n                                    border: 0;\n                                }\n                                .j-design-editor-container:hover {\n                                    box-shadow: 0 0 1px 1px rgba(255,255,255,0.5);\n                                }";
-        this.view.addChild(styleNode);
-        if (option.width && option.height) {
-            this.resize(option.width, option.height);
-        }
+        this.dom.appendChild(styleNode);
+        // 字体加载成功，同时加入到dom结构中
+        this.fonts.on('load', function (font) {
+            styleNode.append(font.toHtml());
+        });
         this.on('select', function (e) {
             _this.select(_this); // 选中自已
         });
@@ -3114,6 +3116,7 @@ var JEditor = /** @class */ (function (_super) {
         });
         // 刷新样式
         this.style.refresh();
+        this.resize(); // 触发一次大小改变
     };
     Object.defineProperty(JEditor.prototype, "children", {
         // 重写子集为target
@@ -3261,12 +3264,6 @@ var JEditor = /** @class */ (function (_super) {
         var el = new shape(__assign(__assign({}, option), { editor: this, type: type }));
         return el;
     };
-    // 创建图片元素
-    JEditor.prototype.createImage = function (url, option) {
-        if (option === void 0) { option = {}; }
-        var img = this.createShape('image', __assign(__assign({}, option), { url: url }));
-        return img;
-    };
     JEditor.prototype.fromJSON = function (data) {
         var e_2, _a;
         this.clear();
@@ -3275,7 +3272,7 @@ var JEditor = /** @class */ (function (_super) {
         if (data.style) {
             this.style.apply(data.style); // 应用样式
         }
-        this.resize(data.width, data.height);
+        this.resize(data.width || data.data.width, data.height || data.data.height);
         try {
             for (var _b = __values(data.children), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var c = _c.value;

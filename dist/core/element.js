@@ -79,13 +79,6 @@ var JElement = /** @class */ (function (_super) {
         _this._children = [];
         // 是否可编辑
         _this.editable = true;
-        // 复制属性
-        for (var k in option) {
-            var v = option[k];
-            if (typeof k !== 'string' || (typeof v !== 'string' || typeof v !== 'number'))
-                continue;
-            _this[k] = v;
-        }
         _this._id = _this.id || option.id || uuidv4().replace(/-/g, '');
         _this._type = _this.type || option.type || '';
         var nodeType = option.nodeType || 'div';
@@ -98,39 +91,32 @@ var JElement = /** @class */ (function (_super) {
             _this.setDomStyle(s.name, s.value);
             _this.emit('styleChange', __assign(__assign({}, s), { target: _this }));
         });
-        if (option.style)
-            _this.style.apply(option.style);
         // 变换控制的是核心元素
         _this.transform = JTransform.createProxy(option.transform, {
             target: _this,
             // 如果指定了只响应某几个属性
             watchProps: option.transformWatchProps
         });
-        _this.initData(option, option.dataType);
-        if (option.editable === false)
-            _this.editable = false;
+        var dataType = option.dataType || JElementData;
+        _this.data = JElementData.createProxy(new dataType());
+        // 如果是组件，不在这里进行数据初始化调用
+        _this.initData(option);
         if (option.className)
             _this.className = option.className;
         _this.bindEvent(); // 事件绑定
         return _this;
     }
     // 初始化一些基础属性
-    JElement.prototype.initData = function (option, type) {
+    JElement.prototype.initData = function (option) {
         var _this = this;
-        if (type === void 0) { type = JElementData; }
-        this.data = JElementData.createProxy(new type());
         // 属性变化映射到style
         this.data.watch([
-            'x', 'y', 'left', 'top', 'width', 'height', 'zIndex', 'visible'
+            'left', 'top', 'width', 'height', 'zIndex', 'visible'
         ], {
             set: function (item) {
                 if (item.name === 'visible') {
                     _this.style.display = item.value ? 'block' : 'none';
                 }
-                else if (item.name === 'x')
-                    _this.data.left = item.value;
-                else if (item.name === 'y')
-                    _this.data.top = item.value;
                 else if (item.name === 'rotation') {
                     _this.transform.rotateZ = item.value;
                 }
@@ -141,11 +127,7 @@ var JElement = /** @class */ (function (_super) {
                     _this.style[item.name] = item.value;
             },
             get: function (name) {
-                if (name === 'x')
-                    return _this.data.left;
-                else if (name === 'y')
-                    return _this.data.top;
-                else if (name === 'width') {
+                if (name === 'width') {
                     var w = _this.style.width || 0;
                     if ((!w || w === 'auto') && _this.dom && _this.dom.clientWidth)
                         return _this.dom.clientWidth;
@@ -169,18 +151,12 @@ var JElement = /** @class */ (function (_super) {
                 return _this.style[name];
             }
         });
-        this.data.x = option.x || option.left || this.data.x || 0;
-        this.data.y = option.y || option.top || this.data.y || 0;
-        this.data.width = option.width || option.width || this.data.width || 1;
-        this.data.height = option.height || option.height || this.data.height || 1;
-        if (typeof option.rotation !== 'undefined')
-            this.data.rotation = option.rotation;
-        if (typeof option.angle !== 'undefined')
-            this.data.angle = option.angle;
-        if (typeof option.zIndex !== 'undefined')
-            this.data.zIndex = option.zIndex;
-        if (typeof option.visible !== 'undefined')
-            this.data.visible = !!option.visible;
+        if (option.style)
+            this.style.apply(option.style);
+        if (option.editable === false)
+            this.editable = false;
+        if (option.visible === false)
+            this.visible = false;
         if (option.data) {
             this.data.from(option.data);
         }
@@ -228,6 +204,16 @@ var JElement = /** @class */ (function (_super) {
         },
         set: function (v) {
             this.dom.className = v;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(JElement.prototype, "visible", {
+        get: function () {
+            return this.data.visible;
+        },
+        set: function (v) {
+            this.data.visible = v;
         },
         enumerable: false,
         configurable: true

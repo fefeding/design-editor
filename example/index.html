@@ -62,8 +62,10 @@
 	container.style.height = window.innerHeight + 'px';
 
 	const editor = new JEditor({
-		width: 800,
-		height: 600,
+		data: {
+			width: 800,
+			height: 600,
+		},
 		style: {
 			backgroundColor: '#fff',
 			containerBackgroundColor: '#eee'
@@ -102,9 +104,19 @@
 
     //editor.fromJSON({"children":[{"children":[],"type":"image","data":{"x":300,"left":300,"y":400,"top":400,"width":100,"height":100,"rotation":0,"src":"https://pixijs.com/assets/bunny.png"},"style":{"bottom":"auto","display":"inline-block","height":100,"left":300,"margin":"0","overflow":"visible","padding":"0","position":"absolute","right":"auto","top":400,"transform":"rotateZ(0rad) scaleX(1) scaleY(1)","width":100,"zIndex":"0"},"transform":{"translateX":0,"translateY":0,"translateZ":0,"rotateX":0,"rotateY":0,"rotateZ":0,"scaleX":1,"scaleY":1,"scaleZ":1,"skewX":0,"skewY":0},"id":"a1acb6d480ad4f1b94cc47c04c8d5cd7"},{"children":[],"type":"text","data":{"x":300,"left":300,"y":100,"top":100,"width":461,"height":39,"rotation":0,"text":"Basic text, 中文测试, complete"},"style":{"bottom":"auto","color":"#004620","display":"inline-block","fontFamily":"Crosterian","fontSize":22,"fontStyle":"normal","fontWeight":"lighter","height":39,"left":300,"margin":"0","overflow":"visible","padding":"0","position":"absolute","right":"auto","textAlign":"left","top":100,"transform":"rotateZ(0rad) scaleX(1) scaleY(1)","width":461,"wordBreak":"keep-all","zIndex":"0"},"transform":{"translateX":0,"translateY":0,"translateZ":0,"rotateX":0,"rotateY":0,"rotateZ":0,"scaleX":1,"scaleY":1,"scaleZ":1,"skewX":0,"skewY":0},"id":"224601617ac14a89a786a8ecc8dcc77f"},{"children":[],"type":"image","data":{"x":100,"left":100,"y":200,"top":200,"width":400,"height":400,"rotation":1.0471975511965976,"src":"https://jtcospublic.ciccten.com/config-server/1703730310545220869/idcard_qrcode.png"},"style":{"bottom":"auto","display":"inline-block","height":400,"left":100,"margin":"0","overflow":"visible","padding":"0","position":"absolute","right":"auto","top":200,"transform":"rotateZ(0rad) scaleX(1) scaleY(1)","width":400,"zIndex":"0"},"transform":{"translateX":0,"translateY":0,"translateZ":0,"rotateX":0,"rotateY":0,"rotateZ":0,"scaleX":1,"scaleY":1,"scaleZ":1,"skewX":0,"skewY":0},"id":"9828932c46f740759dcedd170e0adb54"}],"type":"","data":{"x":198.5,"left":198.5,"y":252.5,"top":252.5,"width":600,"height":800},"style":{"backgroundColor":"#fffffff","backgroundImage":"https://jtcospublic.ciccten.com/public/image/bf.jpg","backgroundSize":"100% 100%","bottom":"auto","boxShadow":"0 0 10px 10px #ccc","display":"inline-block","height":800,"left":198.5,"margin":"0","overflow":"visible","padding":"0","position":"absolute","right":"auto","top":252.5,"transform":"rotateZ(0rad) scaleX(1) scaleY(1)","width":600,"zIndex":"0"},"transform":{"translateX":0,"translateY":0,"translateZ":0,"rotateX":0,"rotateY":0,"rotateZ":0,"scaleX":1,"scaleY":1,"scaleZ":1,"skewX":0,"skewY":0},"id":"f8390b94642049f494934be4052fcaf0"})
 
-	loadTemplate(1, (tmpl) => {
+	/*loadTemplate(1, (tmpl) => {
 		editor.fromJSON(tmpl);
+	});*/
+	const img = editor.createShape('image', {
+		data: {
+			height: "auto",
+			left: 325.5,
+			src: "https://jtcospublic.ciccten.com/config-server/1705561487067855645/1622830_gallery_landskape_mountains_nature_photo_icon.png",
+			top: 78,
+			width: "auto"
+		}
 	});
+	editor.addChild(img);
 
 	// 加载模板
 	async function loadTemplate(id, cb) {
@@ -201,6 +213,10 @@
 	const preview = document.getElementById('previewImg');
 	async function createPreivew() {
 		// https://github.com/bubkoo/html-to-image
+
+		//const fontEmbedCss = await htmlToImage.getFontEmbedCSS(editor.target.dom);
+		//html2Image.toSVG(element1, { fontEmbedCss });
+		//console.log(fontEmbedCss);
         // 截图取target的dom节点，才是真的编辑渲染区域
 		const img = await window.htmlToImage.toPng(editor.target.dom);
 		preview.src = img;

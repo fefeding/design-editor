@@ -41,16 +41,18 @@ var JBaseComponent = /** @class */ (function (_super) {
             // 外层只响应Z轴旋转
             transformWatchProps: [
                 'rotateZ', 'scaleX', 'scaleY'
-            ] }, option), { nodeType: 'div', className: 'j-design-editor-container' })) || this;
+            ] }, option), { nodeType: 'div', className: 'j-design-editor-container', isComponent: true })) || this;
         // 选中
         _this._selected = false;
         option.target = option.target || {};
         // 生成当前控制的元素
-        _this.target = new JElement(__assign(__assign({}, option), { visible: true, 
+        _this.target = new JElement(__assign(__assign({}, option), { visible: true, data: {}, 
             // 不响应本身的变换，只响应父级的
-            transformWatchProps: [], width: '100%', height: '100%', style: {
+            transformWatchProps: [], style: {
                 display: 'block',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                width: '100%',
+                height: '100%',
             } }));
         _this.addChild(_this.target);
         // 变换改为控制主元素
@@ -61,6 +63,7 @@ var JBaseComponent = /** @class */ (function (_super) {
             ]
         });
         return _this;
+        //this.initData(option);// 初始化数据
     }
     Object.defineProperty(JBaseComponent.prototype, "selected", {
         get: function () {

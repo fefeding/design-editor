@@ -1,12 +1,12 @@
 {
   "name": "j-html-design-editor",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "description": "design canvas",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "node test/dev",
-    "build": "node build.js",
+    "build": "gulp && node build.js",
     "push": "npm publish --registry=https://registry.npmjs.org"
   },
   "devDependencies": {

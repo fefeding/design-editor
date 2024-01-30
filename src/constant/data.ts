@@ -91,7 +91,7 @@ export default class JData<T extends object> extends EventEmiter implements IDat
     }
 
     from(data: object) {
-        if(this.data) Object.assign(this.data, data);
+        if(this.data) Object.assign(this, data);
         return this;
     }
 
