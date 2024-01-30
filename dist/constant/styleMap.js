@@ -512,7 +512,7 @@ var JElementStyleProperty = /** @class */ (function () {
         this.wordSpacing = '';
         this.wordWrap = '';
         this.writingMode = '';
-        this.zIndex = '';
+        this.zIndex = 0;
     }
     return JElementStyleProperty;
 }());

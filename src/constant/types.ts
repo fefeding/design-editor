@@ -1,6 +1,10 @@
-import JElementCssStyle from './styleMap';
+import JElementCssStyle, { IJElementStyleDeclaration } from './styleMap';
 import { JElementData, JTextData, JImageData } from './data';
 import EventEmitter from './eventEmitter';
+
+export {
+    IJElementStyleDeclaration
+};
 
 export interface IJFontData {
     label: string;
