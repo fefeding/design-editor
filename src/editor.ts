@@ -5,7 +5,7 @@ import JElement from './core/element';
 import JController from './core/controller';
 import JFonts from './core/fonts';
 import util from './lib/util';
-import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent, IJFonts, IElementOption, IEditorOption } from './constant/types';
+import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent, IJFonts, IElementOption, IEditorOption, ITextOption, IImageOption } from './constant/types';
 
 export default class JEditor extends JBase implements IJEditor {
 
@@ -213,7 +213,7 @@ export default class JEditor extends JBase implements IJEditor {
     }
 
     // 缩放
-    scale(x, y=x) {
+    scale(x: number, y: number = x) {
         if(x < 0.1 || y < 0.1) return;
         this.transform.scaleX = x;
         this.transform.scaleY = y;
@@ -227,7 +227,7 @@ export default class JEditor extends JBase implements IJEditor {
     }
 
     // 创建元素
-    createShape(type: string | JElement, option={} as IElementOption) {
+    createShape(type: string | JElement, option:IElementOption|ITextOption|IImageOption={}) {
         const shape = typeof type === 'string'? this.shapes.get(type): type;
         if(!shape) {
             throw Error(`${type}不存在的元素类型`);
