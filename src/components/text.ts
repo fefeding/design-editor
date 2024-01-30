@@ -1,10 +1,11 @@
 import Base from '../core/baseComponent';
-import { IJBaseComponent } from '../constant/types';
+import { IJTextComponent } from '../constant/types';
+import { JTextData } from '../constant/data';
 import { topZIndex } from '../constant/styleMap';
 import util from '../lib/util';
 import JElement from '../core/element';
 
-export default class JText extends Base<HTMLDivElement> implements IJBaseComponent {
+export default class JText extends Base<HTMLDivElement> implements IJTextComponent {
     constructor(option = {} as any) {
 
         option.style = {
@@ -20,10 +21,24 @@ export default class JText extends Base<HTMLDivElement> implements IJBaseCompone
 
         super({
             ...option,
-            nodeType: 'div'
+            nodeType: 'div',
+            dataType: JTextData
         });
 
-        if(option.text) this.text = option.text;
+        // 属性变化映射到style
+        this.data.watch([
+            'text'
+        ], {
+            set: (item) => {
+                this.target.dom.innerText = item.value;
+            },
+            get: (name: string) => {
+                return this.target.dom.innerText;
+            }
+        });
+
+        const text = option.text;
+        if(text) this.data.text = text;
 
         // 双击可编辑
         this.on('dblclick', ()=>{
@@ -34,12 +49,7 @@ export default class JText extends Base<HTMLDivElement> implements IJBaseCompone
         });
     }
 
-    get text() {
-        return this.target.dom.innerText;
-    }
-    set text(v: string) {
-        this.target.dom.innerText = v;
-    }
+    data: JTextData;
 
     // 进入编辑状态
     edit() {
@@ -65,17 +75,18 @@ export default class JText extends Base<HTMLDivElement> implements IJBaseCompone
             });
             this.editor.dom.appendChild(editEl.dom);
         }
-        editEl.dom.value = this.text;
+        editEl.dom.value = this.data.text;
+        editEl.attr('data-target', this.id);
 
-        const w = util.toNumber(this.width) * 1.2;
-        const h = util.toNumber(this.height) * 1.2;
+        const w = util.toNumber(this.data.width) * 1.2;
+        const h = util.toNumber(this.data.height) * 1.2;
 
         const style = {} as any;
         style.width = Math.max(w, 100) + 'px';
         style.height = Math.max(h, 100) + 'px';
 
-        style.top = this.top;
-        style.left = this.left;
+        style.top = this.data.top;
+        style.left = this.data.left;
         style.fontSize = this.style.fontSize;
         style.fontFamily = this.style.fontFamily;
         style.fontWeight = this.style.fontWeight;
@@ -84,12 +95,16 @@ export default class JText extends Base<HTMLDivElement> implements IJBaseCompone
         util.css(editEl, style);
         editEl.dom.focus();// 进入控件
     }
-    // 结束编辑
+    // 结束编辑 
     closeEdit() {
         const editEl = this.editor.textEditElement;
         if(!editEl) return;
-        this.text = editEl.dom.value;
-        editEl.visible = false;
+        // 编辑的是当前元素，才采用它的值
+        if(editEl.attr('data-target') === this.id) {
+            this.data.text = editEl.dom.value;
+        }
+        editEl.data.visible = false;
+        editEl.dom.value = '';// 置空
     }
 
     toJSON(props = []) {

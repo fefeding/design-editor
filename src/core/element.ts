@@ -6,7 +6,7 @@ import util from '../lib/util';
 import JEvent from '../core/event';
 import JElementCssStyle from '../constant/styleMap';
 import { IJElement, ITransform, IJEditor } from '../constant/types';
-import { ElementData } from '../constant/data';
+import JData, { JElementData } from '../constant/data';
 
 export default class JElement<T extends HTMLElement = HTMLElement> extends EventEmiter  implements IJElement{
 
@@ -47,7 +47,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
             watchProps: option.transformWatchProps
         });
 
-        this.initData(option);
+        this.initData(option, option.dataType);
 
         if(option.editable === false) this.editable = false;
         if(option.className) this.className = option.className;
@@ -55,18 +55,50 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         this.bindEvent();// 事件绑定
     }
     // 初始化一些基础属性
-    initData(option, type=ElementData) {
-        this.data = ElementData.createProxy(new type());
+    initData(option, type=JElementData) {
+        this.data = JElementData.createProxy(new type());
         // 属性变化映射到style
         this.data.watch([
             'x', 'y', 'left', 'top', 'width', 'height', 'zIndex', 'visible'
-        ], (item) => {
-            if(item.name === 'visible') {
-                this.style.display = item.value? 'block': 'none';
+        ], {
+            set: (item) => {
+                if(item.name === 'visible') {
+                    this.style.display = item.value? 'block': 'none';
+                }
+                else if(item.name === 'x') this.data.left = item.value;
+                else if(item.name === 'y') this.data.top = item.value;
+                else if(item.name === 'rotation') {
+                    this.transform.rotateZ = item.value;
+                }
+                else if(item.name === 'angle') {
+                    this.transform.rotateZ = util.degToRad(item.value);
+                }
+                else this.style[item.name] = item.value;
+            },
+            get: (name: string) => {
+                if(name === 'x') return this.data.left;
+                else if(name === 'y') return this.data.top;
+                else if(name === 'width') {
+                    let w = this.style.width || 0;
+                    if((!w || w === 'auto') && this.dom && this.dom.clientWidth) return this.dom.clientWidth;
+                    return w;
+                }
+                else if(name === 'height') {
+                    let h = this.style.height || 0;
+                    if((!h || h === 'auto') && this.dom && this.dom.clientHeight) return this.dom.clientHeight;
+                    return h;
+                }
+                else if(name === 'rotation') {
+                    return this.transform.rotateZ;
+                }
+                else if(name === 'angle') {
+                    return util.radToDeg(this.transform.rotateZ);
+                }
+                else if(name === 'visible') {
+                    return this.style.display !== 'none';
+                }
+                return this.style[name];
             }
-            else if(item.name === 'x') this.data.left = item.value;
-            else if(item.name === 'y') this.data.top = item.value;
-            else this.style[item.name] = item.value;
         });
         this.data.x = option.x || option.left || this.data.x || 0;
         this.data.y = option.y || option.top || this.data.y || 0;
@@ -78,6 +110,10 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         if(typeof option.angle !== 'undefined') this.data.angle = option.angle;
         if(typeof option.zIndex !== 'undefined') this.data.zIndex = option.zIndex;
         if(typeof option.visible !== 'undefined') this.data.visible = !!option.visible;
+
+        if(option.data) {
+            this.data.from(option.data);
+        }
     }
 
     // 绑定事件
@@ -120,48 +156,8 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     // 样式代理
     style: JElementCssStyle;
 
-    data: ElementData;
-
-    get width() {
-        let w = this.style.width || 0;
-        if((!w || w === 'auto') && this.dom && this.dom.clientWidth) return this.dom.clientWidth;
-        return w;
-    }
-    set width(v) {
-        this.style.width = v;
-    }
-
-    get height() {
-        let h = this.style.height || 0;
-        if((!h || h === 'auto') && this.dom && this.dom.clientHeight) return this.dom.clientHeight;
-        return h;
-    }
-    set height(v) {
-        this.style.height = v;
-    }
-
-    // 旋转弧度
-    set rotation(v: number) {    
-        this.transform.rotateZ = v;
-    }
-    get rotation() {
-        const v = this.transform.rotateZ;
-        return v;
-    }
-    // 旋转角度
-    set angle(v) {    
-        this.transform.rotateZ = util.degToRad(v);
-    }
-    get angle() {
-        return util.radToDeg(this.transform.rotateZ);
-    }
+    data: JElementData;    
     
-    get visible() {
-        return this.style.display !== 'none';
-    }
-    set visible(v) {
-        this.style.display = v? 'block': 'none';
-    }
     get className() {
         return this.dom.className;
     }
@@ -189,13 +185,13 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         return this;
     }
     // dom属性
-    attr(name: string, value: string|number|undefined) {
+    attr(name: string, value?: string|number|undefined) {
         return util.attr(this.dom, name, value);
     }
     // 移位
     move(dx, dy) {
-        this.left = util.toNumber(this.left) + dx;
-        this.top = util.toNumber(this.top) + dy;
+        this.data.left = util.toNumber(this.data.left) + dx;
+        this.data.top = util.toNumber(this.data.top) + dy;
 
         this.emit('move', {dx, dy});
     }
@@ -203,10 +199,10 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     // 重置大小
     resize(w, h) {
         if(typeof w === 'number') {
-            this.width = w;
+            this.data.width = w;
         }
         if(typeof h === 'number') {
-            this.height = h;
+            this.data.height = h;
         }
     }
 
@@ -247,7 +243,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
 
     // 转为json
     toJSON(props=[], ig=(p: IJElement)=>true) {
-        const fields = ['left', 'top', 'width', 'height', 'rotation', 'type', 'style', 'transform', 'id', ...props];
+        const fields = ['type', 'data', 'style', 'transform', 'id', ...props];
         const obj = {
             children: []
         };
@@ -261,8 +257,6 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
                 obj[k] = v.toJSON();
             }
         }
-
-        //if(this.transform) obj['transform'] = this.transform.toJSON();
 
         if(this.children && this.children.length) {
             for(const child of this.children) {

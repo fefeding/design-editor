@@ -32,7 +32,7 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
         this.dir = option.dir || '';
         this.size = option.size || 8;
         this.style.cursor = this.style.cursor || GCursors[this.dir];
-        this.width = this.height = this.size;
+        this.data.width = this.data.height = this.size;
 
         this.editor = option.editor;
 
@@ -422,8 +422,8 @@ export default class JControllerComponent extends JControllerItem implements IJC
                     break;
                 }
                 case 'skew': {                    
-                    const rx = offX / util.toNumber(this.width) * Math.PI;
-                    const ry = offY / util.toNumber(this.height) * Math.PI;
+                    const rx = offX / util.toNumber(this.data.width) * Math.PI;
+                    const ry = offY / util.toNumber(this.data.height) * Math.PI;
                     args.skew.x = ry;
                     args.skew.y = rx;
                     break;
@@ -435,11 +435,11 @@ export default class JControllerComponent extends JControllerItem implements IJC
             this.move(args.x, args.y);
         }
         if(args.width) {
-            const width = util.toNumber(this.width) + args.width;
-            this.width = Math.max(width, 1);
+            const width = util.toNumber(this.data.width) + args.width;
+            this.data.width = Math.max(width, 1);
         }
         if(args.height) {
-            this.height = Math.max(util.toNumber(this.height) + args.height, 1);
+            this.data.height = Math.max(util.toNumber(this.data.height) + args.height, 1);
         }
         // x,y旋转
         if(args.skew.x || args.skew.y) {
@@ -457,8 +457,8 @@ export default class JControllerComponent extends JControllerItem implements IJC
         // 先回原坐标，再主算偏移量，这样保证操作更容易理解
         if(this.transform.rotateZ) {
             const center = {
-                x: util.toNumber(this.left) + util.toNumber(this.width)/2,
-                y: util.toNumber(this.top) + util.toNumber(this.height)/2,
+                x: util.toNumber(this.data.left) + util.toNumber(this.data.width)/2,
+                y: util.toNumber(this.data.top) + util.toNumber(this.data.height)/2,
             };
             const [pos1, pos2] = util.rotatePoints([oldPosition, newPosition], center, -this.transform.rotateZ);
             offX = pos2.x - pos1.x;
@@ -474,8 +474,8 @@ export default class JControllerComponent extends JControllerItem implements IJC
     rotateChange(e, args) {
         const {oldPosition, newPosition} = e;
         const center = {
-            x: util.toNumber(this.left) + util.toNumber(this.width)/2,
-            y: util.toNumber(this.top) + util.toNumber(this.height)/2,
+            x: util.toNumber(this.data.left) + util.toNumber(this.data.width)/2,
+            y: util.toNumber(this.data.top) + util.toNumber(this.data.height)/2,
         };
 
         // 编辑器坐标
@@ -517,17 +517,17 @@ export default class JControllerComponent extends JControllerItem implements IJC
         if(!this.target) return;
 
         const pos = {
-            x: util.toNumber(this.left) + (this.isEditor?util.toNumber(this.target.left):0),
-            y: util.toNumber(this.top) + (this.isEditor?util.toNumber(this.target.top):0)
+            x: util.toNumber(this.data.left) + (this.isEditor?util.toNumber(this.target.data.left):0),
+            y: util.toNumber(this.data.top) + (this.isEditor?util.toNumber(this.target.data.top):0)
         };     
 
-        this.target.left = pos.x;
-        this.target.top = pos.y;
+        this.target.data.left = pos.x;
+        this.target.data.top = pos.y;
 
         // 编辑器相对位置一直是0
         if(this.isEditor) {
-            this.left = 0;
-            this.top = 0;
+            this.data.left = 0;
+            this.data.top = 0;
         }
 
         this.target.transform.from({
@@ -536,10 +536,10 @@ export default class JControllerComponent extends JControllerItem implements IJC
             rotateZ: this.transform.rotateZ,
         });
 
-        const width = util.toNumber(this.width) - this.paddingSize * 2;
-        const height = util.toNumber(this.height) - this.paddingSize * 2;
-        if(this.target.width !== width) this.target.width = width;
-        if(this.target.height !== height) this.target.height = height;
+        const width = util.toNumber(this.data.width) - this.paddingSize * 2;
+        const height = util.toNumber(this.data.height) - this.paddingSize * 2;
+        if(this.target.data.width !== width) this.target.data.width = width;
+        if(this.target.data.height !== height) this.target.data.height = height;
 
     }
 
@@ -563,15 +563,15 @@ export default class JControllerComponent extends JControllerItem implements IJC
 
         // 编辑器的话，需要把它的坐标转为相对于容器的
         const pos = {
-            x: (this.isEditor? 0: util.toNumber(target.left)),
-            y: (this.isEditor? 0: util.toNumber(target.top))
+            x: (this.isEditor? 0: util.toNumber(target.data.left)),
+            y: (this.isEditor? 0: util.toNumber(target.data.top))
         };        
         
-        this.left = pos.x;
-        this.top = pos.y;
+        this.data.left = pos.x;
+        this.data.top = pos.y;
 
-        this.width = util.toNumber(target.width) + this.paddingSize * 2;
-        this.height = util.toNumber(target.height) + this.paddingSize * 2;
+        this.data.width = util.toNumber(target.data.width) + this.paddingSize * 2;
+        this.data.height = util.toNumber(target.data.height) + this.paddingSize * 2;
 
         this.transform.from({
            // rotateX: target.transform.rotateX,
@@ -582,11 +582,11 @@ export default class JControllerComponent extends JControllerItem implements IJC
             //scaleZ: target.transform.scaleZ,
         });
         this.target = target;
-        this.visible = true;
+        this.data.visible = true;
 
         // 编辑器不让旋转和skew
         for(const item of this.items) {
-            item.visible = !this.isEditor && target.editable;
+            item.data.visible = !this.isEditor && target.editable;
         }
 
         // 如果是编辑器，则不能捕获事件
@@ -598,7 +598,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
     unbind(target: IJBaseComponent) {
         if(this.target === target) {
            this.reset(false);
-           this.visible = false;
+           this.data.visible = false;
         }
     }
 }

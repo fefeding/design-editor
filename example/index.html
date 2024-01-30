@@ -131,7 +131,7 @@
 			const idAttr = e.target.attributes['data-tmplid'];
 			if (idAttr && idAttr.value) {
 				loadTemplate(idAttr.value, (tmpl) => {                    
-		            editor.fromJSON(tmpl.data || tmpl);
+		            editor.fromJSON(tmpl);
                 });
 			}
 		}
@@ -205,7 +205,7 @@
 
 		setTimeout(createPreivew, 10000);
 
-		//console.log(editor.toString())
+		console.log(editor.toString())
 
 	};
 	setTimeout(createPreivew, 2000);

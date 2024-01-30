@@ -128,16 +128,16 @@ export default class JEditor extends JBase implements IJEditor {
         else this.elementController.unbind(el);
     }
 
-    resize(width=this.width, height=this.height) {
+    resize(width=this.data.width, height=this.data.height) {
 
         this.attr('data-size', `${width}*${height}`);
 
-        this.width = width;
-        this.height = height;        
+        this.data.width = width;
+        this.data.height = height;        
         
         setTimeout(() => {
-            this.left = util.toNumber(this.view.dom.clientWidth) / 2 - util.toNumber(width) / 2;
-            this.top = util.toNumber(this.view.dom.clientHeight) / 2 - util.toNumber(height) / 2;
+            this.data.left = util.toNumber(this.view.dom.clientWidth) / 2 - util.toNumber(width) / 2;
+            this.data.top = util.toNumber(this.view.dom.clientHeight) / 2 - util.toNumber(height) / 2;
 
             this.emit('resize', {
                 width,
@@ -207,7 +207,7 @@ export default class JEditor extends JBase implements IJEditor {
             const el = this.children[i];
             this.removeChild(el);
         }
-        this.elementController.visible = false;
+        this.elementController.data.visible = false;
     }
 
     // 缩放

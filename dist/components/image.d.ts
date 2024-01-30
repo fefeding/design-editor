@@ -1,9 +1,9 @@
 import Base from '../core/baseComponent';
-import { IJBaseComponent } from '../constant/types';
-export default class JImage extends Base<HTMLImageElement> implements IJBaseComponent {
+import { JImageData } from '../constant/data';
+import { IJImageComponent } from '../constant/types';
+export default class JImage extends Base<HTMLImageElement> implements IJImageComponent {
     constructor(option?: any);
-    get src(): string;
-    set src(v: string);
+    data: JImageData;
     toJSON(props?: any[]): {
         children: any[];
     };

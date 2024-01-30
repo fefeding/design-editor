@@ -1,18 +1,6 @@
 import JElementCssStyle from './styleMap';
-import { ElementData } from './data';
+import { JElementData, JTextData, JImageData } from './data';
 import EventEmitter from './eventEmitter';
-
-// 数据对象
-export interface IData {
-    // 监控某个属性变化
-    watch(name: string, fun: Function): IData;
-
-    // 属性改变
-    propertyChange(name: string, value: any);
-
-    from(data: object): IData;
-    toJSON(): object;
-}
 
 export interface IJFontData {
     label: string;
@@ -117,38 +105,14 @@ export interface IJElement<T extends HTMLElement = HTMLElement> extends EventEmi
     editor: IJEditor;
     event: IJEvent;
     style: JElementCssStyle;
-    data: ElementData;
-    get x(): number | string;
-    set x(v: number | string);
-    get y(): number | string;
-    set y(v: number | string);
-    get top(): string | number;
-    set top(v: string | number);
-    get left(): string | number;
-    set left(v: string | number);
-    get right(): number | string;
-    set right(v: number | string);
-    get bottom(): number | string;
-    set bottom(v: number | string);
-    get width(): string | number;
-    set width(v: string | number);
-    get height(): string | number;
-    set height(v: string | number);
-    set rotation(v: number);
-    get rotation(): number;
-    set angle(v: number);
-    get angle(): number;
-    get visible(): boolean;
-    set visible(v: boolean);
-    get zIndex(): number;
-    set zIndex(v: number);
+    data: JElementData;  
     get className(): string;
     set className(v: string);
     transform: ITransform;
     editable: boolean;
     setDomStyle(name: string, value: string): void;
     css(name: string | Object, value?: string | number): this;
-    attr(name: string, value: string | number | undefined): any;
+    attr(name: string, value?: string | number | undefined): any;
     move(dx: any, dy: any): void;
     resize(w: any, h: any): void;
     addChild(child: IJElement | HTMLElement, parent?: IJElement): IJElement<HTMLElement>;
@@ -165,6 +129,14 @@ export interface IJBaseComponent<T extends HTMLElement = HTMLElement> extends IJ
     target: IJElement<T>;
     get selected(): boolean;
     set selected(v: boolean);
+}
+
+export interface IJTextComponent extends IJBaseComponent<HTMLDivElement> {
+    data: JTextData;
+}
+
+export interface IJImageComponent extends IJBaseComponent<HTMLImageElement> {
+    data: JImageData;
 }
 
 export interface IJControllerItem extends IJElement<HTMLDivElement> {

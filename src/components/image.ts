@@ -1,11 +1,13 @@
 import Base from '../core/baseComponent';
-import { IJBaseComponent } from '../constant/types';
+import { JImageData } from '../constant/data';
+import { IJImageComponent } from '../constant/types';
 
-export default class JImage extends Base<HTMLImageElement> implements IJBaseComponent {
+export default class JImage extends Base<HTMLImageElement> implements IJImageComponent {
     constructor(option={} as any) {
         super({
             ...option,
-            nodeType: 'img'
+            nodeType: 'img',
+            dataType: JImageData
         });
 
         this.target.dom.onload = (e) => {
@@ -17,15 +19,23 @@ export default class JImage extends Base<HTMLImageElement> implements IJBaseComp
 
         this.target.attr('crossorigin', 'anonymous');
 
-        this.src = option.url || option.src || '';
+        
+        // 属性变化映射到style
+        this.data.watch([
+            'src'
+        ], {
+            set: (item) => {
+                this.target.dom.src = item.value;
+            },
+            get: (name: string) => {
+                return this.target.dom.src;
+            }
+        });
+        const src = option.url || option.src;
+        if(src) this.data.src = src;
     }
 
-    get src() {
-        return this.target.dom.src;
-    }
-    set src(v: string) {
-        this.target.dom.src = v;
-    }
+    data: JImageData;
 
     toJSON(props = []) {
         props.push('src');

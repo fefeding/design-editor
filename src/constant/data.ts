@@ -1,5 +1,4 @@
 
-import { IData } from './types';
 import EventEmiter from './eventEmitter';
 
 export interface IDataItem {
@@ -7,22 +6,42 @@ export interface IDataItem {
     value: any
 }
 
-export type DataChangeWatch = (data: IDataItem) => void;
+// 数据对象
+export interface IData<T> {
 
-export default class JData extends EventEmiter implements IData {
+    [key: string]: any;
+
+    // 监控某个属性变化
+    watch(name: string, watcher: DataChangeWatch): IData<T>;
+
+    // 属性改变
+    propertyChange(name: string, value: any);
+
+    from(data: object): IData<T>;
+    toJSON(): object;
+}
+
+export type DataChangeWatch = {
+    set: (data: IDataItem) => void; // 写属性
+    get: (name: string) => any  // 读
+}
+
+export default class JData<T extends object> extends EventEmiter implements IData<T> {
     constructor(data={}) {
         super();
         this.from(data);
     }
 
+    data = {} as T;
+
     watcher = new Map<string, DataChangeWatch[]>();
 
     // 监控某个属性变化
-    watch(name: string|Array<string>, fun: DataChangeWatch) {
+    watch(name: string|Array<string>, watcher: DataChangeWatch) {
         if(Array.isArray(name)) {
             for(const n of name) {
                 if(!n) continue;
-                this.watch(n, fun);
+                this.watch(n, watcher);
             }
             return this;
         }
@@ -32,16 +51,22 @@ export default class JData extends EventEmiter implements IData {
         else {
             this.watcher.set(name, watches);
         }
-        watches.push(fun);
+        watches.push(watcher);
+
+        this.data[name] && this.propertyChange(name);// 触发一次
         return this;
     }
 
     // 属性改变
-    propertyChange(name: string, value: any) {
+    propertyChange(name: string, value?: any) {
+        if(typeof value !== 'undefined') this.data[name] = value;
+        else {
+            value = this.data[name];
+        }
         const watches = this.watcher.get(name);
         if(watches && watches.length) {
             for(const w of watches) {
-                w({
+                w && w.set && w.set({
                     name,
                     value
                  });
@@ -53,30 +78,47 @@ export default class JData extends EventEmiter implements IData {
          });
     }
 
-    from(data: object): JData {
-        Object.assign(this, data);
+    // 读取属性
+    getProperty(name: string) {
+        const watches = this.watcher.get(name);
+        if(watches && watches.length) {
+            for(const w of watches) {
+                const v = w && w.get && w.get(name);
+                if(typeof v !== 'undefined') return v;
+            }
+         }
+        return this.data[name];
+    }
+
+    from(data: object) {
+        if(this.data) Object.assign(this.data, data);
         return this;
     }
-    toJSON(props = []): object {
+
+    toJSON(): object {
         const obj = {};
+        const props = Object.getOwnPropertyNames(this.data);
         for(const name of props) {
-            if(typeof this[name] === 'undefined') continue;
+            if(typeof this[name] === 'undefined' || typeof this[name] === 'function') continue;
             obj[name] = this[name];
         }
         return obj;
     }
 
     // 生成数据Data
-    static createProxy<T extends JData>(data: T) : T {
+    static createProxy<T extends JData<T>>(data: T) : T {
         // 代理处理
-        const proxy = new Proxy<T>(data, {
+        const proxy = new Proxy(data, {
             get(target, p, receiver) {
                 const v = target[p];
+                if(typeof v === 'undefined' && typeof p === 'string') {
+                    return target.getProperty(p);
+                }
                 return v;
             },
             set(target, p, value, receiver) {
-                target[p] = value;
                 if(typeof p === 'string') target.propertyChange(p, value);
+                else  target[p] = value;
                 return true;
             }
         });
@@ -85,7 +127,7 @@ export default class JData extends EventEmiter implements IData {
 }
 
 // 元素卙础数据对象
-export class ElementData extends JData {
+export class JElementData extends JData<JElementData> {
     // 坐标X
     x: string|number;
     // 坐标Y
@@ -108,4 +150,12 @@ export class ElementData extends JData {
     visible: boolean;
 
     zIndex: number;
+}
+
+export class JImageData extends JElementData {
+    src: string;
+}
+
+export class JTextData extends JElementData {
+    text: string;
 }

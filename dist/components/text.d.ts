@@ -1,9 +1,9 @@
 import Base from '../core/baseComponent';
-import { IJBaseComponent } from '../constant/types';
-export default class JText extends Base<HTMLDivElement> implements IJBaseComponent {
+import { IJTextComponent } from '../constant/types';
+import { JTextData } from '../constant/data';
+export default class JText extends Base<HTMLDivElement> implements IJTextComponent {
     constructor(option?: any);
-    get text(): string;
-    set text(v: string);
+    data: JTextData;
     edit(): void;
     closeEdit(): void;
     toJSON(props?: any[]): {
