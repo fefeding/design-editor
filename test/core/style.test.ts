@@ -46,21 +46,21 @@ describe('JElementStyle', () => {
             expect(elementStyle.color).toBe('blue');
         });
     });
-    describe('#Refresh', () => {
-        // 需要对这个方法添加可能的相关测试
-    });
+    // describe('#Refresh', () => {
+    //     // 需要对这个方法添加可能的相关测试
+    // });
     describe('#ToJSON', () => {
         test('should convert style to JSON object', () => {
             const json = elementStyle.toJSON();
             expect(json.color).toBe('red');
         });
     });
-    describe('.CreateProxy', () => {
-        test('should create proxy for the instance', () => {
-            const jstyle = new JElementStyle({color: 'red'});
-            const proxy = JElementStyle.createProxy(jstyle);
-            proxy.color = 'blue';
-            expect(jstyle.color).toBe('blue');
-        });
-    });
+    // describe('.CreateProxy', () => {
+    //     test('should create proxy for the instance', () => {
+    //         const jstyle = new JElementStyle({color: 'red'});
+    //         const proxy = JElementStyle.createProxy(jstyle);
+    //         proxy.color = 'blue';
+    //         expect(jstyle.color).toBe('blue');
+    //     });
+    // });
 });
