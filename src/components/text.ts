@@ -98,9 +98,9 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
     // 结束编辑 
     closeEdit() {
         const editEl = this.editor.textEditElement;
-        if(!editEl) return;
+        if(!editEl || !editEl.visible) return;
         // 编辑的是当前元素，才采用它的值
-        if(editEl.attr('data-target') === this.id) {
+        if(editEl.attr('data-target') === this.id && editEl.visible) {
             this.data.text = editEl.dom.value;
         }
         editEl.data.visible = false;

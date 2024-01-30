@@ -118,6 +118,17 @@
 	});
 	editor.addChild(img);
 
+	const txt = editor.createShape('text', {
+		data: {
+			height: "auto",
+			left: 400,
+			top: 200,
+			width: "auto",
+			text: '请输入文本'
+		}
+	});
+	editor.addChild(txt);
+
 	// 加载模板
 	async function loadTemplate(id, cb) {
 		const url = `templates/${id}.json`;

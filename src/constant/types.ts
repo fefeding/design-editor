@@ -115,6 +115,7 @@ export interface IJElement<T extends HTMLElement = HTMLElement> extends EventEmi
     set className(v: string);
     transform: ITransform;
     editable: boolean;
+    visible: boolean;
     setDomStyle(name: string, value: string): void;
     css(name: string | Object, value?: string | number): this;
     attr(name: string, value?: string | number | undefined): any;
