@@ -164,14 +164,14 @@ var JEditor = /** @class */ (function (_super) {
     };
     JEditor.prototype.resize = function (width, height) {
         var _this = this;
-        if (width === void 0) { width = this.width; }
-        if (height === void 0) { height = this.height; }
+        if (width === void 0) { width = this.data.width; }
+        if (height === void 0) { height = this.data.height; }
         this.attr('data-size', "".concat(width, "*").concat(height));
-        this.width = width;
-        this.height = height;
+        this.data.width = width;
+        this.data.height = height;
         setTimeout(function () {
-            _this.left = util.toNumber(_this.view.dom.clientWidth) / 2 - util.toNumber(width) / 2;
-            _this.top = util.toNumber(_this.view.dom.clientHeight) / 2 - util.toNumber(height) / 2;
+            _this.data.left = util.toNumber(_this.view.dom.clientWidth) / 2 - util.toNumber(width) / 2;
+            _this.data.top = util.toNumber(_this.view.dom.clientHeight) / 2 - util.toNumber(height) / 2;
             _this.emit('resize', {
                 width: width,
                 height: height
@@ -233,7 +233,7 @@ var JEditor = /** @class */ (function (_super) {
             var el = this.children[i];
             this.removeChild(el);
         }
-        this.elementController.visible = false;
+        this.elementController.data.visible = false;
     };
     // 缩放
     JEditor.prototype.scale = function (x, y) {

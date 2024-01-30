@@ -66,6 +66,7 @@ import JTransform from '../constant/transform';
 import JStyle from './style';
 import util from '../lib/util';
 import JEvent from '../core/event';
+import { JElementData } from '../constant/data';
 var JElement = /** @class */ (function (_super) {
     __extends(JElement, _super);
     function JElement(option) {
@@ -105,28 +106,84 @@ var JElement = /** @class */ (function (_super) {
             // 如果指定了只响应某几个属性
             watchProps: option.transformWatchProps
         });
-        _this.initOption(option);
+        _this.initData(option, option.dataType);
+        if (option.editable === false)
+            _this.editable = false;
+        if (option.className)
+            _this.className = option.className;
         _this.bindEvent(); // 事件绑定
         return _this;
     }
     // 初始化一些基础属性
-    JElement.prototype.initOption = function (option) {
-        this.x = option.x || option.left || this.x || 0;
-        this.y = option.y || option.top || this.y || 0;
-        this.width = option.width || option.width || this.width || 1;
-        this.height = option.height || option.height || this.height || 1;
+    JElement.prototype.initData = function (option, type) {
+        var _this = this;
+        if (type === void 0) { type = JElementData; }
+        this.data = JElementData.createProxy(new type());
+        // 属性变化映射到style
+        this.data.watch([
+            'x', 'y', 'left', 'top', 'width', 'height', 'zIndex', 'visible'
+        ], {
+            set: function (item) {
+                if (item.name === 'visible') {
+                    _this.style.display = item.value ? 'block' : 'none';
+                }
+                else if (item.name === 'x')
+                    _this.data.left = item.value;
+                else if (item.name === 'y')
+                    _this.data.top = item.value;
+                else if (item.name === 'rotation') {
+                    _this.transform.rotateZ = item.value;
+                }
+                else if (item.name === 'angle') {
+                    _this.transform.rotateZ = util.degToRad(item.value);
+                }
+                else
+                    _this.style[item.name] = item.value;
+            },
+            get: function (name) {
+                if (name === 'x')
+                    return _this.data.left;
+                else if (name === 'y')
+                    return _this.data.top;
+                else if (name === 'width') {
+                    var w = _this.style.width || 0;
+                    if ((!w || w === 'auto') && _this.dom && _this.dom.clientWidth)
+                        return _this.dom.clientWidth;
+                    return w;
+                }
+                else if (name === 'height') {
+                    var h = _this.style.height || 0;
+                    if ((!h || h === 'auto') && _this.dom && _this.dom.clientHeight)
+                        return _this.dom.clientHeight;
+                    return h;
+                }
+                else if (name === 'rotation') {
+                    return _this.transform.rotateZ;
+                }
+                else if (name === 'angle') {
+                    return util.radToDeg(_this.transform.rotateZ);
+                }
+                else if (name === 'visible') {
+                    return _this.style.display !== 'none';
+                }
+                return _this.style[name];
+            }
+        });
+        this.data.x = option.x || option.left || this.data.x || 0;
+        this.data.y = option.y || option.top || this.data.y || 0;
+        this.data.width = option.width || option.width || this.data.width || 1;
+        this.data.height = option.height || option.height || this.data.height || 1;
         if (typeof option.rotation !== 'undefined')
-            this.rotation = option.rotation;
+            this.data.rotation = option.rotation;
         if (typeof option.angle !== 'undefined')
-            this.angle = option.angle;
+            this.data.angle = option.angle;
         if (typeof option.zIndex !== 'undefined')
-            this.zIndex = option.zIndex;
+            this.data.zIndex = option.zIndex;
         if (typeof option.visible !== 'undefined')
-            this.visible = !!option.visible;
-        if (option.className)
-            this.className = option.className;
-        if (option.editable === false)
-            this.editable = false;
+            this.data.visible = !!option.visible;
+        if (option.data) {
+            this.data.from(option.data);
+        }
     };
     // 绑定事件
     JElement.prototype.bindEvent = function (dom) {
@@ -165,143 +222,6 @@ var JElement = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(JElement.prototype, "x", {
-        // 坐标X
-        get: function () {
-            var v = this.style.left || 0;
-            return v;
-        },
-        set: function (v) {
-            this.style.left = v;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JElement.prototype, "y", {
-        // 坐标Y
-        get: function () {
-            var v = this.style.top || 0;
-            return v;
-        },
-        set: function (v) {
-            this.style.top = v;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JElement.prototype, "top", {
-        get: function () {
-            return this.y;
-        },
-        set: function (v) {
-            this.y = v;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JElement.prototype, "left", {
-        get: function () {
-            return this.x;
-        },
-        set: function (v) {
-            this.x = v;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JElement.prototype, "right", {
-        // 坐标right
-        get: function () {
-            var v = this.style.right || 0;
-            return v;
-        },
-        set: function (v) {
-            this.style.right = v;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JElement.prototype, "bottom", {
-        // 坐标bottom
-        get: function () {
-            var v = this.style.bottom || 0;
-            return v;
-        },
-        set: function (v) {
-            this.style.bottom = v;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JElement.prototype, "width", {
-        get: function () {
-            var w = this.style.width || 0;
-            if (!w && this.dom && this.dom.clientWidth)
-                return this.dom.clientWidth;
-            return w;
-        },
-        set: function (v) {
-            this.style.width = v;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JElement.prototype, "height", {
-        get: function () {
-            var h = this.style.height || 0;
-            if (!h && this.dom && this.dom.clientHeight)
-                return this.dom.clientHeight;
-            return h;
-        },
-        set: function (v) {
-            this.style.height = v;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JElement.prototype, "rotation", {
-        get: function () {
-            var v = this.transform.rotateZ;
-            return v;
-        },
-        // 旋转弧度
-        set: function (v) {
-            this.transform.rotateZ = v;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JElement.prototype, "angle", {
-        get: function () {
-            return util.radToDeg(this.transform.rotateZ);
-        },
-        // 旋转角度
-        set: function (v) {
-            this.transform.rotateZ = util.degToRad(v);
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JElement.prototype, "visible", {
-        get: function () {
-            return this.style.display !== 'none';
-        },
-        set: function (v) {
-            this.style.display = v ? 'block' : 'none';
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JElement.prototype, "zIndex", {
-        get: function () {
-            return Number(this.style.zIndex || '0');
-        },
-        set: function (v) {
-            this.style.zIndex = v + '';
-        },
-        enumerable: false,
-        configurable: true
-    });
     Object.defineProperty(JElement.prototype, "className", {
         get: function () {
             return this.dom.className;
@@ -331,17 +251,17 @@ var JElement = /** @class */ (function (_super) {
     };
     // 移位
     JElement.prototype.move = function (dx, dy) {
-        this.left = util.toNumber(this.left) + dx;
-        this.top = util.toNumber(this.top) + dy;
+        this.data.left = util.toNumber(this.data.left) + dx;
+        this.data.top = util.toNumber(this.data.top) + dy;
         this.emit('move', { dx: dx, dy: dy });
     };
     // 重置大小
     JElement.prototype.resize = function (w, h) {
         if (typeof w === 'number') {
-            this.width = w;
+            this.data.width = w;
         }
         if (typeof h === 'number') {
-            this.height = h;
+            this.data.height = h;
         }
     };
     // 新增子元素
@@ -395,7 +315,7 @@ var JElement = /** @class */ (function (_super) {
         var e_2, _a, e_3, _b;
         if (props === void 0) { props = []; }
         if (ig === void 0) { ig = function (p) { return true; }; }
-        var fields = __spreadArray(['left', 'top', 'width', 'height', 'rotation', 'type', 'style', 'transform', 'id'], __read(props), false);
+        var fields = __spreadArray(['type', 'data', 'style', 'transform', 'id'], __read(props), false);
         var obj = {
             children: []
         };
@@ -418,7 +338,6 @@ var JElement = /** @class */ (function (_super) {
             }
             finally { if (e_2) throw e_2.error; }
         }
-        //if(this.transform) obj['transform'] = this.transform.toJSON();
         if (this.children && this.children.length) {
             try {
                 for (var _c = __values(this.children), _d = _c.next(); !_d.done; _d = _c.next()) {

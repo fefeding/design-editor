@@ -88,7 +88,7 @@ var JControllerItem = /** @class */ (function (_super) {
         _this.dir = option.dir || '';
         _this.size = option.size || 8;
         _this.style.cursor = _this.style.cursor || GCursors[_this.dir];
-        _this.width = _this.height = _this.size;
+        _this.data.width = _this.data.height = _this.size;
         _this.editor = option.editor;
         if (_this.editor) {
             // @ts-ignore
@@ -392,8 +392,8 @@ var JControllerComponent = /** @class */ (function (_super) {
                     break;
                 }
                 case 'skew': {
-                    var rx = offX / util.toNumber(this.width) * Math.PI;
-                    var ry = offY / util.toNumber(this.height) * Math.PI;
+                    var rx = offX / util.toNumber(this.data.width) * Math.PI;
+                    var ry = offY / util.toNumber(this.data.height) * Math.PI;
                     args.skew.x = ry;
                     args.skew.y = rx;
                     break;
@@ -405,11 +405,11 @@ var JControllerComponent = /** @class */ (function (_super) {
             this.move(args.x, args.y);
         }
         if (args.width) {
-            var width = util.toNumber(this.width) + args.width;
-            this.width = Math.max(width, 1);
+            var width = util.toNumber(this.data.width) + args.width;
+            this.data.width = Math.max(width, 1);
         }
         if (args.height) {
-            this.height = Math.max(util.toNumber(this.height) + args.height, 1);
+            this.data.height = Math.max(util.toNumber(this.data.height) + args.height, 1);
         }
         // x,y旋转
         if (args.skew.x || args.skew.y) {
@@ -425,8 +425,8 @@ var JControllerComponent = /** @class */ (function (_super) {
         // 先回原坐标，再主算偏移量，这样保证操作更容易理解
         if (this.transform.rotateZ) {
             var center = {
-                x: util.toNumber(this.left) + util.toNumber(this.width) / 2,
-                y: util.toNumber(this.top) + util.toNumber(this.height) / 2,
+                x: util.toNumber(this.data.left) + util.toNumber(this.data.width) / 2,
+                y: util.toNumber(this.data.top) + util.toNumber(this.data.height) / 2,
             };
             var _a = __read(util.rotatePoints([oldPosition, newPosition], center, -this.transform.rotateZ), 2), pos1 = _a[0], pos2 = _a[1];
             offX = pos2.x - pos1.x;
@@ -441,8 +441,8 @@ var JControllerComponent = /** @class */ (function (_super) {
     JControllerComponent.prototype.rotateChange = function (e, args) {
         var oldPosition = e.oldPosition, newPosition = e.newPosition;
         var center = {
-            x: util.toNumber(this.left) + util.toNumber(this.width) / 2,
-            y: util.toNumber(this.top) + util.toNumber(this.height) / 2,
+            x: util.toNumber(this.data.left) + util.toNumber(this.data.width) / 2,
+            y: util.toNumber(this.data.top) + util.toNumber(this.data.height) / 2,
         };
         // 编辑器坐标
         var pos1 = this.editor.toEditorPosition(oldPosition);
@@ -481,27 +481,27 @@ var JControllerComponent = /** @class */ (function (_super) {
         if (!this.target)
             return;
         var pos = {
-            x: util.toNumber(this.left) + (this.isEditor ? util.toNumber(this.target.left) : 0),
-            y: util.toNumber(this.top) + (this.isEditor ? util.toNumber(this.target.top) : 0)
+            x: util.toNumber(this.data.left) + (this.isEditor ? util.toNumber(this.target.data.left) : 0),
+            y: util.toNumber(this.data.top) + (this.isEditor ? util.toNumber(this.target.data.top) : 0)
         };
-        this.target.left = pos.x;
-        this.target.top = pos.y;
+        this.target.data.left = pos.x;
+        this.target.data.top = pos.y;
         // 编辑器相对位置一直是0
         if (this.isEditor) {
-            this.left = 0;
-            this.top = 0;
+            this.data.left = 0;
+            this.data.top = 0;
         }
         this.target.transform.from({
             //skewX: this.transform.skewX,
             //skewY: this.transform.skewY,
             rotateZ: this.transform.rotateZ,
         });
-        var width = util.toNumber(this.width) - this.paddingSize * 2;
-        var height = util.toNumber(this.height) - this.paddingSize * 2;
-        if (this.target.width !== width)
-            this.target.width = width;
-        if (this.target.height !== height)
-            this.target.height = height;
+        var width = util.toNumber(this.data.width) - this.paddingSize * 2;
+        var height = util.toNumber(this.data.height) - this.paddingSize * 2;
+        if (this.target.data.width !== width)
+            this.target.data.width = width;
+        if (this.target.data.height !== height)
+            this.target.data.height = height;
     };
     // 重置
     JControllerComponent.prototype.reset = function (isEditor) {
@@ -534,13 +534,13 @@ var JControllerComponent = /** @class */ (function (_super) {
         this.reset(this.isEditor);
         // 编辑器的话，需要把它的坐标转为相对于容器的
         var pos = {
-            x: (this.isEditor ? 0 : util.toNumber(target.left)),
-            y: (this.isEditor ? 0 : util.toNumber(target.top))
+            x: (this.isEditor ? 0 : util.toNumber(target.data.left)),
+            y: (this.isEditor ? 0 : util.toNumber(target.data.top))
         };
-        this.left = pos.x;
-        this.top = pos.y;
-        this.width = util.toNumber(target.width) + this.paddingSize * 2;
-        this.height = util.toNumber(target.height) + this.paddingSize * 2;
+        this.data.left = pos.x;
+        this.data.top = pos.y;
+        this.data.width = util.toNumber(target.data.width) + this.paddingSize * 2;
+        this.data.height = util.toNumber(target.data.height) + this.paddingSize * 2;
         this.transform.from({
             // rotateX: target.transform.rotateX,
             // rotateY: target.transform.rotateY,
@@ -550,12 +550,12 @@ var JControllerComponent = /** @class */ (function (_super) {
             //scaleZ: target.transform.scaleZ,
         });
         this.target = target;
-        this.visible = true;
+        this.data.visible = true;
         try {
             // 编辑器不让旋转和skew
             for (var _b = __values(this.items), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var item = _c.value;
-                item.visible = !this.isEditor && target.editable;
+                item.data.visible = !this.isEditor && target.editable;
             }
         }
         catch (e_2_1) { e_2 = { error: e_2_1 }; }
@@ -574,7 +574,7 @@ var JControllerComponent = /** @class */ (function (_super) {
     JControllerComponent.prototype.unbind = function (target) {
         if (this.target === target) {
             this.reset(false);
-            this.visible = false;
+            this.data.visible = false;
         }
     };
     return JControllerComponent;

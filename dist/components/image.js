@@ -25,11 +25,12 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 import Base from '../core/baseComponent';
+import { JImageData } from '../constant/data';
 var JImage = /** @class */ (function (_super) {
     __extends(JImage, _super);
     function JImage(option) {
         if (option === void 0) { option = {}; }
-        var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'img' })) || this;
+        var _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'img', dataType: JImageData })) || this;
         _this.target.dom.onload = function (e) {
             _this.emit('load', e);
         };
@@ -37,19 +38,22 @@ var JImage = /** @class */ (function (_super) {
             _this.emit('error', e);
         };
         _this.target.attr('crossorigin', 'anonymous');
-        _this.src = option.url || option.src || '';
+        // 属性变化映射到style
+        _this.data.watch([
+            'src'
+        ], {
+            set: function (item) {
+                _this.target.dom.src = item.value;
+            },
+            get: function (name) {
+                return _this.target.dom.src;
+            }
+        });
+        var src = option.url || option.src;
+        if (src)
+            _this.data.src = src;
         return _this;
     }
-    Object.defineProperty(JImage.prototype, "src", {
-        get: function () {
-            return this.target.dom.src;
-        },
-        set: function (v) {
-            this.target.dom.src = v;
-        },
-        enumerable: false,
-        configurable: true
-    });
     JImage.prototype.toJSON = function (props) {
         if (props === void 0) { props = []; }
         props.push('src');

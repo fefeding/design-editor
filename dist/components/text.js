@@ -25,6 +25,7 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 import Base from '../core/baseComponent';
+import { JTextData } from '../constant/data';
 import { topZIndex } from '../constant/styleMap';
 import util from '../lib/util';
 import JElement from '../core/element';
@@ -34,9 +35,21 @@ var JText = /** @class */ (function (_super) {
         if (option === void 0) { option = {}; }
         var _this = this;
         option.style = __assign({ fontFamily: 'Arial', textAlign: 'left', fontSize: 22, fontWeight: 'normal', fontStyle: 'normal', wordWrap: true, wordBreak: "keep-all" }, option.style);
-        _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'div' })) || this;
-        if (option.text)
-            _this.text = option.text;
+        _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'div', dataType: JTextData })) || this;
+        // 属性变化映射到style
+        _this.data.watch([
+            'text'
+        ], {
+            set: function (item) {
+                _this.target.dom.innerText = item.value;
+            },
+            get: function (name) {
+                return _this.target.dom.innerText;
+            }
+        });
+        var text = option.text;
+        if (text)
+            _this.data.text = text;
         // 双击可编辑
         _this.on('dblclick', function () {
             _this.edit();
@@ -46,16 +59,6 @@ var JText = /** @class */ (function (_super) {
         });
         return _this;
     }
-    Object.defineProperty(JText.prototype, "text", {
-        get: function () {
-            return this.target.dom.innerText;
-        },
-        set: function (v) {
-            this.target.dom.innerText = v;
-        },
-        enumerable: false,
-        configurable: true
-    });
     // 进入编辑状态
     JText.prototype.edit = function () {
         var _this = this;
@@ -82,14 +85,15 @@ var JText = /** @class */ (function (_super) {
             });
             this.editor.dom.appendChild(editEl.dom);
         }
-        editEl.dom.value = this.text;
-        var w = util.toNumber(this.width) * 1.2;
-        var h = util.toNumber(this.height) * 1.2;
+        editEl.dom.value = this.data.text;
+        editEl.attr('data-target', this.id);
+        var w = util.toNumber(this.data.width) * 1.2;
+        var h = util.toNumber(this.data.height) * 1.2;
         var style = {};
         style.width = Math.max(w, 100) + 'px';
         style.height = Math.max(h, 100) + 'px';
-        style.top = this.top;
-        style.left = this.left;
+        style.top = this.data.top;
+        style.left = this.data.left;
         style.fontSize = this.style.fontSize;
         style.fontFamily = this.style.fontFamily;
         style.fontWeight = this.style.fontWeight;
@@ -97,13 +101,17 @@ var JText = /** @class */ (function (_super) {
         util.css(editEl, style);
         editEl.dom.focus(); // 进入控件
     };
-    // 结束编辑
+    // 结束编辑 
     JText.prototype.closeEdit = function () {
         var editEl = this.editor.textEditElement;
         if (!editEl)
             return;
-        this.text = editEl.dom.value;
-        editEl.visible = false;
+        // 编辑的是当前元素，才采用它的值
+        if (editEl.attr('data-target') === this.id) {
+            this.data.text = editEl.dom.value;
+        }
+        editEl.data.visible = false;
+        editEl.dom.value = ''; // 置空
     };
     JText.prototype.toJSON = function (props) {
         if (props === void 0) { props = []; }
