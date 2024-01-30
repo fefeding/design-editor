@@ -55,7 +55,7 @@ describe('JElementStyle', () => {
             expect(json.color).toBe('red');
         });
     });
-    describe.only('.CreateProxy', () => {
+    describe('.CreateProxy', () => {
         test('should create proxy for the instance', () => {
             const jstyle = new JElementStyle({color: 'red'});
             const proxy = JElementStyle.createProxy(jstyle);
