@@ -163,5 +163,11 @@ export default {
         else {
             return dom.getAttribute(name);
         }
+    },
+    // 本地唯一ID，这个只要保证当前线程唯一即可，非全球唯一
+    uuid() {
+        const time = Date.now();
+        const rnd = Math.floor(Math.random() * 10000000000);
+        return (time + rnd).toString();
     }
 }

@@ -1,6 +1,6 @@
 {
   "name": "j-html-design-editor",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "design canvas",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -40,8 +40,7 @@
     "vitest": "^1.2.2"
   },
   "dependencies": {
-    "eventemitter3": "^5.0.1",
-    "uuid": "^9.0.1"
+    "eventemitter3": "^5.0.1"
   },
   "author": "fefeding",
   "license": "MIT"

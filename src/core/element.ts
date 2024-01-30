@@ -1,5 +1,4 @@
 import EventEmiter from '../constant/eventEmitter';
-import { v4 as uuidv4 } from 'uuid';
 import JTransform from '../constant/transform';
 import JStyle from './style';
 import util from '../lib/util';
@@ -13,7 +12,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     constructor(option = {} as any) {
         super();
 
-        this._id = this.id || option.id || uuidv4().replace(/-/g, '');
+        this._id = this.id || option.id || util.uuid();
         this._type = this.type || option.type || '';
 
         const nodeType = option.nodeType || 'div';
