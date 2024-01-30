@@ -1,10 +1,10 @@
-import JElementCssStyle, { JElementStyleDeclaration, JElementStyleProperty } from '../constant/styleMap';
+import JElementCssStyle, { JElementStyleDeclaration, IElementStyleDeclaration, JElementStyleProperty } from '../constant/styleMap';
 import util from '../lib/util';
 
 const NumberStyleMap = ['left', 'top', 'right', 'bottom', 'width', 'height'];
 
 export default class JElementStyle extends JElementCssStyle {
-    constructor(option?: JElementStyleDeclaration) {
+    constructor(option?: IElementStyleDeclaration) {
         super();
         if(option) {            
             this.apply(option);
@@ -12,7 +12,7 @@ export default class JElementStyle extends JElementCssStyle {
     }
 
     // 把样式应用到元素或当前对象
-    apply(data: JElementStyleDeclaration, target: CSSStyleDeclaration | JElementStyleDeclaration = this) {
+    apply(data: IElementStyleDeclaration, target: CSSStyleDeclaration | JElementStyleDeclaration = this) {
         
         for(const name of this.names) {
             if(typeof name !== 'string') continue;

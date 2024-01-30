@@ -7,7 +7,7 @@ src
 │   ├── image.ts
 │   └── text.ts
 ├── constant
-│   ├── data.ts
+│   ├── data.ts  基础数据结构 JData、IData、IDataItem
 │   ├── eventEmitter.ts
 │   ├── styleMap.ts
 │   ├── transform.ts
@@ -15,7 +15,7 @@ src
 ├── core
 │   ├── baseComponent.ts
 │   ├── controller.ts
-│   ├── element.ts
+│   ├── element.ts 元素相关能力的基类：JElement
 │   ├── event.ts   扩展了eventemitter3的on和off支持空格间隔多个事件
 │   ├── fonts.ts
 │   └── style.ts
