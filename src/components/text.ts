@@ -1,12 +1,12 @@
 import Base from '../core/baseComponent';
-import { IJTextComponent } from '../constant/types';
+import { IJTextComponent, ITextOption } from '../constant/types';
 import { JTextData } from '../constant/data';
 import { topZIndex } from '../constant/styleMap';
 import util from '../lib/util';
 import JElement from '../core/element';
 
 export default class JText extends Base<HTMLDivElement> implements IJTextComponent {
-    constructor(option = {} as any) {
+    constructor(option = {} as ITextOption) {
 
         option.style = {
             fontFamily: 'Arial',
@@ -14,7 +14,7 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
             fontSize: 22,
             fontWeight: 'normal',
             fontStyle: 'normal',
-            wordWrap: true,
+            wordWrap: '`break-word',
             wordBreak: "keep-all",
             ...option.style
         };
@@ -36,7 +36,7 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
                 return this.target.dom.innerText;
             }
         });
-
+        // @ts-ignore
         const text = option.text;
         if(text) this.data.text = text;
 
@@ -59,11 +59,11 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
             editEl = this.editor.textEditElement = new JElement<HTMLTextAreaElement>({
                 nodeType: 'textarea',
                 visible: false,
-                zIndex: topZIndex,
                 style: {
                     boxSizing: 'border-box',
                     padding: '4px',
                     position: 'absolute',
+                    zIndex: topZIndex,
                     resize: 'both'
                 }
             });

@@ -1,5 +1,5 @@
 import JElementCssStyle, { IJElementStyleDeclaration } from './styleMap';
-import { JElementData, JTextData, JImageData } from './data';
+import { JElementData, JTextData, JImageData, IJElementData, IJTexteData, IJImageData } from './data';
 import EventEmitter from './eventEmitter';
 
 export {
@@ -21,6 +21,39 @@ export interface IJFonts extends EventEmitter {
     get(name: string): IJFontData | null ;
     check(name: string): boolean;
     load(name: string, url: string): Promise<IJFontData>;
+}
+
+export interface IElementOption<T extends IJElementData = IJElementData> {
+    // 非必要，只是唯一标识
+    id?: string;
+    // 元素类型
+    nodeType?: keyof HTMLElementTagNameMap;
+    // 无需指定，一般是组件设定
+    type?: string;
+    // 编辑器对象，无需指定
+    editor?: IJEditor;
+    // transform监听的属性，表示只采用指定的属性，如果全需要请不要设置
+    transformWatchProps?: string[];
+    // data绑定的类型
+    dataType?: JElementData;
+    // 样式
+    style?: IJElementStyleDeclaration;
+    // 默认是否显示 default=true
+    visible?: boolean;
+    // 是否可以编辑
+    editable?: boolean;
+    // 初始属性值
+    data?: T;
+    // 变换属性
+    transform?: IStyleTransform;
+}
+
+export interface ITextOption extends IElementOption<IJTexteData> {
+    dataType?: JTextData;
+}
+
+export interface IImageOption extends IElementOption<IJImageData> {
+    dataType?: JImageData;
 }
 
 export interface IStyleTransform {

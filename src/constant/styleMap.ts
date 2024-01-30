@@ -165,7 +165,7 @@ export interface IJElementStyleDeclaration {
     fontKerning?: string;
     fontOpticalSizing?: string;
     fontPalette?: string;
-    fontSize?: string;
+    fontSize?: string|number;
     fontSizeAdjust?: string;
     fontStretch?: string;
     fontStyle?: string;

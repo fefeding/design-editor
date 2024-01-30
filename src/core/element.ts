@@ -4,18 +4,20 @@ import JStyle from './style';
 import util from '../lib/util';
 import JEvent from '../core/event';
 import JElementCssStyle from '../constant/styleMap';
-import { IJElement, ITransform, IJEditor } from '../constant/types';
+import { IJElement, ITransform, IJEditor, IElementOption } from '../constant/types';
 import JData, { JElementData } from '../constant/data';
 
 export default class JElement<T extends HTMLElement = HTMLElement> extends EventEmiter  implements IJElement{
 
-    constructor(option = {} as any) {
+    constructor(option = {} as IElementOption) {
         super();
 
         this._id = this.id || option.id || util.uuid();
         this._type = this.type || option.type || '';
 
         const nodeType = option.nodeType || 'div';
+
+        // @ts-ignore
         this._dom = document.createElement(nodeType);   
         
         if(option.editor) this.editor = option.editor;
@@ -38,11 +40,12 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
             watchProps: option.transformWatchProps
         });
         const dataType = option.dataType || JElementData;
+        // @ts-ignore
         this.data = JElementData.createProxy(new dataType());
 
         // 如果是组件，不在这里进行数据初始化调用
         this.initData(option);
-
+        // @ts-ignore
         if(option.className) this.className = option.className;
         
         this.bindEvent();// 事件绑定

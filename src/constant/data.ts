@@ -126,13 +126,31 @@ export default class JData<T extends object> extends EventEmiter implements IDat
     } 
 }
 
-// 元素卙础数据对象
-export class JElementData extends JData<JElementData> {
-    // 坐标X
-    x: string|number;
-    // 坐标Y
-    y: string|number;
+export interface IJElementData {
+    top?: string|number;
 
+    left?: string|number;
+
+    width?: string|number;
+
+    height?: string|number;
+
+    // 旋转弧度
+    rotation?: number;
+    // 旋转角度
+
+    angle?: number;
+
+    visible?: boolean;
+
+    zIndex?: number;
+}
+
+// 元素卙础数据对象
+export class JElementData extends JData<JElementData> implements IJElementData {
+    constructor(data = {} as any) {
+        super(data);
+    }
     top: string|number;
 
     left: string|number;
@@ -152,10 +170,20 @@ export class JElementData extends JData<JElementData> {
     zIndex: number;
 }
 
-export class JImageData extends JElementData {
+export interface IJImageData extends IJElementData {
+
+    src?: string;
+}
+
+export class JImageData extends JElementData implements IJImageData {
     src: string;
 }
 
-export class JTextData extends JElementData {
+export interface IJTexteData extends IJElementData {
+
+    text?: string;
+}
+
+export class JTextData extends JElementData implements IJTexteData {
     text: string;
 }

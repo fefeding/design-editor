@@ -1,9 +1,9 @@
 import Base from '../core/baseComponent';
 import { JImageData } from '../constant/data';
-import { IJImageComponent } from '../constant/types';
+import { IJImageComponent, IImageOption } from '../constant/types';
 
 export default class JImage extends Base<HTMLImageElement> implements IJImageComponent {
-    constructor(option={} as any) {
+    constructor(option={} as IImageOption) {
         super({
             ...option,
             nodeType: 'img',
@@ -31,6 +31,7 @@ export default class JImage extends Base<HTMLImageElement> implements IJImageCom
                 return this.target.dom.src;
             }
         });
+        // @ts-ignore
         const src = option.url || option.src;
         if(src) this.data.src = src;
     }

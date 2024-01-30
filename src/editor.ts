@@ -25,9 +25,9 @@ export default class JEditor extends JBase implements IJEditor {
         if(typeof option.container === 'string') option.container = document.getElementById( option.container);
         this.view = new JElement<HTMLDivElement>({
             style: {
-                'border': 0,
-                'padding': 0,
-                'margin': 0,
+                'border': '0',
+                'padding': '0',
+                'margin': '0',
                 'position': 'relative',
                 'width': '100%',
                 'height': '100%',
