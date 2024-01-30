@@ -2,9 +2,9 @@ import JBase from './core/baseComponent';
 import JText from './components/text';
 import JImage from './components/image';
 import JElement from './core/element';
-import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent, IJFonts } from './constant/types';
+import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent, IJFonts, IElementOption, IEditorOption } from './constant/types';
 export default class JEditor extends JBase implements IJEditor {
-    constructor(option?: any);
+    constructor(option?: IEditorOption);
     init(option: any): void;
     view: JElement<HTMLDivElement>;
     protected shapes: Map<string, IJBaseComponent<HTMLElement>>;
@@ -27,7 +27,7 @@ export default class JEditor extends JBase implements IJEditor {
     clear(): void;
     scale(x: any, y?: any): void;
     regShape(name: string, shape: IJBaseComponent): IJBaseComponent<HTMLElement>;
-    createShape(type: any, option?: {}): any;
+    createShape(type: string | JElement, option?: IElementOption<import("./constant/data").IJElementData>): any;
     fromJSON(data: any): void;
 }
 export { JEditor, JImage, JText, };

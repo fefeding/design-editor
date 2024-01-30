@@ -56,6 +56,17 @@ export interface IImageOption extends IElementOption<IJImageData> {
     dataType?: JImageData;
 }
 
+export interface IEditorOption {
+    // 容器div
+    container?: string|HTMLElement;
+    // 样式
+    style?: IJElementStyleDeclaration;
+    // 是否可以编辑
+    editable?: boolean;
+    // 初始属性值
+    data?: {width?: string|number; height?: string|number;}
+}
+
 export interface IStyleTransform {
     translateX?: string|number;
     translateY?: string|number;
@@ -120,6 +131,7 @@ export interface IJEvent {
 }
 
 export interface IJElement<T extends HTMLElement = HTMLElement> extends EventEmitter {
+    
     get id(): string;
     get type(): string;
     get children(): IJElement<HTMLElement>[];

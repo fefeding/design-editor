@@ -5,18 +5,18 @@ import JElement from './core/element';
 import JController from './core/controller';
 import JFonts from './core/fonts';
 import util from './lib/util';
-import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent, IJFonts, IJFontData } from './constant/types';
+import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent, IJFonts, IElementOption, IEditorOption } from './constant/types';
 
 export default class JEditor extends JBase implements IJEditor {
 
-    constructor(option={} as any) {  
+    constructor(option={} as IEditorOption) {  
         option.style = option.style||{};
         Object.assign(option.style, {
             'boxShadow': '0 0 10px 10px #ccc',
             'position': 'absolute',
             'backgroundSize': '100% 100%',            
         });
-        // 外层只响应Z轴旋转
+        // @ts-ignore 外层只响应Z轴旋转
         option.transformWatchProps = [
             'rotateZ', 'scaleX', 'scaleY'
         ];
@@ -227,11 +227,12 @@ export default class JEditor extends JBase implements IJEditor {
     }
 
     // 创建元素
-    createShape(type, option={}) {
+    createShape(type: string | JElement, option={} as IElementOption) {
         const shape = typeof type === 'string'? this.shapes.get(type): type;
         if(!shape) {
             throw Error(`${type}不存在的元素类型`);
         }
+        // @ts-ignore
         const el = new shape({
             ...option,
             editor: this,
