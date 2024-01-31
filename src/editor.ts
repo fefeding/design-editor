@@ -79,9 +79,11 @@ export default class JEditor extends JBase implements IJEditor {
         this.on('select', (e) => {
             this.select(this);// 选中自已
         });
-        this.on('mousedown', function(e) {
-            this.selected = true;
-            this.elementController.onDragStart(e);
+        this.on('mousedown', function(e: MouseEvent) {
+            if(e.button === 0) {
+                this.selected = true;
+                this.elementController.onDragStart(e);
+            }
         });
 
         // 刷新样式
@@ -157,9 +159,11 @@ export default class JEditor extends JBase implements IJEditor {
         child.on('select', function(v) {
             self.select(this);
         });
-        child.on('mousedown', function(e) {
-            this.selected = true;
-            self.elementController.onDragStart(e);
+        child.on('mousedown', function(e: MouseEvent) {
+            if(e.button === 0) {
+                this.selected = true;
+                self.elementController.onDragStart(e);
+            }
         });
         // 监听样式改变
         child.on('styleChange', (e) => {

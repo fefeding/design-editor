@@ -3,15 +3,19 @@ import util from '../lib/util';
 import JElement from './element';
 import { IJControllerItem, IJControllerComponent, IJBaseComponent, IJEditor } from '../constant/types';
 import { topZIndex, ControlerCursors } from '../constant/styleMap';
+import { SupportEventNames } from './event';
 
 // 控制元素移动和矩阵变换
 export class JControllerItem extends JElement<HTMLDivElement> implements IJControllerItem {
     constructor(option) {
 
-        option.style = option.style || {};
-        option.style.backgroundColor = option.style.backgroundColor || '#fff';
-        option.style.border =  option.style.border|| '1px solid rgba(6,155,181,1)';
-        option.style.position = 'absolute';
+        option.style = {
+            border: '1px solid rgba(6,155,181,1)',
+            backgroundColor: '#fff',
+            pointerEvents: 'auto',
+            ...option.style,
+            position: 'absolute'
+        };
 
         super(option);
 
@@ -24,20 +28,20 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
 
         if(this.editor) {
             // @ts-ignore
-            this.editor.view.on('mouseup', (e) => {
-                this.onDragEnd(e);
+            this.editor.view.on('mouseup', (e: MouseEvent) => {
+                if(e.button === 0) this.onDragEnd(e);
             });
             // @ts-ignore
-            this.editor.view.on('mouseout', (e) => {
+            this.editor.view.on('mouseout', (e: MouseEvent) => {
                 if(e.target !== this.editor.dom) return;// 不是out编辑器，不处理
                 this.onDragEnd(e);
             });
             // @ts-ignore
-            this.editor.view.on('mousemove', (e) => {
+            this.editor.view.on('mousemove', (e: MouseEvent) => {
                 this.onDragMove(e);
             });
         }
-        this.on('mousedown', (e) => {
+        this.on('mousedown', (e: MouseEvent) => {
             // 如果是左健
             if(e.button === 0) {
                 this.onDragStart(e);
@@ -135,27 +139,29 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
 // 元素大小位置控制器
 export default class JControllerComponent extends JControllerItem implements IJControllerComponent {
     constructor(option) {
-        option.zIndex = topZIndex;
-        option.style = option.style || {};
-        option.style.cursor = option.style.cursor || 'move';
+        
+        option.style = {
+            cursor: 'move',
+            backgroundColor: 'transparent',
+            ...option.style,
+            pointerEvents: 'none',
+        };
         option.dir = 'element';
-        option.style.backgroundColor = option.style.backgroundColor || 'transparent';
-        //option.style.boxShadow = '0 0 2px 2px #ccc';
+
+        option.data = {
+            ...option.data,
+            zIndex: topZIndex
+        };
+        
         super(option);
         this.init(option);
         this.editor.dom.appendChild(this.dom);
 
         // 双击事件透传给操作杆绑定的对象
-        this.on('dblclick mousedown', (e) => {
+        this.on(SupportEventNames, (e) => {
             if(this.target) {
-                if(e.type === 'dblclick') this.target.emit('dblclick', e);
-                else if(e.type === 'mousedown') {
-                    // 右健则取消选择
-                    if(e.button === 2) {
-                        this.target.selected = false;
-                        e.preventDefault();
-                    }
-                }
+                //if(e.type === 'dblclick') this.target.emit('dblclick', e);
+                this.target.emit(e.type, e);
             }
         });
     }
@@ -302,7 +308,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
         
         if(this.editor) {
             this.editor.on('mousedown', (e) => {
-                if(!this.isEditor) return;// 不是编辑器，不处理
+                if(!this.isEditor || e.button === 2) return;// 不是编辑器，不处理
                 this.onDragStart(e);
             });
         }
@@ -586,9 +592,9 @@ export default class JControllerComponent extends JControllerItem implements IJC
         }
 
         // 如果是编辑器，则不能捕获事件
-        this.css({
+        /*this.css({
             pointerEvents: this.isEditor? 'none' : 'auto'
-        });
+        });*/
     }
     // 解除绑定
     unbind(target: IJBaseComponent) {

@@ -1,7 +1,8 @@
 
-const SupportEventNames = [
-    'mousedown','mouseup','mouseover','mousemove','mouseout','mousewheel','click','dblclick','keydown','keypress','keyup','blur','change','focus','drag','dragenter','dragleave','dragover','dragstart','drop'
-]
+export const SupportEventNames = [
+    'mousedown','mouseup','mouseover','mousemove','mouseout','mousewheel','click','dblclick','keydown','keypress','keyup','blur','change','focus','drag','dragenter','dragleave','dragover','dragstart','drop', 'contextmenu'
+];
+
 export default class JEvent {
     constructor(target?: HTMLElement) {
         if(target) this.target = target;

@@ -9,12 +9,17 @@ export default class EventEmitter extends EventEmiter {
     /**
      * Add a listener for a given event.
      */
-    on<T extends string|symbol>(event: T, fn: (...args: any[])=>void, context?: any) {
+    on<T extends string|symbol|Array<string>>(event: T, fn: (...args: any[])=>void, context?: any) {
         if(typeof event === 'string') {
             const events = this.splitEventNames(event);
             if(events.length) {
-                for(const name of events) {
-                    super.on(name, fn, context);
+                return this.on(events, fn, context);
+            }
+        }
+        else if(Array.isArray(event)) {
+            if(event.length) {
+                for(const name of event) {
+                    name && super.on(name, fn, context);
                 }
             }
         }
@@ -24,12 +29,17 @@ export default class EventEmitter extends EventEmiter {
         return this;
     }
 
-    off<T extends string|symbol>(event: T, fn?: (...args: any[])=>void, context?: any, once?: boolean) {
+    off<T extends string|symbol|Array<string>>(event: T, fn?: (...args: any[])=>void, context?: any, once?: boolean) {
         if(typeof event === 'string') {
             const events = this.splitEventNames(event);
             if(events.length) {
-                for(const name of events) {
-                    super.off(name, fn, context);
+                return this.off(events, fn, context);
+            }
+        }
+        else if(Array.isArray(event)) {
+            if(event.length) {
+                for(const name of event) {
+                    name && super.off(name, fn, context);
                 }
             }
         }

@@ -14,8 +14,8 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
             fontSize: 22,
             fontWeight: 'normal',
             fontStyle: 'normal',
-            wordWrap: '`break-word',
             wordBreak: "keep-all",
+            wordWrap: "break-word",
             ...option.style
         };
 
@@ -78,15 +78,15 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
         editEl.dom.value = this.data.text;
         editEl.attr('data-target', this.id);
 
-        const w = util.toNumber(this.data.width) * 1.2;
+        const w = util.toNumber(this.data.width) * 1.5;
         const h = util.toNumber(this.data.height) * 1.2;
 
         const style = {} as any;
         style.width = Math.max(w, 100) + 'px';
         style.height = Math.max(h, 100) + 'px';
 
-        style.top = this.data.top;
-        style.left = this.data.left;
+        style.top = util.toNumber(this.data.top) - 4;
+        style.left = util.toNumber(this.data.left) - 4;
         style.fontSize = this.style.fontSize;
         style.fontFamily = this.style.fontFamily;
         style.fontWeight = this.style.fontWeight;
