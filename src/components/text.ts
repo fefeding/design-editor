@@ -47,9 +47,14 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
         this.on('select', ()=>{
             this.closeEdit();
         });
+
+        JText.TextControlCache.set(this.id, this);// 缓存起来
     }
 
     data: JTextData;
+
+    // 所有控件缓存
+    static TextControlCache = new Map<string, JText>();
 
     // 进入编辑状态
     edit() {
@@ -101,7 +106,7 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
         if(!editEl || !editEl.visible) return;
         // 编辑的是当前元素，才采用它的值
         const id = editEl.attr('data-target');
-        const target = this.editor.getChild(id);
+        const target = JText.TextControlCache.get(id);
         if(target instanceof JText) {
             target.data.text = editEl.dom.value;
             editEl.data.visible = false;
@@ -112,5 +117,10 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
     toJSON(props = []) {
         props.push('text');
         return super.toJSON(props);
+    }
+
+    dispose(): void {
+        JText.TextControlCache.delete(this.id); 
+        super.dispose();
     }
 }
