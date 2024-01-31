@@ -8,9 +8,9 @@ describe("JEvent class", () => {
   let target: HTMLElement;
   let handler: any;
   beforeEach(() => {
-    event = new JEvent();
     target = document.createElement("div");
     handler = vi.fn();
+    event = new JEvent(target);
     document.body.appendChild(target);
   });
   afterEach(() => {
@@ -37,13 +37,36 @@ describe("JEvent class", () => {
     target.dispatchEvent(mouseoverEvent);
     expect(handler).toHaveBeenCalledTimes(2);
   });
-  test("removeEvent should remove event handler", () => {
+  test(".removeEvent with event handler", () => {
     event.bindEvent("click", handler, false, target);
     event.removeEvent("click", handler, false, target);
     const clickEvent = new Event("click");
     target.dispatchEvent(clickEvent);
     expect(handler).not.toHaveBeenCalled();
   });
+  test(".removeEvent only name", () => {
+    event.bindEvent("click", handler, false, target);
+    event.removeEvent("click");
+    const clickEvent = new Event("click");
+    target.dispatchEvent(clickEvent);
+    expect(handler).not.toHaveBeenCalled();
+  });
+
+  
+  test(".removeEvent 参数不同不会被删除", () => {
+    event.bindEvent("mousedown", handler, false, target);
+    event.removeEvent("mousedown", ()=>{});
+    const mousedownEvent = new Event("mousedown");
+    target.dispatchEvent(mousedownEvent);
+    expect(handler).toHaveBeenCalled();
+    
+    event.removeEvent("mousedown", ()=>{}, true);
+    const mousedownEvent2 = new Event("mousedown");
+    target.dispatchEvent(mousedownEvent2);
+    expect(handler).toHaveBeenCalled();
+  });
+
+  
   test(".dispose 移除所有事件", () => {
     event.bindEvent("click", handler, false, target);
     event.dispose();
