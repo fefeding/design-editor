@@ -44,16 +44,11 @@ describe("JEvent class", () => {
     target.dispatchEvent(clickEvent);
     expect(handler).not.toHaveBeenCalled();
   });
-  // test("getEventPosition should return correct position for mouse event", () => {
-  //   const click = new MouseEvent("click", { clientX: 100, clientY: 100 });
-  //   const position = event.getEventPosition(click);
-  //   expect(position).toEqual(
-  //     expect.objectContaining({
-  //       x: expect.any(Number),
-  //       y: expect.any(Number),
-  //       pageX: expect.any(Number),
-  //       pageY: expect.any(Number),
-  //     })
-  //   );
-  // });
+  test(".dispose 移除所有事件", () => {
+    event.bindEvent("click", handler, false, target);
+    event.dispose();
+    const clickEvent = new Event("click");
+    target.dispatchEvent(clickEvent);
+    expect(handler).not.toHaveBeenCalled();
+  });
 });

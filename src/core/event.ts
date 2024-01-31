@@ -17,6 +17,8 @@ export default class JEvent {
         this.bindEvent(SupportEventNames, handler, false, target);
     }
 
+    private _eventCache = [];
+
     /**
      * 绑定事件到html对象
      * 
@@ -33,6 +35,7 @@ export default class JEvent {
         }
         for(const n of name) {
             addEvent(target, n, fun, opt);
+            this._eventCache.push([target, n, fun, opt]);
         };
 
         return this;
@@ -54,12 +57,16 @@ export default class JEvent {
         }
         for(const n of name) {
             removeEvent(target, n, fun, opt);
+            this._eventCache = this._eventCache.filter(item=>!(item[0] === target && item[1] === n && item[2] === fun && item[3] === opt));
         }
         return this;
     }
 
     // 移除所有的事件
     dispose() {
-        if(this.target) this.removeEvent(SupportEventNames);
+        for(let item of this._eventCache){
+            this.removeEvent(item[1], item[2], item[3], item[0]);
+        }
+        this._eventCache = [];
     }
 }
