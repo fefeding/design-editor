@@ -33,7 +33,7 @@ describe('JData', () => {
 
   test('.from', () => {
     data.from({ prop: 'value' });
-    expect(data).toMatchObject({ prop: 'value' });
+    expect(data.data).toMatchObject({ prop: 'value' });
   });
 
   test('.JSON', () => {
