@@ -39,13 +39,13 @@ describe('EventEmitter', () => {
     expect(callback).not.toHaveBeenCalled();
   });
 
-  test('splitEventNames function', () => {
-    const result = emitter.splitEventNames('event1 event2');
+  test('normalizeEventNames function', () => {
+    const result = emitter.normalizeEventNames('event1 event2');
     expect(result).toEqual(['event1', 'event2']);
   });
 
-  test('splitEventNames with no name', () => {
-    const result = emitter.splitEventNames('');
+  test('normalizeEventNames with no name', () => {
+    const result = emitter.normalizeEventNames('');
     expect(result).toEqual([]);
   });
 });
