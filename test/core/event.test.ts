@@ -24,13 +24,13 @@ describe("JEvent class", () => {
     expect(handler).toHaveBeenCalled();
   });
   test("bindEvent should bind single event", () => {
-    event.bindEvent("click", handler, false, target);
+    event.bindEvent("click", handler, false);
     const clickEvent = new Event("click");
     target.dispatchEvent(clickEvent);
     expect(handler).toHaveBeenCalled();
   });
   test("bindEvent should bind multiple events", () => {
-    event.bindEvent(["click", "mouseover"], handler, false, target);
+    event.bindEvent(["click", "mouseover"], handler, false);
     const clickEvent = new Event("click");
     const mouseoverEvent = new Event("mouseover");
     target.dispatchEvent(clickEvent);
@@ -38,14 +38,14 @@ describe("JEvent class", () => {
     expect(handler).toHaveBeenCalledTimes(2);
   });
   test(".removeEvent with event handler", () => {
-    event.bindEvent("click", handler, false, target);
-    event.removeEvent("click", handler, false, target);
+    event.bindEvent("click", handler, false);
+    event.removeEvent("click", handler, false);
     const clickEvent = new Event("click");
     target.dispatchEvent(clickEvent);
     expect(handler).not.toHaveBeenCalled();
   });
   test(".removeEvent only name", () => {
-    event.bindEvent("click", handler, false, target);
+    event.bindEvent("click", handler, false);
     event.removeEvent("click");
     const clickEvent = new Event("click");
     target.dispatchEvent(clickEvent);
@@ -54,7 +54,7 @@ describe("JEvent class", () => {
 
   
   test(".removeEvent 参数不同不会被删除", () => {
-    event.bindEvent("mousedown", handler, false, target);
+    event.bindEvent("mousedown", handler, false);
     event.removeEvent("mousedown", ()=>{});
     const mousedownEvent = new Event("mousedown");
     target.dispatchEvent(mousedownEvent);
@@ -68,7 +68,7 @@ describe("JEvent class", () => {
 
   
   test(".dispose 移除所有事件", () => {
-    event.bindEvent("click", handler, false, target);
+    event.bindEvent("click", handler, false);
     event.dispose();
     const clickEvent = new Event("click");
     target.dispatchEvent(clickEvent);

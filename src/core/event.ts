@@ -23,13 +23,15 @@ export default class JEvent {
         // 过滤掉不支持的事件
         return events.filter(k=>SupportEventNames.includes(k));
     }
-    // 初始化所有支持的事件
+    /**
+     * 初始化所有支持的事件，在init之前不要bindEvent，不然在init的时候会被释放掉。
+     * @param handler 事件处理函数
+     * @param target 元素
+     */
     init(handler: EventListenerOrEventListenerObject, target?: HTMLElement) {
         if(target){
-            if(this.target && this.target!==target){
-                // 释放掉原target的事件
-                this.dispose();
-            }
+            // 释放掉原target的事件
+            this.dispose();
             this.target = target;
         }
         this.bindEvent(SupportEventNames, handler, false);
@@ -87,6 +89,9 @@ export default class JEvent {
 
     // 移除所有的事件
     dispose() {
+        if(!this.target){
+            return
+        }
         for(let item of this._eventCache){
             removeEvent(this.target, item[0], item[1], item[2]);
         }

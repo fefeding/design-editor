@@ -1,10 +1,32 @@
 // @vitest-environment happy-dom
 import { expect, describe, test, beforeEach,beforeAll, afterEach, vi } from "vitest";
 import JControllerComponent, { JControllerItem }  from "../../src/core/controller";
+import { nwse, ns }  from "../../src/constant/styleMap";
 import JEditor from '../../src/editor';
 
 describe('JControllerItem', () => {
-  let JControllerInstance, editorMock, eventMock;
+  let JControllerInstance: JControllerItem;
+  let editorMock;
+  let eventMock;
+  const mockContext = {
+    src: '',
+    clearRect: vi.fn(),
+    translate: vi.fn(),
+    rotate: vi.fn(),
+    drawImage: vi.fn((img)=>{mockContext.src = img.src;}),
+    toDataURL: vi.fn()
+};
+  // 创建 mock Image
+  const mockImage = new Image();
+  // 覆盖默认的 Image 构造函数
+  window.Image = vi.fn(() => {
+    // @ts-ignore
+    setTimeout(()=>mockImage.onload(new Event('load')));
+    return mockImage;
+  }) as any;
+  window.HTMLCanvasElement.prototype.getContext = vi.fn(() => mockContext) as any;
+  window.HTMLCanvasElement.prototype.toDataURL = vi.fn(() => mockContext.src);
+
 
   beforeAll(() => {
     editorMock = {
@@ -58,13 +80,13 @@ describe('JControllerItem', () => {
     JControllerInstance.onDragMove(eventMock);
   });
 
-  test('resetCursor function', () => {
-    JControllerInstance.dir = 'l'; // Assuming 'l' is the valid direction
-    JControllerInstance.resetCursor(0);
-    expect(JControllerInstance.style.cursor).toEqual('w-resize');
-
-    JControllerInstance.resetCursor(Math.PI / 4);
-    expect(JControllerInstance.style.cursor).toEqual('move');
+  test('resetCursor function', async() => {
+    JControllerInstance.dir = 'l'; 
+    await JControllerInstance.resetCursor(0);
+    expect(JControllerInstance.style.cursor).toMatch(ns);
+    JControllerInstance.dir = 'lt'; 
+    await JControllerInstance.resetCursor(Math.PI / 4);
+    expect(JControllerInstance.style.cursor).toMatch(nwse);
   });
 });
 
