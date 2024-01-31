@@ -61,7 +61,17 @@
 	const container = document.getElementById('myeditor_container');
 	container.style.height = window.innerHeight + 'px';
 
+	// 默认支持的字体
+	const fonts = {
+        'Zcool Kuaile Regular': {
+            label: 'Zcool Kuaile Regular',
+            family: 'Zcool Kuaile Regular',
+            url: 'fonts/zcool-kuaile-regular.woff2'
+        }
+    };
+
 	const editor = new JEditor({
+		fonts,
 		data: {
 			width: 800,
 			height: 600,
@@ -83,25 +93,18 @@
 		}
 	});
 
-    const fonts = {
-        'Zcool Kuaile Regular': {
-            label: 'Zcool Kuaile Regular',
-            family: 'Zcool Kuaile Regular',
-            url: 'fonts/zcool-kuaile-regular.woff2'
-        }
-    };
-
 	// 元素发生改变事件
 	editor.on('elementChange', async (e) => {
 		console.log(e);
 		if(e.type === 'styleChange') {
     		// 字体发生改变，需要做check, 并加载字体生效
-			if(e.event.data.name === 'fontFamily') {
-				if(editor.fonts.check(e.event.data.value)) return;// 已经加载，则跳过
-				const con = fonts[e.event.data.value];
+			if(e.data.name === 'fontFamily') {
+				// 如果没有在默认支持的字体内，这里会返回false
+				if(editor.fonts.check(e.data.value)) return;// 已经加载，则跳过
+				const con = fonts[e.data.value];
 				if(con) {
 					const f = await editor.fonts.load(con.family, con.url);// 加载
-					console.log('load font', e.event.data.value, f.status);
+					console.log('load font', e.data.value, f.status);
 				}
 			}
 		}
@@ -166,51 +169,6 @@
 			}
 		}
 	});
-	/*
-			const img = editor.createImage('https://pixijs.com/assets/bunny.png');
-			img.width = 100;
-			img.height = 100;
-	
-			img.on('load', () => {
-				//img.resize(100, 100);
-				
-				img.x = editor.width / 2;
-				img.y = editor.height / 2;
-	
-				const img2 = editor.createImage();
-				//img2.width = 200;
-				//img2.height = 200;
-	
-				img2.url = 'https://jtcospublic.ciccten.com/config-server/1703730310545220869/idcard_qrcode.png';
-	
-				img2.x = img.x + 100;
-				img2.y = img.y + 100;
-				img2.angle = 60;
-				editor.addChild(img2);
-			});
-			editor.addChild(img);
-	
-			
-	
-			const txt1 = editor.createShape('text', {
-				text: 'Basic text, 中文测试',
-				style: {
-					fontFamily: 'Crosterian'
-				}
-			});
-			editor.addChild(txt1);
-			txt1.x = 300;
-			txt1.y = 100;*/
-
-	/*editor.loader.loadFont({
-		"zcool-kuaile-regular": 'fonts/zcool-kuaile-regular.woff2',
-	}, (e) => {
-		console.log('load fonts', e);
-	}).then(()=>{
-		
-		const v = editor.loader.assets.get("zcool-kuaile-regular");
-		console.log('load fonts completed', v);
-	});*/
 
 
 	// 放大缩小

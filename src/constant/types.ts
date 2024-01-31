@@ -1,26 +1,23 @@
 import JElementCssStyle, { IJElementStyleDeclaration } from './styleMap';
-import { JElementData, JTextData, JImageData, IJElementData, IJTexteData, IJImageData } from './data';
+import { JElementData, JTextData, JImageData, IJElementData, IJTexteData, IJImageData, IJFontData } from './data';
 import EventEmitter from './eventEmitter';
 
 export {
     IJElementStyleDeclaration
 };
 
-export interface IJFontData {
-    label: string;
-    family: string;
-    url: string;
+export interface IJFontFace extends IJFontData {
     get status(): FontFaceLoadStatus;
-    load(): Promise<IJFontData>;
+    load(): Promise<IJFontFace>;
     toHtml(): string;
 }
 
 export interface IJFonts extends EventEmitter {
-    fonts: Map<string, IJFontData>;
+    fonts: Map<string, IJFontFace>;
     // 获取已加载的字体
-    get(name: string): IJFontData | null ;
+    get(name: string): IJFontFace | null ;
     check(name: string): boolean;
-    load(name: string, url: string): Promise<IJFontData>;
+    load(name: string, url?: string): Promise<IJFontFace>;
 }
 
 export interface IElementOption<T extends IJElementData = IJElementData> {
@@ -61,6 +58,8 @@ export interface IEditorOption {
     container?: string|HTMLElement;
     // 样式
     style?: IJElementStyleDeclaration;
+    // 初始化支持的字体
+    fonts?: Array<IJFontFace>;
     // 是否可以编辑
     editable?: boolean;
     // 初始属性值

@@ -187,3 +187,9 @@ export interface IJTexteData extends IJElementData {
 export class JTextData extends JElementData implements IJTexteData {
     text: string;
 }
+
+export interface IJFontData {
+    label: string;
+    family: string;
+    url: string;
+}

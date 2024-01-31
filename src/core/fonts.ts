@@ -1,10 +1,12 @@
-import { IJFonts, IJFontData } from '../constant/types';
+import { IJFonts, IJFontFace } from '../constant/types';
+import { IJFontData } from '../constant/data';
 import EventEmiter from '../constant/eventEmitter';
 
-export class JFontData implements IJFontData {
-    constructor(family: string, url?: string) {
+export class JFontData implements IJFontFace {
+    constructor(family: string, url?: string, font?: FontFace) {
         this.family = family;
         this.url = url;
+        this.font = font;
     }
     family: string;
     url: string;
@@ -18,7 +20,7 @@ export class JFontData implements IJFontData {
         return 'unloaded';
     }
     
-    async load(url=this.url): Promise<IJFontData> {
+    async load(url=this.url): Promise<IJFontFace> {
         this.url = url || this.url;
         if(!this.font) this.font = new FontFace(this.family, `url("${this.url}")`);
         const f = await this.font.load();
@@ -33,12 +35,25 @@ export class JFontData implements IJFontData {
 
 
 export default class JFonts extends EventEmiter implements IJFonts {
-    constructor(fontSet = new Map<string, JFontData>()) {
+    constructor(fonts?: Array<IJFontData> | {[key:string]: IJFontData}) {
         super();
-        this.fonts = fontSet;
+        // 初始化默认支持的字体
+        if(Array.isArray(fonts)) {
+            for(const f of fonts) {
+                this.fontConfigs.set(f.family, f);
+            }
+        }
+        else if(fonts) {
+            for(const name in fonts) {
+                if(fonts[name] && typeof fonts[name] === 'object') this.fontConfigs.set(fonts[name].family, fonts[name]);
+            }
+        }
         this.init();
     }
-    fonts: Map<string, IJFontData>;
+
+    fontConfigs = new Map<string, IJFontData>();
+
+    fonts = new Map<string, IJFontFace>();
 
     init()  {
         if(document.fonts) {
@@ -53,14 +68,27 @@ export default class JFonts extends EventEmiter implements IJFonts {
                 font = fonts.next();
             }
         }
+        // 系统默认的一些字体支持
+        this.fonts.set('Arial', new JFontData('Arial', '', new FontFace('Arial', '')));
     }
 
 
     // 加载字体
-    async load(name: string, url: string): Promise<IJFontData> {
+    async load(name: string, url?: string): Promise<IJFontFace> {
         let font = this.get(name);
-        if(font) return font;
+        if(font) {
+            if(font.url && (font.status === 'unloaded' || font.status === 'error')) return await font.load();
+            return font;
+        }
         else {
+            if(!url) {
+                const config = this.fontConfigs.get(name);
+                // 没有配置支持的字体，则报错
+                if(!config) {
+                    throw Error(`没有支持的 ${name} 字体配置`);
+                }
+                url = config.url;
+            }
             font = new JFontData(name, url);
             this.fonts.set(name, font);
             const f = await font.load();
@@ -70,7 +98,7 @@ export default class JFonts extends EventEmiter implements IJFonts {
     }
 
     // 获取已加载的字体
-    get(name: string): IJFontData | null {
+    get(name: string): IJFontFace | null {
         if(this.fonts) {
             if(this.fonts.has(name)) return this.fonts.get(name);
         }

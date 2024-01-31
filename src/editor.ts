@@ -35,7 +35,7 @@ export default class JEditor extends JBase implements IJEditor {
             }
         });
         // 字体管理实例
-        this.fonts = new JFonts();
+        this.fonts = new JFonts(option.fonts);
         
         this.target.css({
             'overflow': 'hidden'
@@ -208,8 +208,19 @@ export default class JEditor extends JBase implements IJEditor {
             else if(e.type === 'select') {
                 self.select(this);
             }
+            // 如果是字体依赖，则检查字体支持情况
+            else if(e.type === 'styleChange') {
+                // 字体发生改变，需要做check, 并加载字体生效
+                if(e.data.name === 'fontFamily') {
+                    self.fonts.load(e.data.value).catch((e)=>{
+                        console.error(e);
+                    });// 异步加载字体
+                }
+            }
+
             self.emit('elementChange', {
                 type: e.type,
+                data: e.data || {},
                 event: e,
                 target: this
             });
