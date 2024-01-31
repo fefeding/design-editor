@@ -1,9 +1,12 @@
+import { addEvent, removeEvent } from "../lib/dom";
 
 export const SupportEventNames = [
     'mousedown','mouseup','mouseover','mousemove','mouseout','mousewheel','click','dblclick','keydown','keypress','keyup','blur','change','focus','drag','dragenter','dragleave','dragover','dragstart','drop', 'contextmenu'
 ];
 
 export default class JEvent {
+    target: HTMLElement;
+
     constructor(target?: HTMLElement) {
         if(target) this.target = target;
     }
@@ -14,70 +17,48 @@ export default class JEvent {
         this.bindEvent(SupportEventNames, handler, false, target);
     }
 
-    target: HTMLElement;
-
     /**
      * 绑定事件到html对象
      * 
      * @method bindEvent
      * @static
-     * @param {element} html元素对象
-     * @param {string} name 事件名称
-     * @param {function} fun 事件委托
-     * @returns {name, fun, target} 返回当前绑定
+     * @param {string | Array<string>} name 事件名称
+     * @param {EventListenerOrEventListenerObject} fun 事件处理函数
+     * @param {boolean | AddEventListenerOptions} opt 配置选项
+     * @param {HTMLElement} target 绑定的元素，默认为 this.target
      */
-    bindEvent(name: string|Array<string>, fun: EventListenerOrEventListenerObject, opt: boolean | AddEventListenerOptions = false, target: HTMLElement = this.target) {
-        if(Array.isArray(name)) {
-            for(const n of name) {
-                this.bindEvent(n, fun, opt, target);
-            }
-            return this;
+    bindEvent(name: string | Array<string>, fun: EventListenerOrEventListenerObject, opt: boolean | AddEventListenerOptions = false, target: HTMLElement = this.target) {
+        if(typeof name === 'string') {
+            name = name.split(' ');
         }
-        if(name &&  name.indexOf && name.indexOf(' ') != -1) {
-            const ns = name.split(' ');
-            return this.bindEvent(ns, fun, opt, target);
-        }
-        /*// @ts-ignore
-        if(target.attachEvent) {
-            // @ts-ignore
-            target.attachEvent("on"+name, fun, opt);
-        } */   
-        if(target.addEventListener) {
-            target.addEventListener(name, fun, opt);
-        }
+        for(const n of name) {
+            addEvent(target, n, fun, opt);
+        };
+
         return this;
     }
 
     /**
-     * 从对象中移除事件到
+     * 从对象中移除事件
      * 
      * @method removeEvent
      * @static
-     * @param {element} html元素对象
-     * @param {string} name 事件名称
-     * @param {function} fun 事件委托
+     * @param {string | Array<string>} name 事件名称
+     * @param {EventListenerOrEventListenerObject} fun 事件处理函数
+     * @param {boolean | AddEventListenerOptions} opt 配置选项
+     * @param {HTMLElement} target 解除绑定的元素，默认为 this.target
      */
     removeEvent(name: string|Array<string>, fun?: EventListenerOrEventListenerObject, opt: boolean | AddEventListenerOptions = false, target: HTMLElement = this.target) {
-        if(Array.isArray(name)) {
-            for(const n of name) {
-                this.removeEvent(n, fun, opt, target);
-            }
-            return this;
+        if(typeof name === 'string') {
+            name = name.split(' ');
         }
-        if(target.removeEventListener) {
-            target.removeEventListener(name, fun, opt);
-        }  
-        // @ts-ignore  
-        else if(target.detachEvent) {
-            // @ts-ignore
-            target.detachEvent('on' + name, fun, opt);
-        }
-        else {
-            target['on' + name] = null;
+        for(const n of name) {
+            removeEvent(target, n, fun, opt);
         }
         return this;
     }
 
+    // 移除所有的事件
     dispose() {
         if(this.target) this.removeEvent(SupportEventNames);
     }
