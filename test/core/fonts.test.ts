@@ -1,43 +1,17 @@
 // @vitest-environment happy-dom
 import { expect, describe, test, beforeEach,beforeAll, afterEach, vi } from "vitest";
 import JFonts, { JFontData }   from "../../src/core/fonts";
-import JEditor from '../../src/editor';
+import mock from "../fixtures/mock";
 
+const {FontFaceMock} = mock();
 
+let fontDataInstance;
+beforeAll(() => {
+  fontDataInstance = new JFontData('Arial', 'https://example.com/arial.ttf');
+});
 
 describe('JFontData Class', () => {
-  let fontDataInstance, FontFaceMock;
 
-  beforeAll(() => {
-
-    FontFaceMock = vi.fn().mockImplementation((family, url) => ({
-      family,
-      status: 'unloaded',
-      load: vi.fn().mockImplementation(function(){
-            this.status = 'loaded';
-            return Promise.resolve(this);
-      })
-    }));
-    global.FontFace = FontFaceMock;
-
-    Object.defineProperty(document, 'fonts', {
-        value: {
-            add: vi.fn(),
-            values: vi.fn().mockReturnValue({
-                next: vi.fn().mockReturnValue({
-                    value: null,
-                    done: true
-                }),
-                [Symbol.iterator]: function() { return this; }
-            })
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-    });
-
-    fontDataInstance = new JFontData('Arial', 'https://example.com/arial.ttf');
-  });
 
   test('instance should be created', () => {
     expect(fontDataInstance).toBeInstanceOf(JFontData);
@@ -52,6 +26,9 @@ describe('JFontData Class', () => {
   test('toHtml function', () => {
     expect(fontDataInstance.toHtml()).toEqual('@font-face {font-family: "Arial"; src: url("https://example.com/arial.ttf")}');
   });
+
+
+
 });
 
 describe('JFonts Class', () => {
@@ -67,9 +44,9 @@ describe('JFonts Class', () => {
   });
 
   test('load function', async () => {
-    const loadedFont = await jFontsInstance.load('Arial', 'https://example.com/arial.ttf');
+    const loadedFont = await jFontsInstance.load('Arial2', 'https://example.com/arial.ttf');
     expect(loadedFont.status).toEqual('loaded');
-    expect(mapInstance.has('Arial')).toEqual(true);
+    expect(jFontsInstance.fonts.has('Arial2')).toEqual(true);
   });
 
   test('get function', () => {

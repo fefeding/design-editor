@@ -11,6 +11,9 @@ import {
 import { Window } from "happy-dom";
 import JEditor from "../src/editor";
 import { editorData, imageChild } from "./fixtures/editor.data";
+import mock from "./fixtures/mock";
+
+const {FontFaceMock} = mock();
 
 describe("JEditor", () => {
   let window;

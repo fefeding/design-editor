@@ -10,6 +10,9 @@ import {
 } from "vitest";
 import JText from "../../src/components/text";
 import JEditor from '../../src/editor';
+import mock from "../fixtures/mock";
+
+const {FontFaceMock} = mock();
 
 
 
@@ -20,19 +23,7 @@ describe("JText", () => {
 
   beforeEach(() => {
     mockEditElement = new JEditor();
-    // mockEditElement.attr = vi.fn();
-    // mockEditElement = vi.spyOn(new JEditor(), 'attr');
-    // mockEditElement.attr = vi.fn();
-    // mockEditElement = {
-    //   dom: {
-    //   value: '',
-    //     focus: vi.fn(),
-    //     blur: vi.fn()
-    //   },
-    //   attr: vi.fn(),
-    //   on: vi.fn(),
-    //   visible: false,
-    // };
+
     text = new JText({
       editor: mockEditElement
     });

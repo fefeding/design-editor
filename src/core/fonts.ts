@@ -77,24 +77,22 @@ export default class JFonts extends EventEmiter implements IJFonts {
     async load(name: string, url?: string): Promise<IJFontFace> {
         let font = this.get(name);
         if(font) {
-            if(font.url && (font.status === 'unloaded' || font.status === 'error')) return await font.load();
+            if(font.url && (font.status === 'unloaded' || font.status === 'error')) return font.load();
             return font;
         }
-        else {
-            if(!url) {
-                const config = this.fontConfigs.get(name);
-                // 没有配置支持的字体，则报错
-                if(!config) {
-                    throw Error(`没有支持的 ${name} 字体配置`);
-                }
-                url = config.url;
+        if(!url) {
+            const config = this.fontConfigs.get(name);
+            // 没有配置支持的字体，则报错
+            if(!config) {
+                throw Error(`没有支持的 ${name} 字体配置`);
             }
-            font = new JFontData(name, url);
-            this.fonts.set(name, font);
-            const f = await font.load();
-            this.emit('load', f);// 加载字本事件
-            return f;
+            url = config.url;
         }
+        font = new JFontData(name, url);
+        this.fonts.set(name, font);
+        const f = await font.load();
+        this.emit('load', f);// 加载字本事件
+        return f;
     }
 
     // 获取已加载的字体

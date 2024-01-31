@@ -32,7 +32,7 @@ describe('util', () => {
   // Do similar tests for other conversion functions...
 
   test('Should correctly get element position', () => {
-    const el = global.document.createElement('div');
+    const el = window.document.createElement('div');
     // Set some styles here...
     const pos = util.getElementPosition(el);
     expect(pos).toEqual(expect.any(Object));

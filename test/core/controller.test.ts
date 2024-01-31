@@ -3,29 +3,14 @@ import { expect, describe, test, beforeEach,beforeAll, afterEach, vi } from "vit
 import JControllerComponent, { JControllerItem }  from "../../src/core/controller";
 import { nwse, ns }  from "../../src/constant/styleMap";
 import JEditor from '../../src/editor';
+import mock from "../fixtures/mock";
+
+const {FontFaceMock} = mock();
 
 describe('JControllerItem', () => {
   let JControllerInstance: JControllerItem;
   let editorMock;
   let eventMock;
-  const mockContext = {
-    src: '',
-    clearRect: vi.fn(),
-    translate: vi.fn(),
-    rotate: vi.fn(),
-    drawImage: vi.fn((img)=>{mockContext.src = img.src;}),
-    toDataURL: vi.fn()
-};
-  // 创建 mock Image
-  const mockImage = new Image();
-  // 覆盖默认的 Image 构造函数
-  window.Image = vi.fn(() => {
-    // @ts-ignore
-    setTimeout(()=>mockImage.onload(new Event('load')));
-    return mockImage;
-  }) as any;
-  window.HTMLCanvasElement.prototype.getContext = vi.fn(() => mockContext) as any;
-  window.HTMLCanvasElement.prototype.toDataURL = vi.fn(() => mockContext.src);
 
 
   beforeAll(() => {
