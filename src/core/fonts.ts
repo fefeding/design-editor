@@ -40,12 +40,12 @@ export default class JFonts extends EventEmiter implements IJFonts {
         // 初始化默认支持的字体
         if(Array.isArray(fonts)) {
             for(const f of fonts) {
-                this.fontConfigs.set(f.family, f);
+                this.fontConfigs.set(f.family.toLocaleLowerCase(), f);
             }
         }
         else if(fonts) {
             for(const name in fonts) {
-                if(fonts[name] && typeof fonts[name] === 'object') this.fontConfigs.set(fonts[name].family, fonts[name]);
+                if(fonts[name] && typeof fonts[name] === 'object') this.fontConfigs.set(fonts[name].family.toLocaleLowerCase(), fonts[name]);
             }
         }
         this.init();
@@ -69,7 +69,7 @@ export default class JFonts extends EventEmiter implements IJFonts {
             }
         }
         // 系统默认的一些字体支持
-        this.fonts.set('Arial', new JFontData('Arial', '', new FontFace('Arial', '')));
+        this.fonts.set('arial', new JFontData('Arial', '', new FontFace('Arial', '')));
     }
 
 
@@ -81,7 +81,7 @@ export default class JFonts extends EventEmiter implements IJFonts {
             return font;
         }
         if(!url) {
-            const config = this.fontConfigs.get(name);
+            const config = this.fontConfigs.get(name.toLocaleLowerCase());
             // 没有配置支持的字体，则报错
             if(!config) {
                 throw Error(`没有支持的 ${name} 字体配置`);
@@ -89,7 +89,7 @@ export default class JFonts extends EventEmiter implements IJFonts {
             url = config.url;
         }
         font = new JFontData(name, url);
-        this.fonts.set(name, font);
+        this.fonts.set(name.toLocaleLowerCase(), font);
         const f = await font.load();
         this.emit('load', f);// 加载字本事件
         return f;
@@ -98,6 +98,7 @@ export default class JFonts extends EventEmiter implements IJFonts {
     // 获取已加载的字体
     get(name: string): IJFontFace | null {
         if(this.fonts) {
+            name = name.toLocaleLowerCase();
             if(this.fonts.has(name)) return this.fonts.get(name);
         }
         return null;

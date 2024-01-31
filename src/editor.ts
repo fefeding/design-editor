@@ -211,7 +211,7 @@ export default class JEditor extends JBase implements IJEditor {
             // 如果是字体依赖，则检查字体支持情况
             else if(e.type === 'styleChange') {
                 // 字体发生改变，需要做check, 并加载字体生效
-                if(e.data.name === 'fontFamily') {
+                if(e.data.name === 'fontFamily' && e.data.value) {
                     self.fonts.load(e.data.value).catch((e)=>{
                         console.error(e);
                     });// 异步加载字体
