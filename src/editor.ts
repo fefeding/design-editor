@@ -6,6 +6,7 @@ import JController from './core/controller';
 import JFonts from './core/fonts';
 import util from './lib/util';
 import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent, IJFonts, IElementOption, IEditorOption, ITextOption, IImageOption } from './constant/types';
+import JBaseComponent from './core/baseComponent';
 
 export default class JEditor extends JBase implements IJEditor {
 
@@ -176,6 +177,8 @@ export default class JEditor extends JBase implements IJEditor {
         // 刷新样式
         child.style.refresh();
 
+        child.editable = this.editable;// 当前是否可编辑
+
         this.target.addChild(child, this.target);
     }
 
@@ -191,6 +194,13 @@ export default class JEditor extends JBase implements IJEditor {
             el.off('styleChange');
         }
         return this.target.removeChild(el);
+    }
+
+    // 通过ID获取子元素
+    getChild(id: string): IJElement|undefined {
+        for(const child of this.children) {
+            if(child.id === id) return child;
+        }
     }
 
     // 把domcument坐标转为编辑器相对坐标

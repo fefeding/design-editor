@@ -57,7 +57,13 @@ export default class JEvent {
      * @param {string} name 事件名称
      * @param {function} fun 事件委托
      */
-    removeEvent(name: string, fun: EventListenerOrEventListenerObject, opt: boolean | AddEventListenerOptions = false, target: HTMLElement = this.target) {
+    removeEvent(name: string|Array<string>, fun?: EventListenerOrEventListenerObject, opt: boolean | AddEventListenerOptions = false, target: HTMLElement = this.target) {
+        if(Array.isArray(name)) {
+            for(const n of name) {
+                this.removeEvent(n, fun, opt, target);
+            }
+            return this;
+        }
         if(target.removeEventListener) {
             target.removeEventListener(name, fun, opt);
         }  
@@ -70,5 +76,9 @@ export default class JEvent {
             target['on' + name] = null;
         }
         return this;
+    }
+
+    dispose() {
+        if(this.target) this.removeEvent(SupportEventNames);
     }
 }

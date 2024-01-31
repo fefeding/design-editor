@@ -100,11 +100,13 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
         const editEl = this.editor.textEditElement;
         if(!editEl || !editEl.visible) return;
         // 编辑的是当前元素，才采用它的值
-        if(editEl.attr('data-target') === this.id && editEl.visible) {
-            this.data.text = editEl.dom.value;
+        const id = editEl.attr('data-target');
+        const target = this.editor.getChild(id);
+        if(target instanceof JText) {
+            target.data.text = editEl.dom.value;
+            editEl.data.visible = false;
+            editEl.dom.value = '';// 置空
         }
-        editEl.data.visible = false;
-        editEl.dom.value = '';// 置空
     }
 
     toJSON(props = []) {

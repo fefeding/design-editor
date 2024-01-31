@@ -2,7 +2,7 @@ import EventEmiter from '../constant/eventEmitter';
 import JTransform from '../constant/transform';
 import JStyle from './style';
 import util from '../lib/util';
-import JEvent from '../core/event';
+import JEvent, { SupportEventNames } from '../core/event';
 import JElementCssStyle from '../constant/styleMap';
 import { IJElement, ITransform, IJEditor, IElementOption } from '../constant/types';
 import JData, { JElementData } from '../constant/data';
@@ -276,5 +276,19 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
 
     toHtml() {
         return this.dom.outerHTML;
+    }
+
+    // 丢弃
+    dispose() {
+        this.event.dispose();
+        if(this.data) {
+            this.data.removeAllListeners();
+            delete this.data;
+        }
+        if(this.style) {
+            this.style.removeAllListeners();
+            delete this.style;
+        }
+        this.removeAllListeners();
     }
 }

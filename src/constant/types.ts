@@ -160,6 +160,7 @@ export interface IJElement<T extends HTMLElement = HTMLElement> extends EventEmi
     };
     toString(): string;
     toHtml(): string;
+    dispose(): void;
 }
 
 export interface IJBaseComponent<T extends HTMLElement = HTMLElement> extends IJElement<T> {
@@ -228,6 +229,8 @@ export interface IJEditor extends IJBaseComponent {
     get selectedElements(): Array<IJBaseComponent>;
     bindEvent(dom?: HTMLElement): void;
     select(el: IJBaseComponent): void;
+    // 通过ID获取子元素
+    getChild(id: string): IJElement|undefined;
     resize(width?: string | number, height?: string | number): void;
     toEditorPosition(pos: {
         x: number;

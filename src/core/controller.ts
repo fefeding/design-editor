@@ -152,18 +152,13 @@ export default class JControllerComponent extends JControllerItem implements IJC
             ...option.data,
             zIndex: topZIndex
         };
-        
+
         super(option);
+
+        if(!this.editor.editable) return;
+
         this.init(option);
         this.editor.dom.appendChild(this.dom);
-
-        // 双击事件透传给操作杆绑定的对象
-        this.on(SupportEventNames, (e) => {
-            if(this.target) {
-                //if(e.type === 'dblclick') this.target.emit('dblclick', e);
-                this.target.emit(e.type, e);
-            }
-        });
     }
 
     init(option) {
@@ -560,6 +555,8 @@ export default class JControllerComponent extends JControllerItem implements IJC
 
     // 绑定到操作的对象
     bind(target: IJBaseComponent) {
+        if(!target.editable) return;
+        
         this.isEditor = target === this.editor;
         this.reset(this.isEditor);
 
