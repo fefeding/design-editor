@@ -30,6 +30,9 @@ export default class JEvent {
      * @param {HTMLElement} target 绑定的元素，默认为 this.target
      */
     bindEvent(name: string | Array<string>, fun: EventListenerOrEventListenerObject, opt: boolean | AddEventListenerOptions = false, target: HTMLElement = this.target) {
+        if(!target){
+            return;
+        }
         if(typeof name === 'string') {
             name = name.split(' ');
         }
@@ -52,12 +55,24 @@ export default class JEvent {
      * @param {HTMLElement} target 解除绑定的元素，默认为 this.target
      */
     removeEvent(name: string|Array<string>, fun?: EventListenerOrEventListenerObject, opt: boolean | AddEventListenerOptions = false, target: HTMLElement = this.target) {
+        if(!target){
+            return;
+        }
         if(typeof name === 'string') {
             name = name.split(' ');
         }
         for(const n of name) {
-            removeEvent(target, n, fun, opt);
-            this._eventCache = this._eventCache.filter(item=>!(item[0] === target && item[1] === n && item[2] === fun && item[3] === opt));
+            this._eventCache = this._eventCache.filter(item=>{
+                if(item[0] === target && item[1] === n){
+                    if((fun && fun !== item[2]) || (typeof opt !== 'undefined' && opt !==item[3])){
+                        // DOM 要完全一致才能remove掉
+                        return true;
+                    }
+                    removeEvent(target, n, item[2], item[3]);
+                    return false;
+                }
+                return true;
+            });
         }
         return this;
     }
@@ -65,7 +80,7 @@ export default class JEvent {
     // 移除所有的事件
     dispose() {
         for(let item of this._eventCache){
-            this.removeEvent(item[1], item[2], item[3], item[0]);
+            removeEvent(item[0], item[1], item[2], item[3]);
         }
         this._eventCache = [];
     }
