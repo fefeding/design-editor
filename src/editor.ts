@@ -90,6 +90,8 @@ export default class JEditor extends JBase implements IJEditor {
         // 刷新样式
         this.style.refresh();
         this.resize();// 触发一次大小改变
+
+        //this.bindElementEvent(this);
     }
 
     // 外层用于定位的容器
