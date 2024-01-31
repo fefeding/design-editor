@@ -1,6 +1,5 @@
 // @vitest-environment happy-dom
 import { expect, describe, test, beforeEach,beforeAll, afterEach, vi } from "vitest";
-import util  from "../../src/lib/util";
 
 import EventEmitter from '../../src/constant/eventEmitter';
 import JData, { JElementData, JImageData, JTextData, IJElementData } from '../../src/constant/data.ts';
