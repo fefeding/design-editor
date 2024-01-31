@@ -28,7 +28,8 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
             this.setDomStyle(s.name, s.value);
 
             this.emit('styleChange', {
-                ...s,
+                type: 'styleChange',
+                data: s,
                 target: this
             });
         });

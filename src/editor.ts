@@ -6,7 +6,7 @@ import JController from './core/controller';
 import JFonts from './core/fonts';
 import util from './lib/util';
 import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent, IJFonts, IElementOption, IEditorOption, ITextOption, IImageOption } from './constant/types';
-import JBaseComponent from './core/baseComponent';
+import { SupportEventNames } from './core/event';
 
 export default class JEditor extends JBase implements IJEditor {
 
@@ -162,19 +162,8 @@ export default class JEditor extends JBase implements IJEditor {
             return super.addChild(child);
         }
         const self = this;
-        child.on('select', function(v) {
-            self.select(this);
-        });
-        child.on('mousedown', function(e: MouseEvent) {
-            if(e.button === 0) {
-                this.selected = true;
-                self.elementController.onDragStart(e);
-            }
-        });
-        // 监听样式改变
-        child.on('styleChange', (e) => {
-            this.emit('styleChange', e);
-        });
+       
+        this.bindElementEvent(child);
         
         child.parent = this;// 把父设置成编辑器
         child.editor = this;
@@ -194,11 +183,35 @@ export default class JEditor extends JBase implements IJEditor {
             return;
         }
         if(el instanceof JElement) {
-            el.off('select');
-            el.off('mousedown');
-            el.off('styleChange');
+            el.off(SupportEventNames);
+            el.off(['select', 'styleChange', 'dataChange']);
         }
         return this.target.removeChild(el);
+    }
+
+    // 绑定元素事件
+    bindElementEvent(el: IJElement) {
+        const self = this;
+        // 监听样式改变
+        el.on([
+            ...SupportEventNames,
+            'styleChange', 'select', 'dataChange'
+        ], function(e) {
+            // 左健选中
+            if(e.type === 'mousedown' && e.button === 0) {
+                this.selected = true;
+                self.elementController.onDragStart(e);
+            }
+            // 选中状态改变
+            else if(e.type === 'select') {
+                self.select(this);
+            }
+            self.emit('elementChange', {
+                type: e.type,
+                event: e,
+                target: this
+            });
+        });
     }
 
     // 通过ID获取子元素

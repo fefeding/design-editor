@@ -1,7 +1,7 @@
 import EventEmiter from 'eventemitter3';
 export default class EventEmitter extends EventEmiter {
     // 用空格分隔事件名
-    splitEventNames(name: string) {
+    private splitEventNames(name: string) {
         if(!name) return [];
         const arr = name.split(' ');
         return arr;

@@ -47,7 +47,13 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
             ]
         });
 
-        //this.initData(option);// 初始化数据
+        this.data.on('change', (e) => {
+            this.emit('dataChange', {
+                type: 'dataChange',
+                target: this,
+                data: e
+            });
+        });
     }
 
     // 当前控件的核心元素
@@ -60,7 +66,11 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
     }
     set selected(v: boolean) {
         this._selected = v;
-        this.emit('select', v);
+        this.emit('select', {
+            type: 'select',
+            target: this,
+            selected: v
+        });
     }
 
     // 设置css到dom
