@@ -2,8 +2,7 @@
 import util from '../lib/util';
 import JElement from './element';
 import { IJControllerItem, IJControllerComponent, IJBaseComponent, IJEditor } from '../constant/types';
-import { topZIndex, ControlerCursors } from '../constant/styleMap';
-import { SupportEventNames } from './event';
+import { topZIndex, ControlerCursors, ControlItemIcons } from '../constant/styleMap';
 
 // 控制元素移动和矩阵变换
 export class JControllerItem extends JElement<HTMLDivElement> implements IJControllerItem {
@@ -21,7 +20,7 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
 
         this.dir = option.dir || '';
         this.size = option.size || 8;
-        this.style.cursor = this.style.cursor || ControlerCursors[this.dir];
+        
         this.data.width = this.data.height = this.size;
 
         this.editor = option.editor;
@@ -123,15 +122,11 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
     }
 
     // 计算指针
-    resetCursor(rotation: number) {
-        
+    async resetCursor(rotation: number = 0) {
+        let cursor = await ControlerCursors.get(this.dir, rotation);
+        if(!cursor) return;
         // 先简单处理
-        if(!rotation || (rotation > -Math.PI/6 && rotation< Math.PI/6)) {
-            this.style.cursor = ControlerCursors[this.dir];
-        }
-        else {
-            this.style.cursor = 'move';
-        }
+        this.style.cursor = cursor.includes('\/')? `url(${cursor}) 12 12,pointer`:cursor;
     }
 
 }
@@ -159,6 +154,8 @@ export default class JControllerComponent extends JControllerItem implements IJC
 
         this.init(option);
         this.editor.dom.appendChild(this.dom);
+
+        this.resetCursor(this.transform.rotateZ);
     }
 
     init(option) {
@@ -274,7 +271,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
                 cursor: `pointer`,
                 ...option.itemStyle,
                 'backgroundSize': '100%',
-                backgroundImage: ControlerCursors.rotate
+                backgroundImage: ControlItemIcons.rotate
             },
             transform: {
                 translateX: '-50%',
@@ -292,7 +289,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
                 cursor: `pointer`,
                 ...option.itemStyle,
                 'backgroundSize': '100%',
-                backgroundImage: ControlerCursors.skew
+                backgroundImage: ControlItemIcons.skew
             },
             transform: {
                 translateX: '-50%',
@@ -337,9 +334,10 @@ export default class JControllerComponent extends JControllerItem implements IJC
         const self = this;
         item.on('change', function(e) {
             self.change(e);
-            // 重置指针
-            this.resetCursor(self.transform.rotateZ);
         });
+
+        item.resetCursor(this.transform.rotateZ);
+
         return item;
     }
 
@@ -505,6 +503,11 @@ export default class JControllerComponent extends JControllerItem implements IJC
         if(args.rotation) {
             this.transform.rotateZ += args.rotation;
             this.transform.apply();
+
+            // 发生了旋转，要处理指针图标
+            for(const item of this.items) {
+                item.resetCursor(this.transform.rotateZ);
+            }
         }
     }
 
@@ -556,7 +559,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
     // 绑定到操作的对象
     bind(target: IJBaseComponent) {
         if(!target.editable) return;
-        
+
         this.isEditor = target === this.editor;
         this.reset(this.isEditor);
 

@@ -169,5 +169,30 @@ export default {
         const time = Date.now();
         const rnd = Math.floor(Math.random() * 10000000000);
         return (time + rnd).toString();
+    },
+    // 把图片旋转一定角度，返回base64
+    async rotateImage(url: string, rotation: number): Promise<string> {
+        return new Promise((resolve, reject)=>{
+            const img = new Image();
+            img.onload = function(e) {
+                const cvs = document.createElement('canvas');
+                cvs.width = img.width;
+                cvs.height = img.height;
+                const ctx = cvs.getContext('2d');
+                ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+                ctx.translate(cvs.width / 2, cvs.height / 2);
+                ctx.rotate(rotation);
+                ctx.translate(-cvs.width / 2, -cvs.height / 2);
+
+                ctx.drawImage(img, 0, 0);
+                const data = cvs.toDataURL();
+                resolve(data);
+            };
+            img.onerror = function(e){
+                reject && reject(e);
+            }
+            img.src=url;
+        });
     }
 }

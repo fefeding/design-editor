@@ -174,7 +174,7 @@ describe("JEditor", () => {
 
     editor.fromJSON(testData);
 
-    expect(editor.dom.style.backgroundColor).toBe("red");
+    expect(editor.target.dom.style.backgroundColor).toBe("red");
     expect(editor.clear).toBeCalled();
     expect(editor.resize).toBeCalled();
     expect(editor.createShape).toBeCalledWith("someType", {

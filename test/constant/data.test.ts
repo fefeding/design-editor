@@ -8,7 +8,8 @@ describe('JData', () => {
   let data;
 
   beforeEach(() => {
-    data = new JData();
+    const src = new JElementData();
+    data = JData.createProxy(src);
   });
 
   test('should instantiate', () => {
