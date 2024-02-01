@@ -29,7 +29,6 @@
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/rollup-darwin-x64": "^4.9.6",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1",
     "babelify": "^10.0.0",
