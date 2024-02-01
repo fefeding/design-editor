@@ -48,10 +48,10 @@ export interface IData<T> {
  */
 export type DataChangeWatch = {
     /** 写属性 */
-    set: (data: IDataItem) => void; 
+    set?: (data: IDataItem) => void; 
 
     /** 获取属性值 */
-    get: (name: string) => any;
+    get?: (name: string) => any;
 }
 
 /**
