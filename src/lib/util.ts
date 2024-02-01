@@ -194,5 +194,44 @@ export default {
             }
             img.src=url;
         });
+    },
+    // 请求远程资源
+    async request(url: string, option?: {
+        method?: string,
+        headers?: {[key:string]: string},
+        data?: {[key:string]: string}
+    }): Promise<string> {
+        option = option || {};
+        return new Promise((resolve, reject) => {
+            const request = new XMLHttpRequest();//新建XMLHttpRequest对象
+            if(option.headers) {
+                for(const name in option.headers) {
+                    request.setRequestHeader(name, option.headers[name]);
+                }
+            }
+            const params = [];
+            if(option.data) {
+                for(const name in option.data) {
+                    params.push(`${name}=${encodeURIComponent(option.data[name])}`);
+                }
+            }
+            const method = option.method? option.method.toUpperCase() : 'GET';
+            if(method === 'GET') {
+                url += (url.includes('?')?'&':'?') + params.join('&')
+            }
+            request.onreadystatechange = function (e) { //状态发生变化时，函数被回调
+                if (this.readyState === 4) { //成功完成
+                    //判断相应结果：
+                    if (this.status ===200) {
+                        resolve(this.responseText);
+                    } else {
+                        reject(e);
+                    }
+                }
+            }
+            //发送请求：
+            request.open(method, url);
+            request.send(method === 'POST'? params.join('&'): null);
+        });
     }
 }

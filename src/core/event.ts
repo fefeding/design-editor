@@ -95,6 +95,6 @@ export default class JEvent {
         for(let item of this._eventCache){
             removeEvent(this.target, item[0], item[1], item[2]);
         }
-        this._eventCache = [];
+        this._eventCache = [];        
     }
 }

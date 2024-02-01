@@ -261,5 +261,45 @@ export default {
                     })];
             });
         });
+    },
+    // 请求远程资源
+    request: function (url, option) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                option = option || {};
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        var request = new XMLHttpRequest(); //新建XMLHttpRequest对象
+                        if (option.headers) {
+                            for (var name_1 in option.headers) {
+                                request.setRequestHeader(name_1, option.headers[name_1]);
+                            }
+                        }
+                        var params = [];
+                        if (option.data) {
+                            for (var name_2 in option.data) {
+                                params.push("".concat(name_2, "=").concat(encodeURIComponent(option.data[name_2])));
+                            }
+                        }
+                        var method = option.method ? option.method.toUpperCase() : 'GET';
+                        if (method === 'GET') {
+                            url += (url.includes('?') ? '&' : '?') + params.join('&');
+                        }
+                        request.onreadystatechange = function (e) {
+                            if (this.readyState === 4) { //成功完成
+                                //判断相应结果：
+                                if (this.status === 200) {
+                                    resolve(this.responseText);
+                                }
+                                else {
+                                    reject(e);
+                                }
+                            }
+                        };
+                        //发送请求：
+                        request.open(method, url);
+                        request.send(method === 'POST' ? params.join('&') : null);
+                    })];
+            });
+        });
     }
 };

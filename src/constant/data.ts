@@ -22,8 +22,8 @@ export interface IData<T> {
 }
 
 export type DataChangeWatch = {
-    set: (data: IDataItem) => void; // 写属性
-    get: (name: string) => any  // 读
+    set?: (data: IDataItem) => void; // 写属性
+    get?: (name: string) => any  // 读
 }
 
 export default class JData<T extends object> extends EventEmiter implements IData<T> {
@@ -95,13 +95,29 @@ export default class JData<T extends object> extends EventEmiter implements IDat
         return this;
     }
 
-    toJSON(): object {
-        const obj = {};
+    // 遍历
+    map(fun?: (name: string, value: any)=>any): Array<IDataItem> {
         const props = Object.getOwnPropertyNames(this.data);
+        const res = [];
         for(const name of props) {
             if(typeof this[name] === 'undefined' || typeof this[name] === 'function') continue;
-            obj[name] = this[name];
+            
+            const ret = fun && fun(name, this[name]);
+            if(ret !== false) {
+                res.push({
+                    name,
+                    value: this[name]
+                });
+            }
         }
+        return res;
+    }
+
+    toJSON(): object {
+        const obj = {};
+        this.map((name, value) => {
+            obj[name] = value;
+        });
         return obj;
     }
 
@@ -175,8 +191,18 @@ export interface IJImageData extends IJElementData {
     src?: string;
 }
 
+export interface IJSvgData extends IJElementData {
+    url?: string;
+    svg?: string
+}
+
 export class JImageData extends JElementData implements IJImageData {
     src: string;
+}
+
+export class JSvgData extends JImageData implements IJSvgData {
+    url: string;
+    svg: string;
 }
 
 export interface IJTexteData extends IJElementData {

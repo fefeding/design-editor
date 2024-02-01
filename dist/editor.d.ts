@@ -28,7 +28,9 @@ export default class JEditor extends JBase implements IJEditor {
     };
     clear(): void;
     scale(x: number, y?: number): void;
-    regShape(name: string, shape: IJBaseComponent): IJBaseComponent<HTMLElement>;
+    regShape(name: string | {
+        [key: string]: IJBaseComponent;
+    }, shape: IJBaseComponent): IJBaseComponent<HTMLElement>;
     createShape(type: string | JElement, option?: IElementOption | ITextOption | IImageOption): any;
     fromJSON(data: any): void;
 }

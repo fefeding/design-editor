@@ -1,5 +1,5 @@
 import JElementCssStyle, { IJElementStyleDeclaration } from './styleMap';
-import { JElementData, JTextData, JImageData, IJElementData, IJTexteData, IJImageData, IJFontData } from './data';
+import { JElementData, JTextData, JImageData, IJElementData, IJTexteData, IJImageData, IJFontData, JSvgData, IJSvgData } from './data';
 import EventEmitter from './eventEmitter';
 
 export {
@@ -51,6 +51,10 @@ export interface ITextOption extends IElementOption<IJTexteData> {
 
 export interface IImageOption extends IElementOption<IJImageData> {
     dataType?: JImageData;
+}
+
+export interface ISvgOption extends IElementOption<IJSvgData> {
+    dataType?: JSvgData;
 }
 
 export interface IEditorOption {
@@ -174,6 +178,10 @@ export interface IJTextComponent extends IJBaseComponent<HTMLDivElement> {
 
 export interface IJImageComponent extends IJBaseComponent<HTMLImageElement> {
     data: JImageData;
+}
+
+export interface IJSvgComponent extends IJBaseComponent<HTMLDivElement> {
+    data: JSvgData;
 }
 
 export interface IJControllerItem extends IJElement<HTMLDivElement> {

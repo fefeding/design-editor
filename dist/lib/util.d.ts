@@ -57,5 +57,14 @@ declare const _default: {
     attr(dom: any, name: string, value: string | number | undefined): any;
     uuid(): string;
     rotateImage(url: string, rotation: number): Promise<string>;
+    request(url: string, option?: {
+        method?: string;
+        headers?: {
+            [key: string]: string;
+        };
+        data?: {
+            [key: string]: string;
+        };
+    }): Promise<string>;
 };
 export default _default;

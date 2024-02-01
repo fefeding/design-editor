@@ -11,8 +11,8 @@ export interface IData<T> {
     toJSON(): object;
 }
 export type DataChangeWatch = {
-    set: (data: IDataItem) => void;
-    get: (name: string) => any;
+    set?: (data: IDataItem) => void;
+    get?: (name: string) => any;
 };
 export default class JData<T extends object> extends EventEmiter implements IData<T> {
     constructor(data?: {});
@@ -22,6 +22,7 @@ export default class JData<T extends object> extends EventEmiter implements IDat
     propertyChange(name: string, value?: any): void;
     getProperty(name: string): any;
     from(data: object): this;
+    map(fun?: (name: string, value: any) => any): Array<IDataItem>;
     toJSON(): object;
     static createProxy<T extends JData<T>>(data: T): T;
 }
@@ -49,8 +50,16 @@ export declare class JElementData extends JData<JElementData> implements IJEleme
 export interface IJImageData extends IJElementData {
     src?: string;
 }
+export interface IJSvgData extends IJElementData {
+    url?: string;
+    svg?: string;
+}
 export declare class JImageData extends JElementData implements IJImageData {
     src: string;
+}
+export declare class JSvgData extends JImageData implements IJSvgData {
+    url: string;
+    svg: string;
 }
 export interface IJTexteData extends IJElementData {
     text?: string;

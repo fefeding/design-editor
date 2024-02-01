@@ -122,6 +122,265 @@ typeof SuppressedError === "function" ? SuppressedError : function (error, suppr
     return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
 };
 
+var util = {
+    // 是否是数字
+    isNumber: function (v) {
+        return typeof v === 'number' || /^\s*[\d\.]+\s*$/.test(v);
+    },
+    // 是否是带像素单位的字符串
+    isPXNumber: function (v) {
+        return /^\s*[\d\.]+\s*px\s*/i.test(v);
+    },
+    // 是否是带角度单位的字符串
+    isDegNumber: function (v) {
+        return /^\s*[\d\.]+\s*deg\s*/i.test(v);
+    },
+    // 是否是带弧度单位的字符串
+    isRadNumber: function (v) {
+        return /^\s*[\d\.]+\s*rad\s*/i.test(v);
+    },
+    // 转为像素字符串格式 
+    toPX: function (v) {
+        if (this.isNumber(v))
+            return v + 'px';
+        return v;
+    },
+    // 带像素或其它单位的转换为数字
+    toNumber: function (v) {
+        if (this.isNumber(v))
+            return Number(v);
+        else if (typeof v === 'string')
+            return parseFloat(v);
+    },
+    // 弧度转角度
+    radToDeg: function (v) {
+        return v * (180 / Math.PI);
+    },
+    // 角度转弧度
+    degToRad: function (v) {
+        return v * (Math.PI / 180);
+    },
+    // 转为角度格式
+    toDeg: function (v) {
+        if (this.isNumber(v))
+            return v + 'deg';
+        if (typeof v === 'string' && this.isRadNumber(v))
+            return this.toDeg(this.radToDeg(parseFloat(v)));
+        return v;
+    },
+    // 转为弧度格式
+    toRad: function (v) {
+        if (this.isNumber(v))
+            return v + 'rad';
+        if (typeof v === 'string' && this.isDegNumber(v))
+            return this.toRad(this.degToRad(parseFloat(v)));
+        return v;
+    },
+    /**
+     * 获取元素的绝对定位
+     *
+     * @method getElementPosition
+     * @static
+     * @param {element} el 目标元素对象
+     * @return {position} 位置对象(top,left)
+     */
+    getElementPosition: function (el) {
+        var pos = { "y": 0, "x": 0 };
+        if (!el)
+            return pos;
+        if (el.offsetParent) {
+            while (el.offsetParent) {
+                pos.y += el.offsetTop;
+                pos.x += el.offsetLeft;
+                el = el.offsetParent;
+            }
+        }
+        // @ts-ignore
+        else if (el.x) {
+            // @ts-ignore
+            pos.x += el.x;
+        }
+        // @ts-ignore
+        else if (el.y) {
+            // @ts-ignore
+            pos.y += el.y;
+        }
+        return pos;
+    },
+    // 获取元素bounds
+    getElementBoundingRect: function (el) {
+        var bounds = {
+            height: 0,
+            width: 0,
+            x: 0,
+            y: 0
+        };
+        if (el.getBoundingClientRect) {
+            bounds = el.getBoundingClientRect();
+            var scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+            var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            bounds.x += scrollLeft;
+            bounds.y += scrollTop;
+        }
+        else {
+            var pos = this.getElementPosition(el);
+            bounds.x = pos.x;
+            bounds.y = pos.y;
+            bounds.width = el.clientWidth;
+            bounds.height = el.clientHeight;
+        }
+        return bounds;
+    },
+    // 把domcument坐标转为指定元素相对坐标
+    toDomPosition: function (pos, dom) {
+        var domPos = this.getElementBoundingRect(dom);
+        return {
+            x: pos.x - domPos.x,
+            y: pos.y - domPos.y
+        };
+    },
+    /**
+     * 把一个或多个点绕某个点旋转一定角度
+     * 先把坐标原点移到旋转中心点，计算后移回
+     * @method rotatePoints
+     * @static
+     * @param {Array/object} p 一个或多个点
+     * @param {x: number, y: number} rp 旋转中心点
+     * @param {*} r 旋转角度
+     */
+    rotatePoints: function (p, center, r) {
+        if (!r || !p)
+            return p;
+        var cos = Math.cos(r);
+        var sin = Math.sin(r);
+        if (Array.isArray(p)) {
+            for (var i = 0; i < p.length; i++) {
+                if (!p[i])
+                    continue;
+                var x1 = p[i].x - center.x;
+                var y1 = p[i].y - center.y;
+                p[i].x = x1 * cos - y1 * sin + center.x;
+                p[i].y = x1 * sin + y1 * cos + center.y;
+            }
+        }
+        else {
+            var x1 = p.x - center.x;
+            var y1 = p.y - center.y;
+            p.x = x1 * cos - y1 * sin + center.x;
+            p.y = x1 * sin + y1 * cos + center.y;
+        }
+        return p;
+    },
+    // 设置样式
+    css: function (dom, name, value) {
+        var e_1, _a;
+        if (!name)
+            return;
+        if (typeof name === 'object') {
+            try {
+                for (var _b = __values(Object.getOwnPropertyNames(name)), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var n = _c.value;
+                    this.css(dom, n, name[n]);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+        }
+        else {
+            dom.style[name] = value;
+        }
+        return this;
+    },
+    // dom属性
+    attr: function (dom, name, value) {
+        if (typeof value !== 'undefined') {
+            dom.setAttribute(name, value + '');
+            return value;
+        }
+        else {
+            return dom.getAttribute(name);
+        }
+    },
+    // 本地唯一ID，这个只要保证当前线程唯一即可，非全球唯一
+    uuid: function () {
+        var time = Date.now();
+        var rnd = Math.floor(Math.random() * 10000000000);
+        return (time + rnd).toString();
+    },
+    // 把图片旋转一定角度，返回base64
+    rotateImage: function (url, rotation) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        var img = new Image();
+                        img.onload = function (e) {
+                            var cvs = document.createElement('canvas');
+                            cvs.width = img.width;
+                            cvs.height = img.height;
+                            var ctx = cvs.getContext('2d');
+                            ctx.clearRect(0, 0, cvs.width, cvs.height);
+                            ctx.translate(cvs.width / 2, cvs.height / 2);
+                            ctx.rotate(rotation);
+                            ctx.translate(-cvs.width / 2, -cvs.height / 2);
+                            ctx.drawImage(img, 0, 0);
+                            var data = cvs.toDataURL();
+                            resolve(data);
+                        };
+                        img.onerror = function (e) {
+                            reject && reject(e);
+                        };
+                        img.src = url;
+                    })];
+            });
+        });
+    },
+    // 请求远程资源
+    request: function (url, option) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                option = option || {};
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        var request = new XMLHttpRequest(); //新建XMLHttpRequest对象
+                        if (option.headers) {
+                            for (var name_1 in option.headers) {
+                                request.setRequestHeader(name_1, option.headers[name_1]);
+                            }
+                        }
+                        var params = [];
+                        if (option.data) {
+                            for (var name_2 in option.data) {
+                                params.push("".concat(name_2, "=").concat(encodeURIComponent(option.data[name_2])));
+                            }
+                        }
+                        var method = option.method ? option.method.toUpperCase() : 'GET';
+                        if (method === 'GET') {
+                            url += (url.includes('?') ? '&' : '?') + params.join('&');
+                        }
+                        request.onreadystatechange = function (e) {
+                            if (this.readyState === 4) { //成功完成
+                                //判断相应结果：
+                                if (this.status === 200) {
+                                    resolve(this.responseText);
+                                }
+                                else {
+                                    reject(e);
+                                }
+                            }
+                        };
+                        //发送请求：
+                        request.open(method, url);
+                        request.send(method === 'POST' ? params.join('&') : null);
+                    })];
+            });
+        });
+    }
+};
+
 function getDefaultExportFromCjs (x) {
 	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
 }
@@ -525,225 +784,6 @@ var EventEmitter = /** @class */ (function (_super) {
     };
     return EventEmitter;
 }(EventEmitter$1));
-
-var util = {
-    // 是否是数字
-    isNumber: function (v) {
-        return typeof v === 'number' || /^\s*[\d\.]+\s*$/.test(v);
-    },
-    // 是否是带像素单位的字符串
-    isPXNumber: function (v) {
-        return /^\s*[\d\.]+\s*px\s*/i.test(v);
-    },
-    // 是否是带角度单位的字符串
-    isDegNumber: function (v) {
-        return /^\s*[\d\.]+\s*deg\s*/i.test(v);
-    },
-    // 是否是带弧度单位的字符串
-    isRadNumber: function (v) {
-        return /^\s*[\d\.]+\s*rad\s*/i.test(v);
-    },
-    // 转为像素字符串格式 
-    toPX: function (v) {
-        if (this.isNumber(v))
-            return v + 'px';
-        return v;
-    },
-    // 带像素或其它单位的转换为数字
-    toNumber: function (v) {
-        if (this.isNumber(v))
-            return Number(v);
-        else if (typeof v === 'string')
-            return parseFloat(v);
-    },
-    // 弧度转角度
-    radToDeg: function (v) {
-        return v * (180 / Math.PI);
-    },
-    // 角度转弧度
-    degToRad: function (v) {
-        return v * (Math.PI / 180);
-    },
-    // 转为角度格式
-    toDeg: function (v) {
-        if (this.isNumber(v))
-            return v + 'deg';
-        if (typeof v === 'string' && this.isRadNumber(v))
-            return this.toDeg(this.radToDeg(parseFloat(v)));
-        return v;
-    },
-    // 转为弧度格式
-    toRad: function (v) {
-        if (this.isNumber(v))
-            return v + 'rad';
-        if (typeof v === 'string' && this.isDegNumber(v))
-            return this.toRad(this.degToRad(parseFloat(v)));
-        return v;
-    },
-    /**
-     * 获取元素的绝对定位
-     *
-     * @method getElementPosition
-     * @static
-     * @param {element} el 目标元素对象
-     * @return {position} 位置对象(top,left)
-     */
-    getElementPosition: function (el) {
-        var pos = { "y": 0, "x": 0 };
-        if (!el)
-            return pos;
-        if (el.offsetParent) {
-            while (el.offsetParent) {
-                pos.y += el.offsetTop;
-                pos.x += el.offsetLeft;
-                el = el.offsetParent;
-            }
-        }
-        // @ts-ignore
-        else if (el.x) {
-            // @ts-ignore
-            pos.x += el.x;
-        }
-        // @ts-ignore
-        else if (el.y) {
-            // @ts-ignore
-            pos.y += el.y;
-        }
-        return pos;
-    },
-    // 获取元素bounds
-    getElementBoundingRect: function (el) {
-        var bounds = {
-            height: 0,
-            width: 0,
-            x: 0,
-            y: 0
-        };
-        if (el.getBoundingClientRect) {
-            bounds = el.getBoundingClientRect();
-            var scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
-            var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-            bounds.x += scrollLeft;
-            bounds.y += scrollTop;
-        }
-        else {
-            var pos = this.getElementPosition(el);
-            bounds.x = pos.x;
-            bounds.y = pos.y;
-            bounds.width = el.clientWidth;
-            bounds.height = el.clientHeight;
-        }
-        return bounds;
-    },
-    // 把domcument坐标转为指定元素相对坐标
-    toDomPosition: function (pos, dom) {
-        var domPos = this.getElementBoundingRect(dom);
-        return {
-            x: pos.x - domPos.x,
-            y: pos.y - domPos.y
-        };
-    },
-    /**
-     * 把一个或多个点绕某个点旋转一定角度
-     * 先把坐标原点移到旋转中心点，计算后移回
-     * @method rotatePoints
-     * @static
-     * @param {Array/object} p 一个或多个点
-     * @param {x: number, y: number} rp 旋转中心点
-     * @param {*} r 旋转角度
-     */
-    rotatePoints: function (p, center, r) {
-        if (!r || !p)
-            return p;
-        var cos = Math.cos(r);
-        var sin = Math.sin(r);
-        if (Array.isArray(p)) {
-            for (var i = 0; i < p.length; i++) {
-                if (!p[i])
-                    continue;
-                var x1 = p[i].x - center.x;
-                var y1 = p[i].y - center.y;
-                p[i].x = x1 * cos - y1 * sin + center.x;
-                p[i].y = x1 * sin + y1 * cos + center.y;
-            }
-        }
-        else {
-            var x1 = p.x - center.x;
-            var y1 = p.y - center.y;
-            p.x = x1 * cos - y1 * sin + center.x;
-            p.y = x1 * sin + y1 * cos + center.y;
-        }
-        return p;
-    },
-    // 设置样式
-    css: function (dom, name, value) {
-        var e_1, _a;
-        if (!name)
-            return;
-        if (typeof name === 'object') {
-            try {
-                for (var _b = __values(Object.getOwnPropertyNames(name)), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var n = _c.value;
-                    this.css(dom, n, name[n]);
-                }
-            }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
-            finally {
-                try {
-                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-                }
-                finally { if (e_1) throw e_1.error; }
-            }
-        }
-        else {
-            dom.style[name] = value;
-        }
-        return this;
-    },
-    // dom属性
-    attr: function (dom, name, value) {
-        if (typeof value !== 'undefined') {
-            dom.setAttribute(name, value + '');
-            return value;
-        }
-        else {
-            return dom.getAttribute(name);
-        }
-    },
-    // 本地唯一ID，这个只要保证当前线程唯一即可，非全球唯一
-    uuid: function () {
-        var time = Date.now();
-        var rnd = Math.floor(Math.random() * 10000000000);
-        return (time + rnd).toString();
-    },
-    // 把图片旋转一定角度，返回base64
-    rotateImage: function (url, rotation) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                return [2 /*return*/, new Promise(function (resolve, reject) {
-                        var img = new Image();
-                        img.onload = function (e) {
-                            var cvs = document.createElement('canvas');
-                            cvs.width = img.width;
-                            cvs.height = img.height;
-                            var ctx = cvs.getContext('2d');
-                            ctx.clearRect(0, 0, cvs.width, cvs.height);
-                            ctx.translate(cvs.width / 2, cvs.height / 2);
-                            ctx.rotate(rotation);
-                            ctx.translate(-cvs.width / 2, -cvs.height / 2);
-                            ctx.drawImage(img, 0, 0);
-                            var data = cvs.toDataURL();
-                            resolve(data);
-                        };
-                        img.onerror = function (e) {
-                            reject && reject(e);
-                        };
-                        img.src = url;
-                    })];
-            });
-        });
-    }
-};
 
 var topZIndex = 10000;
 // 支持的样式属性列表
@@ -1937,16 +1977,23 @@ var JData = /** @class */ (function (_super) {
             Object.assign(this, data);
         return this;
     };
-    JData.prototype.toJSON = function () {
+    // 遍历
+    JData.prototype.map = function (fun) {
         var e_4, _a;
-        var obj = {};
         var props = Object.getOwnPropertyNames(this.data);
+        var res = [];
         try {
             for (var props_1 = __values(props), props_1_1 = props_1.next(); !props_1_1.done; props_1_1 = props_1.next()) {
                 var name_2 = props_1_1.value;
                 if (typeof this[name_2] === 'undefined' || typeof this[name_2] === 'function')
                     continue;
-                obj[name_2] = this[name_2];
+                var ret = fun && fun(name_2, this[name_2]);
+                if (ret !== false) {
+                    res.push({
+                        name: name_2,
+                        value: this[name_2]
+                    });
+                }
             }
         }
         catch (e_4_1) { e_4 = { error: e_4_1 }; }
@@ -1956,6 +2003,13 @@ var JData = /** @class */ (function (_super) {
             }
             finally { if (e_4) throw e_4.error; }
         }
+        return res;
+    };
+    JData.prototype.toJSON = function () {
+        var obj = {};
+        this.map(function (name, value) {
+            obj[name] = value;
+        });
         return obj;
     };
     // 生成数据Data
@@ -1997,6 +2051,13 @@ var JImageData = /** @class */ (function (_super) {
     }
     return JImageData;
 }(JElementData));
+var JSvgData = /** @class */ (function (_super) {
+    __extends(JSvgData, _super);
+    function JSvgData() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return JSvgData;
+}(JImageData));
 var JTextData = /** @class */ (function (_super) {
     __extends(JTextData, _super);
     function JTextData() {
@@ -2540,6 +2601,60 @@ var JImage = /** @class */ (function (_super) {
         return _super.prototype.toJSON.call(this, props);
     };
     return JImage;
+}(JBaseComponent));
+
+var JSvg = /** @class */ (function (_super) {
+    __extends(JSvg, _super);
+    function JSvg(option) {
+        if (option === void 0) { option = {}; }
+        var _this = _super.call(this, __assign(__assign({}, option), { dataType: JSvgData })) || this;
+        // 属性变化映射到style
+        _this.data.watch([
+            'url', 'svg', 'src'
+        ], {
+            set: function (item) {
+                if (item.name === 'url') {
+                    _this.load(item.value);
+                }
+                if (item.name === 'src') {
+                    _this.data.url = item.value;
+                }
+                else if (item.name === 'svg') {
+                    _this.target.dom.innerHTML = item.value;
+                }
+            }
+        });
+        return _this;
+    }
+    // 替换变量
+    JSvg.prototype.renderSvg = function (svg) {
+        this.data.map(function (name, value) {
+            svg = svg.replace(new RegExp("\\{".concat(name, "\\}"), 'g'), value);
+        });
+        return svg;
+    };
+    // 加载svg内容
+    JSvg.prototype.load = function (url) {
+        if (url === void 0) { url = this.data.url; }
+        return __awaiter(this, void 0, void 0, function () {
+            var svg;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, util.request(url)];
+                    case 1:
+                        svg = _a.sent();
+                        this.data.svg = svg;
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    JSvg.prototype.toJSON = function (props) {
+        if (props === void 0) { props = []; }
+        props.push('src');
+        return _super.prototype.toJSON.call(this, props);
+    };
+    return JSvg;
 }(JBaseComponent));
 
 // 控制元素移动和矩阵变换
@@ -3245,9 +3360,7 @@ var JEditor = /** @class */ (function (_super) {
             option.container.appendChild(_this.view.dom);
         _this.view.addChild(_this.dom);
         // @ts-ignore
-        _this.regShape('image', JImage);
-        // @ts-ignore
-        _this.regShape('text', JText);
+        _this.regShape({ 'image': JImage, 'text': JText, 'svg': JSvg });
         _this.init(option);
         _this.bindEvent(_this.view.dom);
         return _this;
@@ -3459,6 +3572,12 @@ var JEditor = /** @class */ (function (_super) {
     };
     // 注册自定义组件
     JEditor.prototype.regShape = function (name, shape) {
+        if (typeof name === 'object') {
+            for (var n in name) {
+                this.regShape(n, name[n]);
+            }
+            return;
+        }
         if (this.shapes.has(name))
             throw Error("\u5143\u7D20\u7C7B\u578B".concat(name, "\u5DF2\u7ECF\u5B58\u5728"));
         this.shapes.set(name, shape);
@@ -3504,4 +3623,4 @@ var JEditor = /** @class */ (function (_super) {
     return JEditor;
 }(JBaseComponent));
 
-export { JBaseComponent, JEditor, JElement, JImage, JText, JEditor as default };
+export { JBaseComponent, JEditor, JElement, JImage, JText, JEditor as default, util };

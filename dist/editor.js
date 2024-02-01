@@ -63,6 +63,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 import JBase from './core/baseComponent';
 import JText from './components/text';
 import JImage from './components/image';
+import JSvg from './components/svg';
 import JElement from './core/element';
 import JController from './core/controller';
 import JFonts from './core/fonts';
@@ -107,9 +108,7 @@ var JEditor = /** @class */ (function (_super) {
             option.container.appendChild(_this.view.dom);
         _this.view.addChild(_this.dom);
         // @ts-ignore
-        _this.regShape('image', JImage);
-        // @ts-ignore
-        _this.regShape('text', JText);
+        _this.regShape({ 'image': JImage, 'text': JText, 'svg': JSvg });
         _this.init(option);
         _this.bindEvent(_this.view.dom);
         return _this;
@@ -322,6 +321,12 @@ var JEditor = /** @class */ (function (_super) {
     };
     // 注册自定义组件
     JEditor.prototype.regShape = function (name, shape) {
+        if (typeof name === 'object') {
+            for (var n in name) {
+                this.regShape(n, name[n]);
+            }
+            return;
+        }
         if (this.shapes.has(name))
             throw Error("\u5143\u7D20\u7C7B\u578B".concat(name, "\u5DF2\u7ECF\u5B58\u5728"));
         this.shapes.set(name, shape);

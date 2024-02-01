@@ -1,6 +1,7 @@
 import JBase from './core/baseComponent';
 import JText from './components/text';
 import JImage from './components/image';
+import JSvg from './components/svg';
 import JElement from './core/element';
 import JController from './core/controller';
 import JFonts from './core/fonts';
@@ -44,9 +45,7 @@ export default class JEditor extends JBase implements IJEditor {
         this.view.addChild(this.dom);
         
         // @ts-ignore
-        this.regShape('image', JImage);
-        // @ts-ignore
-        this.regShape('text', JText);
+        this.regShape({'image': JImage, 'text': JText, 'svg': JSvg});
 
         this.init(option);  
 
@@ -265,7 +264,13 @@ export default class JEditor extends JBase implements IJEditor {
     }
 
     // 注册自定义组件
-    regShape(name: string, shape: IJBaseComponent) {
+    regShape(name: string|{[key: string]: IJBaseComponent}, shape: IJBaseComponent) {
+        if(typeof name === 'object') {
+            for(const n in name) {
+                this.regShape(n, name[n]);
+            }
+            return;
+        }
         if(this.shapes.has(name)) throw Error(`元素类型${name}已经存在`);
         this.shapes.set(name, shape);
         return shape;

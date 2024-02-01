@@ -126,16 +126,23 @@ var JData = /** @class */ (function (_super) {
             Object.assign(this, data);
         return this;
     };
-    JData.prototype.toJSON = function () {
+    // 遍历
+    JData.prototype.map = function (fun) {
         var e_4, _a;
-        var obj = {};
         var props = Object.getOwnPropertyNames(this.data);
+        var res = [];
         try {
             for (var props_1 = __values(props), props_1_1 = props_1.next(); !props_1_1.done; props_1_1 = props_1.next()) {
                 var name_2 = props_1_1.value;
                 if (typeof this[name_2] === 'undefined' || typeof this[name_2] === 'function')
                     continue;
-                obj[name_2] = this[name_2];
+                var ret = fun && fun(name_2, this[name_2]);
+                if (ret !== false) {
+                    res.push({
+                        name: name_2,
+                        value: this[name_2]
+                    });
+                }
             }
         }
         catch (e_4_1) { e_4 = { error: e_4_1 }; }
@@ -145,6 +152,13 @@ var JData = /** @class */ (function (_super) {
             }
             finally { if (e_4) throw e_4.error; }
         }
+        return res;
+    };
+    JData.prototype.toJSON = function () {
+        var obj = {};
+        this.map(function (name, value) {
+            obj[name] = value;
+        });
         return obj;
     };
     // 生成数据Data
@@ -189,6 +203,14 @@ var JImageData = /** @class */ (function (_super) {
     return JImageData;
 }(JElementData));
 export { JImageData };
+var JSvgData = /** @class */ (function (_super) {
+    __extends(JSvgData, _super);
+    function JSvgData() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return JSvgData;
+}(JImageData));
+export { JSvgData };
 var JTextData = /** @class */ (function (_super) {
     __extends(JTextData, _super);
     function JTextData() {
