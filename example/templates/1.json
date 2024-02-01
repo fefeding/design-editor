@@ -116,7 +116,7 @@
         "top": 659.1149726953342,
         "width": 57.30716562271119,
         "height": 34.03532028198242,
-        "src": "https://jtcospublic.ciccten.com/jt-design/example/templates/images/1_3.svg"
+        "src": "templates/images/1_3.svg"
       },
       "style": {
         "backgroundColor": "",
@@ -164,7 +164,7 @@
         "top": 189.6300000000001,
         "width": 71.5,
         "height": 72.5,
-        "src": "https://jtcospublic.ciccten.com/jt-design/example/templates/images/1_4.svg"
+        "src": "templates/images/1_4.svg"
       },
       "style": {
         "backgroundColor": "",
@@ -319,7 +319,7 @@
         "top": 1037.0635986328125,
         "width": 25.308328926563263,
         "height": 23.42910766601563,
-        "src": "https://jtcospublic.ciccten.com/jt-design/example/templates/images/1_5.svg"
+        "src": "templates/images/1_5.svg"
       },
       "style": {
         "backgroundColor": "",
@@ -367,7 +367,7 @@
         "top": 1013.6520853042603,
         "width": 25.308328926563263,
         "height": 23.42910766601563,
-        "src": "https://jtcospublic.ciccten.com/jt-design/example/templates/images/1_6.svg"
+        "src": "templates/images/1_6.svg"
       },
       "style": {
         "backgroundColor": "",
@@ -415,7 +415,7 @@
         "top": 990.7086982727051,
         "width": 25.308328926563263,
         "height": 23.429041862487797,
-        "src": "https://jtcospublic.ciccten.com/jt-design/example/templates/images/1_7.svg"
+        "src": "templates/images/1_7.svg"
       },
       "style": {
         "backgroundColor": "",
@@ -463,7 +463,7 @@
         "top": 967.2971849441528,
         "width": 25.308328926563263,
         "height": 23.429041862487797,
-        "src": "https://jtcospublic.ciccten.com/jt-design/example/templates/images/1_8.svg"
+        "src": "templates/images/1_8.svg"
       },
       "style": {
         "backgroundColor": "",
@@ -511,7 +511,7 @@
         "top": 943.8856058120728,
         "width": 25.308328926563263,
         "height": 23.428976058959964,
-        "src": "https://jtcospublic.ciccten.com/jt-design/example/templates/images/1_9.svg"
+        "src": "templates/images/1_9.svg"
       },
       "style": {
         "backgroundColor": "",
@@ -559,7 +559,7 @@
         "top": 167,
         "width": 35.5,
         "height": 28.5,
-        "src": "https://jtcospublic.ciccten.com/jt-design/example/templates/images/1_10.png"
+        "src": "templates/images/1_10.png"
       },
       "style": {
         "backgroundColor": "",
@@ -607,7 +607,7 @@
         "top": 205.49987697601318,
         "width": 2.5879464149475098,
         "height": 19.58963680267334,
-        "src": "https://jtcospublic.ciccten.com/jt-design/example/templates/images/1_11.svg"
+        "src": "templates/images/1_11.svg"
       },
       "style": {
         "backgroundColor": "",
@@ -815,7 +815,7 @@
         "top": 952,
         "width": 108.5,
         "height": 108.5,
-        "src": "https://jtcospublic.ciccten.com/jt-design/example/templates/images/1_12.png"
+        "src": "templates/images/1_12.png"
       },
       "style": {
         "backgroundColor": "",

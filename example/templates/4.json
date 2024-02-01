@@ -62,7 +62,7 @@
                 "top": 946,
                 "width": 91.00000000000001,
                 "height": 91.00000000000001,
-                "src": "https://jtcospublic.ciccten.com/jt-design/example/templates/images/4_3.png"
+                "src": "templates/images/4_3.png"
             },
             "style": {
                 "backgroundColor": "",
@@ -214,7 +214,7 @@
                 "top": 483.4999752044678,
                 "width": 33.99999612569809,
                 "height": 3.0000076293945312,
-                "src": "https://jtcospublic.ciccten.com/jt-design/example/templates/images/4_4.svg"
+                "src": "templates/images/4_4.svg"
             },
             "style": {
                 "backgroundColor": "",
@@ -368,7 +368,7 @@
                 "top": 538,
                 "width": 103,
                 "height": 15.500000000000002,
-                "src": "https://jtcospublic.ciccten.com/jt-design/example/templates/images/4_5.png"
+                "src": "templates/images/4_5.png"
             },
             "style": {
                 "backgroundColor": "",
