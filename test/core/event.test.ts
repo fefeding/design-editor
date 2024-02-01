@@ -23,44 +23,44 @@ describe("JEvent class", () => {
     target.dispatchEvent(clickEvent);
     expect(handler).toHaveBeenCalled();
   });
-  test("bindEvent should bind single event", () => {
-    event.bindEvent("click", handler, false);
+  test("on should bind single event", () => {
+    event.on("click", handler, false);
     const clickEvent = new Event("click");
     target.dispatchEvent(clickEvent);
     expect(handler).toHaveBeenCalled();
   });
-  test("bindEvent should bind multiple events", () => {
-    event.bindEvent(["click", "mouseover"], handler, false);
+  test("on should bind multiple events", () => {
+    event.on(["click", "mouseover"], handler, false);
     const clickEvent = new Event("click");
     const mouseoverEvent = new Event("mouseover");
     target.dispatchEvent(clickEvent);
     target.dispatchEvent(mouseoverEvent);
     expect(handler).toHaveBeenCalledTimes(2);
   });
-  test(".removeEvent with event handler", () => {
-    event.bindEvent("click", handler, false);
-    event.removeEvent("click", handler, false);
+  test(".off with event handler", () => {
+    event.on("click", handler, false);
+    event.off("click", handler, false);
     const clickEvent = new Event("click");
     target.dispatchEvent(clickEvent);
     expect(handler).not.toHaveBeenCalled();
   });
-  test(".removeEvent only name", () => {
-    event.bindEvent("click", handler, false);
-    event.removeEvent("click");
+  test(".off only name", () => {
+    event.on("click", handler, false);
+    event.off("click");
     const clickEvent = new Event("click");
     target.dispatchEvent(clickEvent);
     expect(handler).not.toHaveBeenCalled();
   });
 
   
-  test(".removeEvent 参数不同不会被删除", () => {
-    event.bindEvent("mousedown", handler, false);
-    event.removeEvent("mousedown", ()=>{});
+  test(".off 参数不同不会被删除", () => {
+    event.on("mousedown", handler, false);
+    event.off("mousedown", ()=>{});
     const mousedownEvent = new Event("mousedown");
     target.dispatchEvent(mousedownEvent);
     expect(handler).toHaveBeenCalled();
     
-    event.removeEvent("mousedown", ()=>{}, true);
+    event.off("mousedown", ()=>{}, true);
     const mousedownEvent2 = new Event("mousedown");
     target.dispatchEvent(mousedownEvent2);
     expect(handler).toHaveBeenCalled();
@@ -68,7 +68,7 @@ describe("JEvent class", () => {
 
   
   test(".dispose 移除所有事件", () => {
-    event.bindEvent("click", handler, false);
+    event.on("click", handler, false);
     event.dispose();
     const clickEvent = new Event("click");
     target.dispatchEvent(clickEvent);
