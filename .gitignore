@@ -21,3 +21,7 @@ bin-release/
 node_modules
 build/package-lock.json
 .DS_Store
+.vitepress/dist
+.vitepress/cache
+docs/api
+docs/.api

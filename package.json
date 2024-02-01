@@ -8,7 +8,15 @@
     "dev": "node test/dev",
     "build": "gulp && node build.js",
     "test": "vitest",
-    "push": "npm publish --registry=https://registry.npmjs.org"
+    "update": "npx taze major  -w",
+    "release": "npx bumpp --commit --tag --push",
+    "api:json": "npm run build && npx api-extractor run",
+    "api:md": "npx api-documenter markdown -i ./docs/.api -o ./docs/api && node ./build/md.js",
+    "api": "npm run api:json && npm run api:md",
+    "push": "npm publish --registry=https://registry.npmjs.org",
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview"
   },
   "devDependencies": {
     "@babel/core": "^7.23.7",
@@ -16,6 +24,8 @@
     "@babel/plugin-proposal-function-bind": "^7.23.3",
     "@babel/preset-env": "^7.23.8",
     "@babel/preset-stage-0": "^7.8.3",
+    "@microsoft/api-documenter": "^7.23.20",
+    "@microsoft/api-extractor": "^7.39.4",
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
@@ -38,6 +48,7 @@
     "tslib": "^2.6.2",
     "typescript": "^5.3.3",
     "vinyl-source-stream": "^2.0.0",
+    "vitepress": "^1.0.0-rc.40",
     "vitest": "^1.2.2"
   },
   "dependencies": {

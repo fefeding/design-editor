@@ -112,24 +112,24 @@ export interface IJEvent {
     /**
      * 绑定事件到html对象
      *
-     * @method bindEvent
+     * @method on
      * @static
      * @param {element} html元素对象
      * @param {string} name 事件名称
      * @param {function} fun 事件委托
      * @returns {name, fun, target} 返回当前绑定
      */
-    bindEvent(name: string | Array<string>, fun: EventListenerOrEventListenerObject, opt?: boolean | AddEventListenerOptions, target?: HTMLElement): any;
+    on(name: string | Array<string>, fun: EventListenerOrEventListenerObject, opt?: boolean | AddEventListenerOptions, target?: HTMLElement): any;
     /**
      * 从对象中移除事件到
      *
-     * @method removeEvent
+     * @method off
      * @static
      * @param {element} html元素对象
      * @param {string} name 事件名称
      * @param {function} fun 事件委托
      */
-    removeEvent(name: string, fun: EventListenerOrEventListenerObject, opt?: boolean | AddEventListenerOptions, target?: HTMLElement): this;
+    off(name: string, fun: EventListenerOrEventListenerObject, opt?: boolean | AddEventListenerOptions, target?: HTMLElement): this;
     
 }
 
