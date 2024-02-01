@@ -178,11 +178,8 @@ var util = {
     },
     /**
      * 获取元素的绝对定位
-     *
-     * @method getElementPosition
-     * @static
-     * @param {element} el 目标元素对象
-     * @return {position} 位置对象(top,left)
+     * @param  el - 目标元素对象
+     * @returns  位置对象(top,left)
      */
     getElementPosition: function (el) {
         var pos = { "y": 0, "x": 0 };
@@ -242,11 +239,9 @@ var util = {
     /**
      * 把一个或多个点绕某个点旋转一定角度
      * 先把坐标原点移到旋转中心点，计算后移回
-     * @method rotatePoints
-     * @static
-     * @param {Array/object} p 一个或多个点
-     * @param {x: number, y: number} rp 旋转中心点
-     * @param {*} r 旋转角度
+     * @param  p - 一个或多个点
+     * @param  rp -  旋转中心点
+     * @param  r - 旋转角度
      */
     rotatePoints: function (p, center, r) {
         if (!r || !p)
@@ -1746,6 +1741,9 @@ var JElementStyle = /** @class */ (function (_super) {
 var SupportEventNames = [
     'mousedown', 'mouseup', 'mouseover', 'mousemove', 'mouseout', 'mousewheel', 'click', 'dblclick', 'keydown', 'keypress', 'keyup', 'blur', 'change', 'focus', 'drag', 'dragenter', 'dragleave', 'dragover', 'dragstart', 'drop', 'contextmenu'
 ];
+/**
+ * @public
+ */
 var JEvent = /** @class */ (function () {
     function JEvent(target) {
         this._eventCache = [];
@@ -1766,8 +1764,8 @@ var JEvent = /** @class */ (function () {
     };
     /**
      * 初始化所有支持的事件，在init之前不要on，不然在init的时候会被释放掉。
-     * @param handler 事件处理函数
-     * @param target 元素
+     * @param handler - 事件处理函数
+     * @param target - 元素
      */
     JEvent.prototype.init = function (handler, target) {
         if (target) {
@@ -1779,13 +1777,9 @@ var JEvent = /** @class */ (function () {
     };
     /**
      * 绑定事件到html对象
-     *
-     * @method on
-     * @static
-     * @param {string | Array<string>} name 事件名称
-     * @param {EventListenerOrEventListenerObject} fun 事件处理函数
-     * @param {boolean | AddEventListenerOptions} opt 配置选项
-     * @param {HTMLElement} target 绑定的元素，默认为 this.target
+     * @param  name - 事件名称
+     * @param  fun - 事件处理函数
+     * @param opt - 配置选项
      */
     JEvent.prototype.on = function (name, fun, opt) {
         var e_1, _a;
@@ -1809,13 +1803,10 @@ var JEvent = /** @class */ (function () {
     };
     /**
      * 从对象中移除事件
-     *
-     * @method off
      * 不传 的时候删除所有事件
-     * @param {string | Array<string>} name 事件名称
-     * @param {EventListenerOrEventListenerObject} fun 事件处理函数
-     * @param {boolean | AddEventListenerOptions} opt 配置选项
-     * @param {HTMLElement} target 解除绑定的元素，默认为 this.target
+     * @param  name - 事件名称
+     * @param  fun - 事件处理函数
+     * @param opt - 配置选项
      */
     JEvent.prototype.off = function (name, fun, opt) {
         var _this = this;
@@ -2038,6 +2029,10 @@ var JImageData = /** @class */ (function (_super) {
     }
     return JImageData;
 }(JElementData));
+/**
+ * svg
+ * @public
+ */
 var JSvgData = /** @class */ (function (_super) {
     __extends(JSvgData, _super);
     function JSvgData() {
@@ -2057,6 +2052,9 @@ var JTextData = /** @class */ (function (_super) {
     return JTextData;
 }(JElementData));
 
+/**
+ * @public
+ */
 var JElement = /** @class */ (function (_super) {
     __extends(JElement, _super);
     function JElement(option) {
@@ -2374,6 +2372,9 @@ var JElement = /** @class */ (function (_super) {
     return JElement;
 }(EventEmitter));
 
+/**
+ * @public
+ */
 var JBaseComponent = /** @class */ (function (_super) {
     __extends(JBaseComponent, _super);
     function JBaseComponent(option) {
@@ -3363,6 +3364,9 @@ var JFonts = /** @class */ (function (_super) {
     return JFonts;
 }(EventEmitter));
 
+/**
+ * @public
+ */
 var JEditor = /** @class */ (function (_super) {
     __extends(JEditor, _super);
     function JEditor(option) {
@@ -3665,4 +3669,4 @@ var JEditor = /** @class */ (function (_super) {
     return JEditor;
 }(JBaseComponent));
 
-export { EventEmitter, JBaseComponent, JData, JEditor, JElement, JElementCssStyle, JElementData, JElementStyleDeclaration, JElementStyleProperty, JImage, JImageData, JSvgData, JText, JTextData, JEditor as default, util };
+export { EventEmitter, JBaseComponent, JData, JEditor, JElement, JElementCssStyle, JElementData, JElementStyleDeclaration, JElementStyleProperty, JEvent, JImage, JImageData, JSvgData, JText, JTextData, JEditor as default, util };

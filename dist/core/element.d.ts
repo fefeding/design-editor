@@ -3,6 +3,9 @@ import JEvent from '../core/event';
 import JElementCssStyle from '../constant/styleMap';
 import { IJElement, ITransform, IJEditor, IElementOption } from '../constant/types';
 import { JElementData } from '../constant/data';
+/**
+ * @public
+ */
 export default class JElement<T extends HTMLElement = HTMLElement> extends EventEmiter implements IJElement {
     constructor(option?: IElementOption<import("../constant/data").IJElementData>);
     initData(option: any): void;

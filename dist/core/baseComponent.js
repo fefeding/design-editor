@@ -26,6 +26,9 @@ var __assign = (this && this.__assign) || function () {
 };
 import { ContainerDefaultStyle } from '../constant/styleMap';
 import JElement from '../core/element';
+/**
+ * @public
+ */
 var JBaseComponent = /** @class */ (function (_super) {
     __extends(JBaseComponent, _super);
     function JBaseComponent(option) {

@@ -13,7 +13,11 @@ function traverseDir(dir) {
       traverseDir(pathname);
     } else if (stat.isFile() && path.extname(pathname) === '.md') {
       let content = fs.readFileSync(pathname, 'utf-8');
-      content = content.replace(/[\<\>]/g, $0 => `\\${$0}`);
+      content = content.replace(/\<\w+\>/g, $0 => ($0 === '<code>'? $0 : '`'+$0+'`'))
+                .replace(/\|(\s*\{[^}]+\}\s*)\|/g, ($0, $1) => '|`'+$1+'`|');
+
+
+      
       fs.writeFileSync(pathname, content, 'utf-8');
     }
   });

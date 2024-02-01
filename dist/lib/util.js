@@ -101,11 +101,8 @@ export default {
     },
     /**
      * 获取元素的绝对定位
-     *
-     * @method getElementPosition
-     * @static
-     * @param {element} el 目标元素对象
-     * @return {position} 位置对象(top,left)
+     * @param  el - 目标元素对象
+     * @returns  位置对象(top,left)
      */
     getElementPosition: function (el) {
         var pos = { "y": 0, "x": 0 };
@@ -165,11 +162,9 @@ export default {
     /**
      * 把一个或多个点绕某个点旋转一定角度
      * 先把坐标原点移到旋转中心点，计算后移回
-     * @method rotatePoints
-     * @static
-     * @param {Array/object} p 一个或多个点
-     * @param {x: number, y: number} rp 旋转中心点
-     * @param {*} r 旋转角度
+     * @param  p - 一个或多个点
+     * @param  rp -  旋转中心点
+     * @param  r - 旋转角度
      */
     rotatePoints: function (p, center, r) {
         if (!r || !p)

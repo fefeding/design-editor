@@ -14,9 +14,9 @@
     "api:md": "npx api-documenter markdown -i ./docs/.api -o ./docs/api && node ./build/md.js",
     "api": "npm run api:json && npm run api:md",
     "push": "npm publish --registry=https://registry.npmjs.org",
-    "docs:dev": "vitepress dev",
-    "docs:build": "vitepress build",
-    "docs:preview": "vitepress preview"
+    "docs:dev": "npm run api && vitepress dev",
+    "docs:build": "npm run api && vitepress build",
+    "docs:preview": "npm run api && vitepress preview"
   },
   "devDependencies": {
     "@babel/core": "^7.23.7",

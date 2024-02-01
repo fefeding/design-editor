@@ -69,6 +69,9 @@ import JController from './core/controller';
 import JFonts from './core/fonts';
 import util from './lib/util';
 import { SupportEventNames } from './core/event';
+/**
+ * @public
+ */
 var JEditor = /** @class */ (function (_super) {
     __extends(JEditor, _super);
     function JEditor(option) {

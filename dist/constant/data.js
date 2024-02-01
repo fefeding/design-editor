@@ -225,6 +225,10 @@ var JImageData = /** @class */ (function (_super) {
     return JImageData;
 }(JElementData));
 export { JImageData };
+/**
+ * svg
+ * @public
+ */
 var JSvgData = /** @class */ (function (_super) {
     __extends(JSvgData, _super);
     function JSvgData() {

@@ -107,6 +107,10 @@ export declare class JElementData extends JData<JElementData> implements IJEleme
 export interface IJImageData extends IJElementData {
     src?: string;
 }
+/**
+ * svg
+ * @public
+ */
 export interface IJSvgData extends IJElementData {
     url?: string;
     svg?: string;
@@ -118,6 +122,10 @@ export interface IJSvgData extends IJElementData {
 export declare class JImageData extends JElementData implements IJImageData {
     src: string;
 }
+/**
+ * svg
+ * @public
+ */
 export declare class JSvgData extends JImageData implements IJSvgData {
     url: string;
     svg: string;

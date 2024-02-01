@@ -8,7 +8,9 @@ import JFonts from './core/fonts';
 import util from './lib/util';
 import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent, IJFonts, IElementOption, IEditorOption, ITextOption, IImageOption } from './constant/types';
 import { SupportEventNames } from './core/event';
-
+/**
+ * @public
+ */
 export default class JEditor extends JBase implements IJEditor {
 
     constructor(option={} as IEditorOption) {  

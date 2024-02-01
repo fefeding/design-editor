@@ -82,6 +82,9 @@ export interface IImageOption extends IElementOption<IJImageData> {
      */
     dataType?: JImageData;
 }
+/**
+ * @public
+ */
 export interface ISvgOption extends IElementOption<IJSvgData> {
     dataType?: JSvgData;
 }
@@ -266,6 +269,9 @@ export interface IJTextComponent extends IJBaseComponent<HTMLDivElement> {
 export interface IJImageComponent extends IJBaseComponent<HTMLImageElement> {
     data: JImageData;
 }
+/**
+ * @public
+ */
 export interface IJSvgComponent extends IJBaseComponent<HTMLDivElement> {
     data: JSvgData;
 }

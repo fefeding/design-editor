@@ -6,7 +6,9 @@ import JEvent, { SupportEventNames } from '../core/event';
 import JElementCssStyle from '../constant/styleMap';
 import { IJElement, ITransform, IJEditor, IElementOption } from '../constant/types';
 import JData, { JElementData } from '../constant/data';
-
+/**
+ * @public
+ */
 export default class JElement<T extends HTMLElement = HTMLElement> extends EventEmiter  implements IJElement{
 
     constructor(option = {} as IElementOption) {

@@ -1,5 +1,8 @@
 import { IJBaseComponent, IJElement } from '../constant/types';
 import JElement from '../core/element';
+/**
+ * @public
+ */
 export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends JElement<T> implements IJBaseComponent {
     constructor(option?: any);
     target: IJElement<T>;

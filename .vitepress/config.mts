@@ -7,8 +7,8 @@ export default defineConfig({
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
-      { text: 'Home', link: '/docs/' },
-      { text: 'Examples', link: '/docs/markdown-examples' }
+      { text: 'Home', link: '/README' },
+      { text: 'API', link: '/docs/api/j-html-design-editor' }
     ],
 
     sidebar: [
@@ -16,13 +16,13 @@ export default defineConfig({
         text: 'Examples',
         items: [
           { text: 'Markdown Examples', link: '/docs/markdown-examples' },
-          { text: 'Runtime API Examples', link: '/docs/api' }
+          { text: 'API', link: '/docs/api/j-html-design-editor' }
         ]
       }
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
+      { icon: 'github', link: 'https://gitee.com/fefeding/j-html-design-editor.git' }
     ]
   }
 })

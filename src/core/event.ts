@@ -1,7 +1,9 @@
 export const SupportEventNames = [
     'mousedown','mouseup','mouseover','mousemove','mouseout','mousewheel','click','dblclick','keydown','keypress','keyup','blur','change','focus','drag','dragenter','dragleave','dragover','dragstart','drop', 'contextmenu'
 ];
-
+/**
+ * @public
+ */
 export default class JEvent {
     target: HTMLElement;
 
@@ -23,8 +25,8 @@ export default class JEvent {
     }
     /**
      * 初始化所有支持的事件，在init之前不要on，不然在init的时候会被释放掉。
-     * @param handler 事件处理函数
-     * @param target 元素
+     * @param handler - 事件处理函数
+     * @param target - 元素
      */
     init(handler: EventListenerOrEventListenerObject, target?: HTMLElement) {
         if(target){
@@ -39,13 +41,9 @@ export default class JEvent {
 
     /**
      * 绑定事件到html对象
-     * 
-     * @method on
-     * @static
-     * @param {string | Array<string>} name 事件名称
-     * @param {EventListenerOrEventListenerObject} fun 事件处理函数
-     * @param {boolean | AddEventListenerOptions} opt 配置选项
-     * @param {HTMLElement} target 绑定的元素，默认为 this.target
+     * @param  name - 事件名称
+     * @param  fun - 事件处理函数
+     * @param opt - 配置选项
      */
     on(name: string | Array<string>, fun: EventListenerOrEventListenerObject, opt: boolean | AddEventListenerOptions = false) {
         const events = this.normalizeEventNames(name);
@@ -59,13 +57,10 @@ export default class JEvent {
 
     /**
      * 从对象中移除事件
-     * 
-     * @method off
      * 不传 的时候删除所有事件
-     * @param {string | Array<string>} name 事件名称
-     * @param {EventListenerOrEventListenerObject} fun 事件处理函数
-     * @param {boolean | AddEventListenerOptions} opt 配置选项
-     * @param {HTMLElement} target 解除绑定的元素，默认为 this.target
+     * @param  name - 事件名称
+     * @param  fun - 事件处理函数
+     * @param opt - 配置选项
      */
     off(name?: string|Array<string>, fun?: EventListenerOrEventListenerObject, opt: boolean | AddEventListenerOptions = false) {
         const events = this.normalizeEventNames(name);

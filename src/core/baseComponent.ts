@@ -2,7 +2,9 @@
 import { IJBaseComponent, IJElement } from '../constant/types';
 import { ContainerDefaultStyle } from '../constant/styleMap';
 import JElement from '../core/element';
-
+/**
+ * @public
+ */
 export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends JElement<T> implements IJBaseComponent {
     constructor(option = {} as any) {
         option.style = option.style || {};

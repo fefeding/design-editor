@@ -55,6 +55,9 @@ import JStyle from './style';
 import util from '../lib/util';
 import JEvent from '../core/event';
 import { JElementData } from '../constant/data';
+/**
+ * @public
+ */
 var JElement = /** @class */ (function (_super) {
     __extends(JElement, _super);
     function JElement(option) {
