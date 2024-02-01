@@ -5,7 +5,26 @@ import { topZIndex } from '../constant/styleMap';
 import util from '../lib/util';
 import JElement from '../core/element';
 
+/**
+ * 文本组件类 JText，继承于基础组件 Base。
+ * @public
+ */
 export default class JText extends Base<HTMLDivElement> implements IJTextComponent {
+
+    /**
+     * JText组件构造函数。
+     * @example
+     * ```
+     * const textInstance = new JText({
+     *   text: 'Hello World',
+     *   style: {
+     *     color: 'red',
+     *     fontSize: '18px'
+     *   }
+     * });
+     * ```
+     * @param option - 文本组件选项，包括 text, style 等。
+     */
     constructor(option = {} as ITextOption) {
 
         option.style = {
@@ -25,7 +44,7 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
             dataType: JTextData
         });
 
-        // 属性变化映射到style
+        // 'text' 属性变化映射到 innerText
         this.data.watch([
             'text'
         ], {
@@ -36,14 +55,18 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
                 return this.target.dom.innerText;
             }
         });
+
+        // 如果在选项中提供，设置 'text' 属性
         // @ts-ignore
         const text = option.text;
         if(text) this.data.text = text;
 
-        // 双击可编辑
+        // 添加双击事件监听器，进入编辑状态
         this.on('dblclick', ()=>{
             this.edit();
         });
+
+        // 添加选择事件监听器，退出编辑状态
         this.on('select', ()=>{
             this.closeEdit();
         });
@@ -51,12 +74,17 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
         JText.TextControlCache.set(this.id, this);// 缓存起来
     }
 
+    /**
+     * JTextData 数据
+     */
     data: JTextData;
 
-    // 所有控件缓存
+    // 所有 JText 实例的缓存
     static TextControlCache = new Map<string, JText>();
 
-    // 进入编辑状态
+    /**
+     * 进入文本编辑状态
+     */
     edit() {
         if(!this.editable) return;
         let editEl = this.editor.textEditElement;
@@ -100,7 +128,10 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
         util.css(editEl, style);
         editEl.dom.focus();// 进入控件
     }
-    // 结束编辑 
+    
+    /** 
+     * 退出文本编辑状态
+     */
     closeEdit() {
         const editEl = this.editor.textEditElement;
         if(!editEl || !editEl.visible) return;
@@ -114,13 +145,21 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
         }
     }
 
+    /**
+     * Div元素的JSON表现形式，包括 'text' 等属性
+     * @param props - 要序列化的属性列表
+     * @returns JSON对象，表示div元素
+     */
     toJSON(props = []) {
         props.push('text');
         return super.toJSON(props);
     }
 
+    /**
+     * 移除 JText 实例
+     */
     dispose(): void {
-        JText.TextControlCache.delete(this.id); 
+        JText.TextControlCache.delete(this.id);
         super.dispose();
     }
 }

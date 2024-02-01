@@ -4,7 +4,10 @@ import util from '../lib/util';
 
 export const topZIndex = 10000;
 
-// 支持的样式属性列表
+/**
+ * 支持的样式属性列表
+ * @public
+ */
 export class JElementStyleDeclaration extends EventEmiter {
     accentColor?: string;
     alignContent?: string;
@@ -414,10 +417,15 @@ export class JElementStyleDeclaration extends EventEmiter {
     writingMode?: string;
     zIndex?: string|number;
 }
-
+/**
+ * @public
+ */
 export type IJElementStyleDeclaration = Omit<JElementStyleDeclaration, keyof EventEmiter>;
 
-// 样式属性集合
+/**
+ * 样式属性集合
+ * @public
+ */
 export class JElementStyleProperty {
     accentColor: string='';
     alignContent: string='';
@@ -897,7 +905,9 @@ export class JElementStyleProperty {
     writingMode: string='';
     zIndex: string|number=0;
 }
-
+/**
+ * @public
+ */
 export default abstract class JElementCssStyle extends JElementStyleDeclaration {
     static styleNamesMap = [] as Array<string>;
     // 所有样式名称

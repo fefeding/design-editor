@@ -1,39 +1,73 @@
 
 import EventEmiter from './eventEmitter';
 
+/**
+ * 数据项，包含名字和值
+ * @public
+ */
 export interface IDataItem {
     name: string;
     value: any
 }
 
-// 数据对象
+/**
+ * 数据对象接口，包含监听属性变化、属性改变和数据导入导出等方法
+ * @public
+ */
 export interface IData<T> {
 
     [key: string]: any;
-
-    // 监控某个属性变化
+    
+    /** 
+     * 监听某个属性的变化
+     * @param name - 需要监听的属性名
+     */
     watch(name: string, watcher: DataChangeWatch): IData<T>;
 
-    // 属性改变
+    /** 
+     * 属性改变的方法
+     * @param name - 变化的属性名
+     */
     propertyChange(name: string, value: any);
 
+    /** 
+     * 从对象中导入数据
+     * @param data - 需导入的数据对象
+     */
     from(data: object): IData<T>;
+    
+    /** 
+     * 导出数据为json对象
+     * @returns 返回json对象
+     */
     toJSON(): object;
 }
-
+/**
+ * 用于监听数据变化的接口
+ * @public
+ */
 export type DataChangeWatch = {
-    set?: (data: IDataItem) => void; // 写属性
-    get?: (name: string) => any  // 读
+    /** 写属性 */
+    set: (data: IDataItem) => void; 
+
+    /** 获取属性值 */
+    get: (name: string) => any;
 }
 
+/**
+ * JData 类：提供了一种方式来处理和管理数据
+ * @public
+ */
 export default class JData<T extends object> extends EventEmiter implements IData<T> {
     constructor(data={}) {
         super();
         this.from(data);
     }
 
+    /** 用于存放数据的对象 */
     data = {} as T;
 
+    /** 存放数据变化的监听器 */
     watcher = new Map<string, DataChangeWatch[]>();
 
     // 监控某个属性变化
@@ -90,6 +124,11 @@ export default class JData<T extends object> extends EventEmiter implements IDat
         return this.data[name];
     }
 
+    /** 
+     * 从对象中导入数据到当前实例
+     * @param data - 需导入的数据对象
+     * @returns 返回当前 JData 实例
+     */
     from(data: object) {
         if(this.data) Object.assign(this, data);
         return this;
@@ -113,6 +152,10 @@ export default class JData<T extends object> extends EventEmiter implements IDat
         return res;
     }
 
+    /** 
+     * 导出数据为 JSON 对象
+     * @returns 返回 JSON 对象
+     */
     toJSON(): object {
         const obj = {};
         this.map((name, value) => {
@@ -141,7 +184,10 @@ export default class JData<T extends object> extends EventEmiter implements IDat
         return proxy;
     } 
 }
-
+/**
+ * 图形元素的数据接口
+ * @public
+ */
 export interface IJElementData {
     top?: string|number;
 
@@ -162,7 +208,10 @@ export interface IJElementData {
     zIndex?: number;
 }
 
-// 元素卙础数据对象
+/**
+ * 元素的基础数据类
+ * @public
+ */
 export class JElementData extends JData<JElementData> implements IJElementData {
     constructor(data = {} as any) {
         super(data);
@@ -186,6 +235,10 @@ export class JElementData extends JData<JElementData> implements IJElementData {
     zIndex: number;
 }
 
+/**
+ * 图片元素的数据接口，包含了源地址等额外属性
+ * @public
+ */
 export interface IJImageData extends IJElementData {
 
     src?: string;
@@ -196,6 +249,11 @@ export interface IJSvgData extends IJElementData {
     svg?: string
 }
 
+
+/**
+ * 图片元素的数据类，继承自元素的基础数据类 JElementData
+ * @public
+ */
 export class JImageData extends JElementData implements IJImageData {
     src: string;
 }
@@ -205,17 +263,34 @@ export class JSvgData extends JImageData implements IJSvgData {
     svg: string;
 }
 
+/**
+ * 文本元素的数据接口，包含了文本内容等额外属性
+ * @public
+ */
 export interface IJTexteData extends IJElementData {
 
     text?: string;
 }
 
+/**
+ * 文本元素的数据类，继承自元素的基础数据类 JElementData
+ * @public
+ */
 export class JTextData extends JElementData implements IJTexteData {
     text: string;
 }
 
+/**
+ * 定义字体的数据接口
+ * @public
+ */
 export interface IJFontData {
+    /** 字体的标签名 */
     label: string;
+
+    /** 字体的名称 */
     family: string;
+
+    /** 字体的链接地址 */
     url: string;
 }
