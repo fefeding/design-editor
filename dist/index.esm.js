@@ -1673,37 +1673,6 @@ var JElementStyle = /** @class */ (function (_super) {
     return JElementStyle;
 }(JElementCssStyle));
 
-// 兼容旧浏览器的 addEventListener
-function addEvent(element, eventName, handler, opt) {
-    if (opt === void 0) { opt = false; }
-    if (element.addEventListener) {
-        element.addEventListener(eventName, handler, opt);
-    }
-    else if (element.attachEvent) {
-        // IE8及以下版本浏览器
-        element.attachEvent('on' + eventName, handler);
-    }
-    else {
-        // 最老版本浏览器使用赋值方式
-        element['on' + eventName] = handler;
-    }
-}
-// 兼容旧浏览器的 removeEventListener
-function removeEvent(element, eventName, handler, opt) {
-    if (opt === void 0) { opt = false; }
-    if (element.removeEventListener) {
-        element.removeEventListener(eventName, handler, opt);
-    }
-    else if (element.detachEvent) {
-        // IE8及以下版本浏览器
-        element.detachEvent('on' + eventName, handler);
-    }
-    else {
-        // 最老版本浏览器使用赋值方式
-        element['on' + eventName] = null;
-    }
-}
-
 var SupportEventNames = [
     'mousedown', 'mouseup', 'mouseover', 'mousemove', 'mouseout', 'mousewheel', 'click', 'dblclick', 'keydown', 'keypress', 'keyup', 'blur', 'change', 'focus', 'drag', 'dragenter', 'dragleave', 'dragover', 'dragstart', 'drop', 'contextmenu'
 ];
@@ -1726,7 +1695,7 @@ var JEvent = /** @class */ (function () {
         return events.filter(function (k) { return SupportEventNames.includes(k); });
     };
     /**
-     * 初始化所有支持的事件，在init之前不要bindEvent，不然在init的时候会被释放掉。
+     * 初始化所有支持的事件，在init之前不要on，不然在init的时候会被释放掉。
      * @param handler 事件处理函数
      * @param target 元素
      */
@@ -1736,26 +1705,26 @@ var JEvent = /** @class */ (function () {
             this.dispose();
             this.target = target;
         }
-        this.bindEvent(SupportEventNames, handler, false);
+        this.on(SupportEventNames, handler, false);
     };
     /**
      * 绑定事件到html对象
      *
-     * @method bindEvent
+     * @method on
      * @static
      * @param {string | Array<string>} name 事件名称
      * @param {EventListenerOrEventListenerObject} fun 事件处理函数
      * @param {boolean | AddEventListenerOptions} opt 配置选项
      * @param {HTMLElement} target 绑定的元素，默认为 this.target
      */
-    JEvent.prototype.bindEvent = function (name, fun, opt) {
+    JEvent.prototype.on = function (name, fun, opt) {
         var e_1, _a;
         if (opt === void 0) { opt = false; }
         var events = this.normalizeEventNames(name);
         try {
             for (var events_1 = __values(events), events_1_1 = events_1.next(); !events_1_1.done; events_1_1 = events_1.next()) {
                 var n = events_1_1.value;
-                addEvent(this.target, n, fun, opt);
+                this.target.addEventListener(n, fun, opt);
                 this._eventCache.push([n, fun, opt]);
             }
         }
@@ -1771,67 +1740,33 @@ var JEvent = /** @class */ (function () {
     /**
      * 从对象中移除事件
      *
-     * @method removeEvent
-     * @static
+     * @method off
+     * 不传 的时候删除所有事件
      * @param {string | Array<string>} name 事件名称
      * @param {EventListenerOrEventListenerObject} fun 事件处理函数
      * @param {boolean | AddEventListenerOptions} opt 配置选项
      * @param {HTMLElement} target 解除绑定的元素，默认为 this.target
      */
-    JEvent.prototype.removeEvent = function (name, fun, opt) {
-        var e_2, _a;
+    JEvent.prototype.off = function (name, fun, opt) {
         var _this = this;
         if (opt === void 0) { opt = false; }
         var events = this.normalizeEventNames(name);
-        var _loop_1 = function (n) {
-            this_1._eventCache = this_1._eventCache.filter(function (item) {
-                if (item[0] === n) {
-                    if ((fun && fun !== item[1]) || (typeof opt !== 'undefined' && opt !== item[2])) {
-                        // DOM 要完全一致才能remove掉
-                        return true;
-                    }
-                    removeEvent(_this.target, n, item[1], item[2]);
-                    return false;
-                }
+        this._eventCache = this._eventCache.filter(function (item) {
+            if (events.length && !events.includes(item[0])) {
                 return true;
-            });
-        };
-        var this_1 = this;
-        try {
-            for (var events_2 = __values(events), events_2_1 = events_2.next(); !events_2_1.done; events_2_1 = events_2.next()) {
-                var n = events_2_1.value;
-                _loop_1(n);
             }
-        }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
-        finally {
-            try {
-                if (events_2_1 && !events_2_1.done && (_a = events_2.return)) _a.call(events_2);
+            if ((fun && fun !== item[1]) || (typeof opt !== 'undefined' && opt !== item[2])) {
+                // DOM 要完全一致才能被removeEventListener删除掉
+                return true;
             }
-            finally { if (e_2) throw e_2.error; }
-        }
+            _this.target.removeEventListener(item[0], item[1], item[2]);
+            return false;
+        });
         return this;
     };
     // 移除所有的事件
     JEvent.prototype.dispose = function () {
-        var e_3, _a;
-        if (!this.target) {
-            return;
-        }
-        try {
-            for (var _b = __values(this._eventCache), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var item = _c.value;
-                removeEvent(this.target, item[0], item[1], item[2]);
-            }
-        }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-            }
-            finally { if (e_3) throw e_3.error; }
-        }
-        this._eventCache = [];
+        this.off();
     };
     return JEvent;
 }());
