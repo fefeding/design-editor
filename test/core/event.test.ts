@@ -37,14 +37,14 @@ describe("JEvent class", () => {
     target.dispatchEvent(mouseoverEvent);
     expect(handler).toHaveBeenCalledTimes(2);
   });
-  test(".off with event handler", () => {
+  test(".off 3个参数", () => {
     event.on("click", handler, false);
     event.off("click", handler, false);
     const clickEvent = new Event("click");
     target.dispatchEvent(clickEvent);
     expect(handler).not.toHaveBeenCalled();
   });
-  test(".off only name", () => {
+  test(".off 1个参数", () => {
     event.on("click", handler, false);
     event.off("click");
     const clickEvent = new Event("click");

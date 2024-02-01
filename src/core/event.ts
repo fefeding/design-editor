@@ -74,7 +74,7 @@ export default class JEvent {
                 return true;
             }
             if((fun && fun !== item[1]) || (typeof opt !== 'undefined' && opt !==item[2])){
-                // DOM 要完全一致才能remove掉
+                // DOM 要完全一致才能被removeEventListener删除掉
                 return true;
             }
             this.target.removeEventListener(item[0], item[1], item[2]);
