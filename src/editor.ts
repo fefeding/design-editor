@@ -6,6 +6,7 @@ import JElement from './core/element';
 import JController from './core/controller';
 import JFonts from './core/fonts';
 import util from './lib/util';
+import { Debounce } from './lib/decorator';
 import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent, IJFonts, IElementOption, IEditorOption, ITextOption, IImageOption } from './constant/types';
 import { SupportEventNames } from './core/event';
 /**
@@ -25,7 +26,6 @@ export default class JEditor extends JBase implements IJEditor {
             'rotateZ', 'scaleX', 'scaleY'
         ];
         super(option);
-
         if(typeof option.container === 'string') option.container = document.getElementById( option.container);
         this.view = new JElement<HTMLDivElement>({
             style: {
@@ -141,22 +141,17 @@ export default class JEditor extends JBase implements IJEditor {
         else this.elementController.unbind(el);
     }
 
+    @Debounce(10)
     resize(width=this.data.width, height=this.data.height) {
-
-        this.attr('data-size', `${width}*${height}`);
-
+        this.data.left = Math.max((util.toNumber(this.view.dom.clientWidth) - util.toNumber(width)) / 2, 0);
+        this.data.top = Math.max((util.toNumber(this.view.dom.clientHeight) - util.toNumber(height)) / 2, 0);
         this.data.width = width;
-        this.data.height = height;        
-        
-        setTimeout(() => {
-            this.data.left = util.toNumber(this.view.dom.clientWidth) / 2 - util.toNumber(width) / 2;
-            this.data.top = util.toNumber(this.view.dom.clientHeight) / 2 - util.toNumber(height) / 2;
-
-            this.emit('resize', {
-                width,
-                height
-            });
-        }, 10);
+        this.data.height = height; 
+        this.attr('data-size', `${width}*${height}`);
+        this.emit('resize', {
+            width,
+            height
+        });
     }
 
     // 添加元素到画布

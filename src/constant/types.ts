@@ -5,7 +5,7 @@ import EventEmitter from './eventEmitter';
 export {
     EventEmitter,
     JElementCssStyle,
-    IJElementStyleDeclaration
+    type IJElementStyleDeclaration
 };
 
 

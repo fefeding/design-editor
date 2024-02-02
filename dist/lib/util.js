@@ -73,7 +73,7 @@ export default {
         if (this.isNumber(v))
             return Number(v);
         else if (typeof v === 'string')
-            return parseFloat(v);
+            return parseFloat(v) || 0;
     },
     // 弧度转角度
     radToDeg: function (v) {

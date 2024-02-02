@@ -205,12 +205,13 @@ var JEditor = /** @class */ (function (_super) {
         var _this = this;
         if (width === void 0) { width = this.data.width; }
         if (height === void 0) { height = this.data.height; }
-        this.attr('data-size', "".concat(width, "*").concat(height));
-        this.data.width = width;
-        this.data.height = height;
-        setTimeout(function () {
-            _this.data.left = util.toNumber(_this.view.dom.clientWidth) / 2 - util.toNumber(width) / 2;
-            _this.data.top = util.toNumber(_this.view.dom.clientHeight) / 2 - util.toNumber(height) / 2;
+        clearTimeout(this._resizeTimer);
+        this._resizeTimer = setTimeout(function () {
+            _this.data.left = Math.max((util.toNumber(_this.view.dom.clientWidth) - util.toNumber(width)) / 2, 0);
+            _this.data.top = Math.max((util.toNumber(_this.view.dom.clientHeight) - util.toNumber(height)) / 2, 0);
+            _this.data.width = width;
+            _this.data.height = height;
+            _this.attr('data-size', "".concat(width, "*").concat(height));
             _this.emit('resize', {
                 width: width,
                 height: height

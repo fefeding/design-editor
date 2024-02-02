@@ -40,6 +40,13 @@ var __assign = function() {
     return __assign.apply(this, arguments);
 };
 
+function __decorate(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+
 function __awaiter(thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -150,7 +157,7 @@ var util = {
         if (this.isNumber(v))
             return Number(v);
         else if (typeof v === 'string')
-            return parseFloat(v);
+            return parseFloat(v) || 0;
     },
     // 弧度转角度
     radToDeg: function (v) {
@@ -3365,6 +3372,40 @@ var JFonts = /** @class */ (function (_super) {
 }(EventEmitter));
 
 /**
+ * 防抖装饰器
+ * @example
+ ```ts
+ class Test {
+        @Debounce(1000)
+        log() {
+            console.log("Debounced output!");
+        }
+    }
+ ```
+ * @param milliseconds - 毫秒数
+ * @returns
+ */
+function Debounce(milliseconds) {
+    if (milliseconds === void 0) { milliseconds = 0; }
+    return function (target, propertyKey, descriptor) {
+        var originalMethod = descriptor.value;
+        var timerId = null;
+        descriptor.value = function () {
+            var _this = this;
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            clearTimeout(timerId);
+            timerId = setTimeout(function () {
+                originalMethod.apply(_this, args);
+            }, milliseconds);
+        };
+        return descriptor;
+    };
+}
+
+/**
  * @public
  */
 var JEditor = /** @class */ (function (_super) {
@@ -3497,20 +3538,17 @@ var JEditor = /** @class */ (function (_super) {
             this.elementController.unbind(el);
     };
     JEditor.prototype.resize = function (width, height) {
-        var _this = this;
         if (width === void 0) { width = this.data.width; }
         if (height === void 0) { height = this.data.height; }
-        this.attr('data-size', "".concat(width, "*").concat(height));
+        this.data.left = Math.max((util.toNumber(this.view.dom.clientWidth) - util.toNumber(width)) / 2, 0);
+        this.data.top = Math.max((util.toNumber(this.view.dom.clientHeight) - util.toNumber(height)) / 2, 0);
         this.data.width = width;
         this.data.height = height;
-        setTimeout(function () {
-            _this.data.left = util.toNumber(_this.view.dom.clientWidth) / 2 - util.toNumber(width) / 2;
-            _this.data.top = util.toNumber(_this.view.dom.clientHeight) / 2 - util.toNumber(height) / 2;
-            _this.emit('resize', {
-                width: width,
-                height: height
-            });
-        }, 10);
+        this.attr('data-size', "".concat(width, "*").concat(height));
+        this.emit('resize', {
+            width: width,
+            height: height
+        });
     };
     // 添加元素到画布
     JEditor.prototype.addChild = function (child) {
@@ -3666,6 +3704,9 @@ var JEditor = /** @class */ (function (_super) {
             finally { if (e_3) throw e_3.error; }
         }
     };
+    __decorate([
+        Debounce(10)
+    ], JEditor.prototype, "resize", null);
     return JEditor;
 }(JBaseComponent));
 

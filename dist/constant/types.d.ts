@@ -1,7 +1,7 @@
 import JElementCssStyle, { IJElementStyleDeclaration } from './styleMap';
 import { JElementData, JTextData, JImageData, IJElementData, IJTexteData, IJImageData, IJFontData, JSvgData, IJSvgData } from './data';
 import EventEmitter from './eventEmitter';
-export { EventEmitter, JElementCssStyle, IJElementStyleDeclaration };
+export { EventEmitter, JElementCssStyle, type IJElementStyleDeclaration };
 /**
  * 字体对象接口
  * @public
