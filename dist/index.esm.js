@@ -1382,7 +1382,7 @@ var ControlerCursors = {
                     case 0:
                         if (dir === 'rotate' || dir === 'skew')
                             return [2 /*return*/, this[dir]];
-                        rotationKey = Number(rotation.toFixed(2));
+                        rotationKey = Number((rotation % (2 * Math.PI)).toFixed(2));
                         key = rotationKey === 0 ? dir : "".concat(dir, "_").concat(rotationKey);
                         cursor = this[key];
                         if (!!cursor) return [3 /*break*/, 11];
