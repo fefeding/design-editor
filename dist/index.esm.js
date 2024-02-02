@@ -1383,7 +1383,7 @@ var ControlerCursors = {
                     case 0:
                         if (dir === 'rotate' || dir === 'skew')
                             return [2 /*return*/, this[dir]];
-                        if (rotation > fullCircleRadius)
+                        if (Math.abs(rotation) > fullCircleRadius)
                             rotation = rotation % fullCircleRadius;
                         rotationKey = Number(rotation.toFixed(2));
                         key = rotationKey === 0 ? dir : "".concat(dir, "_").concat(rotationKey);
@@ -3115,7 +3115,7 @@ var JControllerComponent = /** @class */ (function (_super) {
         args.rotation = angle2 - angle1;
         if (args.rotation) {
             this.transform.rotateZ += args.rotation;
-            if (this.transform.rotateZ > fullCircleRadius)
+            if (Math.abs(this.transform.rotateZ) > fullCircleRadius)
                 this.transform.rotateZ = this.transform.rotateZ % fullCircleRadius;
             this.transform.apply();
             try {

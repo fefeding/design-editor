@@ -502,7 +502,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
 
         if(args.rotation) {
             this.transform.rotateZ += args.rotation;
-            if(this.transform.rotateZ > fullCircleRadius) this.transform.rotateZ = this.transform.rotateZ % fullCircleRadius;
+            if(Math.abs(this.transform.rotateZ) > fullCircleRadius) this.transform.rotateZ = this.transform.rotateZ % fullCircleRadius;
             this.transform.apply();
 
             // 发生了旋转，要处理指针图标

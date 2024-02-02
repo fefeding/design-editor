@@ -975,7 +975,7 @@ export const ControlerCursors = {
     // 根据角度旋转指针
     async get(dir: string, rotation: number=0) {
         if(dir === 'rotate' || dir === 'skew') return this[dir];
-        if(rotation > fullCircleRadius) rotation = rotation % fullCircleRadius;
+        if(Math.abs(rotation) > fullCircleRadius) rotation = rotation % fullCircleRadius;
         // 2PI 为一个圆，把角度转为一个圆内的值，以免重复生成图片
         const rotationKey = Number(rotation.toFixed(2));// 精度只取小数2位
         const key = rotationKey===0 ? dir: `${dir}_${rotationKey}`;
