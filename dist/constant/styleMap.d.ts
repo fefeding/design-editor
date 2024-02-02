@@ -1,5 +1,6 @@
 import EventEmiter from './eventEmitter';
 export declare const topZIndex = 10000;
+export declare const fullCircleRadius: number;
 /**
  * 支持的样式属性列表
  * @public

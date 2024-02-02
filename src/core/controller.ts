@@ -2,7 +2,7 @@
 import util from '../lib/util';
 import JElement from './element';
 import { IJControllerItem, IJControllerComponent, IJBaseComponent, IJEditor } from '../constant/types';
-import { topZIndex, ControlerCursors, ControlItemIcons } from '../constant/styleMap';
+import { topZIndex, ControlerCursors, ControlItemIcons, fullCircleRadius } from '../constant/styleMap';
 
 // 控制元素移动和矩阵变换
 export class JControllerItem extends JElement<HTMLDivElement> implements IJControllerItem {
@@ -502,6 +502,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
 
         if(args.rotation) {
             this.transform.rotateZ += args.rotation;
+            if(this.transform.rotateZ > fullCircleRadius) this.transform.rotateZ = this.transform.rotateZ % fullCircleRadius;
             this.transform.apply();
 
             // 发生了旋转，要处理指针图标

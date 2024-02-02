@@ -809,6 +809,7 @@ var EventEmitter = /** @class */ (function (_super) {
 }(EventEmitter$1));
 
 var topZIndex = 10000;
+var fullCircleRadius = Math.PI * 2;
 /**
  * 支持的样式属性列表
  * @public
@@ -1382,7 +1383,9 @@ var ControlerCursors = {
                     case 0:
                         if (dir === 'rotate' || dir === 'skew')
                             return [2 /*return*/, this[dir]];
-                        rotationKey = Number((rotation % (2 * Math.PI)).toFixed(2));
+                        if (rotation > fullCircleRadius)
+                            rotation = rotation % fullCircleRadius;
+                        rotationKey = Number(rotation.toFixed(2));
                         key = rotationKey === 0 ? dir : "".concat(dir, "_").concat(rotationKey);
                         cursor = this[key];
                         if (!!cursor) return [3 /*break*/, 11];
@@ -3112,6 +3115,8 @@ var JControllerComponent = /** @class */ (function (_super) {
         args.rotation = angle2 - angle1;
         if (args.rotation) {
             this.transform.rotateZ += args.rotation;
+            if (this.transform.rotateZ > fullCircleRadius)
+                this.transform.rotateZ = this.transform.rotateZ % fullCircleRadius;
             this.transform.apply();
             try {
                 // 发生了旋转，要处理指针图标
