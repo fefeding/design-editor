@@ -31,7 +31,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
     isEditor: boolean;
     createItem(id: any, option: any): JControllerItem;
     change(e: any): void;
-    getRotateEventPosition(e: any): {
+    getRotateEventPosition(e: any, rotation?: number): {
         offX: any;
         offY: any;
     };

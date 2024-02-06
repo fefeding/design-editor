@@ -2987,7 +2987,7 @@ var JControllerComponent = /** @class */ (function (_super) {
         else {
             // 先回原坐标，再主算偏移量，这样保证操作更容易理解
             if (this.transform.rotateZ) {
-                var pos = this.getRotateEventPosition(e);
+                var pos = this.getRotateEventPosition(e, this.transform.rotateZ);
                 offX = pos.offX;
                 offY = pos.offY;
             }
@@ -3043,6 +3043,7 @@ var JControllerComponent = /** @class */ (function (_super) {
                 }
             }
         }
+        //console.log(dir, args, this.transform.rotateZ);
         // 位移
         if (args.x || args.y) {
             this.move(args.x, args.y);
@@ -3063,15 +3064,16 @@ var JControllerComponent = /** @class */ (function (_super) {
         this.applyToTarget();
     };
     // 因为旋转后坐标要回原才好计算操作，
-    JControllerComponent.prototype.getRotateEventPosition = function (e) {
+    JControllerComponent.prototype.getRotateEventPosition = function (e, rotation) {
+        if (rotation === void 0) { rotation = this.transform.rotateZ; }
         var offX = e.offX, offY = e.offY, oldPosition = e.oldPosition, newPosition = e.newPosition;
         // 先回原坐标，再主算偏移量，这样保证操作更容易理解
-        if (this.transform.rotateZ) {
+        if (rotation) {
             var center = {
                 x: util.toNumber(this.data.left) + util.toNumber(this.data.width) / 2,
                 y: util.toNumber(this.data.top) + util.toNumber(this.data.height) / 2,
             };
-            var _a = __read(util.rotatePoints([oldPosition, newPosition], center, -this.transform.rotateZ), 2), pos1 = _a[0], pos2 = _a[1];
+            var _a = __read(util.rotatePoints([oldPosition, newPosition], center, -rotation), 2), pos1 = _a[0], pos2 = _a[1];
             offX = pos2.x - pos1.x;
             offY = pos2.y - pos1.y;
         }

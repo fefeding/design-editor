@@ -368,7 +368,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
         else {
             // 先回原坐标，再主算偏移量，这样保证操作更容易理解
             if(this.transform.rotateZ) {
-                const pos = this.getRotateEventPosition(e);
+                const pos = this.getRotateEventPosition(e, this.transform.rotateZ);
                 offX = pos.offX;
                 offY = pos.offY;
             }
@@ -425,6 +425,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
                 }            
             }
         }
+        //console.log(dir, args, this.transform.rotateZ);
         // 位移
         if(args.x || args.y) {
             this.move(args.x, args.y);
@@ -447,15 +448,15 @@ export default class JControllerComponent extends JControllerItem implements IJC
     }
 
     // 因为旋转后坐标要回原才好计算操作，
-    getRotateEventPosition(e) {
+    getRotateEventPosition(e, rotation: number = this.transform.rotateZ) {
         let {offX, offY, oldPosition, newPosition} = e;
         // 先回原坐标，再主算偏移量，这样保证操作更容易理解
-        if(this.transform.rotateZ) {
+        if(rotation) {
             const center = {
                 x: util.toNumber(this.data.left) + util.toNumber(this.data.width)/2,
                 y: util.toNumber(this.data.top) + util.toNumber(this.data.height)/2,
             };
-            const [pos1, pos2] = util.rotatePoints([oldPosition, newPosition], center, -this.transform.rotateZ);
+            const [pos1, pos2] = util.rotatePoints([oldPosition, newPosition], center, -rotation);
             offX = pos2.x - pos1.x;
             offY = pos2.y - pos1.y;
         }
