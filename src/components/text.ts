@@ -77,7 +77,7 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
     /**
      * JTextData 数据
      */
-    data: JTextData;
+    declare data: JTextData;
 
     // 所有 JText 实例的缓存
     static TextControlCache = new Map<string, JText>();

@@ -1,90 +1,43 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (g && (g = 0, op[0] && (_ = 0)), _) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-var __values = (this && this.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
-};
 export default {
     // 是否是数字
-    isNumber: function (v) {
+    isNumber(v) {
         return typeof v === 'number' || /^\s*[\d\.]+\s*$/.test(v);
     },
     // 是否是带像素单位的字符串
-    isPXNumber: function (v) {
+    isPXNumber(v) {
         return /^\s*[\d\.]+\s*px\s*/i.test(v);
     },
     // 是否是带角度单位的字符串
-    isDegNumber: function (v) {
+    isDegNumber(v) {
         return /^\s*[\d\.]+\s*deg\s*/i.test(v);
     },
     // 是否是带弧度单位的字符串
-    isRadNumber: function (v) {
+    isRadNumber(v) {
         return /^\s*[\d\.]+\s*rad\s*/i.test(v);
     },
     // 转为像素字符串格式 
-    toPX: function (v) {
+    toPX(v) {
         if (this.isNumber(v))
             return v + 'px';
         return v;
     },
     // 带像素或其它单位的转换为数字
-    toNumber: function (v) {
+    toNumber(v) {
         if (this.isNumber(v))
             return Number(v);
         else if (typeof v === 'string')
             return parseFloat(v) || 0;
     },
     // 弧度转角度
-    radToDeg: function (v) {
+    radToDeg(v) {
         return v * (180 / Math.PI);
     },
     // 角度转弧度
-    degToRad: function (v) {
+    degToRad(v) {
         return v * (Math.PI / 180);
     },
     // 转为角度格式
-    toDeg: function (v) {
+    toDeg(v) {
         if (this.isNumber(v))
             return v + 'deg';
         if (typeof v === 'string' && this.isRadNumber(v))
@@ -92,7 +45,7 @@ export default {
         return v;
     },
     // 转为弧度格式
-    toRad: function (v) {
+    toRad(v) {
         if (this.isNumber(v))
             return v + 'rad';
         if (typeof v === 'string' && this.isDegNumber(v))
@@ -104,8 +57,8 @@ export default {
      * @param  el - 目标元素对象
      * @returns  位置对象(top,left)
      */
-    getElementPosition: function (el) {
-        var pos = { "y": 0, "x": 0 };
+    getElementPosition(el) {
+        const pos = { "y": 0, "x": 0 };
         if (!el)
             return pos;
         if (el.offsetParent) {
@@ -128,8 +81,8 @@ export default {
         return pos;
     },
     // 获取元素bounds
-    getElementBoundingRect: function (el) {
-        var bounds = {
+    getElementBoundingRect(el) {
+        let bounds = {
             height: 0,
             width: 0,
             x: 0,
@@ -137,13 +90,13 @@ export default {
         };
         if (el.getBoundingClientRect) {
             bounds = el.getBoundingClientRect();
-            var scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
-            var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            const scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+            const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
             bounds.x += scrollLeft;
             bounds.y += scrollTop;
         }
         else {
-            var pos = this.getElementPosition(el);
+            const pos = this.getElementPosition(el);
             bounds.x = pos.x;
             bounds.y = pos.y;
             bounds.width = el.clientWidth;
@@ -152,8 +105,8 @@ export default {
         return bounds;
     },
     // 把domcument坐标转为指定元素相对坐标
-    toDomPosition: function (pos, dom) {
-        var domPos = this.getElementBoundingRect(dom);
+    toDomPosition(pos, dom) {
+        const domPos = this.getElementBoundingRect(dom);
         return {
             x: pos.x - domPos.x,
             y: pos.y - domPos.y
@@ -166,47 +119,36 @@ export default {
      * @param  rp -  旋转中心点
      * @param  r - 旋转角度
      */
-    rotatePoints: function (p, center, r) {
+    rotatePoints(p, center, r) {
         if (!r || !p)
             return p;
-        var cos = Math.cos(r);
-        var sin = Math.sin(r);
+        let cos = Math.cos(r);
+        let sin = Math.sin(r);
         if (Array.isArray(p)) {
-            for (var i = 0; i < p.length; i++) {
+            for (let i = 0; i < p.length; i++) {
                 if (!p[i])
                     continue;
-                var x1 = p[i].x - center.x;
-                var y1 = p[i].y - center.y;
+                let x1 = p[i].x - center.x;
+                let y1 = p[i].y - center.y;
                 p[i].x = x1 * cos - y1 * sin + center.x;
                 p[i].y = x1 * sin + y1 * cos + center.y;
             }
         }
         else {
-            var x1 = p.x - center.x;
-            var y1 = p.y - center.y;
+            let x1 = p.x - center.x;
+            let y1 = p.y - center.y;
             p.x = x1 * cos - y1 * sin + center.x;
             p.y = x1 * sin + y1 * cos + center.y;
         }
         return p;
     },
     // 设置样式
-    css: function (dom, name, value) {
-        var e_1, _a;
+    css(dom, name, value) {
         if (!name)
             return;
         if (typeof name === 'object') {
-            try {
-                for (var _b = __values(Object.getOwnPropertyNames(name)), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var n = _c.value;
-                    this.css(dom, n, name[n]);
-                }
-            }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
-            finally {
-                try {
-                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-                }
-                finally { if (e_1) throw e_1.error; }
+            for (const n of Object.getOwnPropertyNames(name)) {
+                this.css(dom, n, name[n]);
             }
         }
         else {
@@ -215,7 +157,7 @@ export default {
         return this;
     },
     // dom属性
-    attr: function (dom, name, value) {
+    attr(dom, name, value) {
         if (typeof value !== 'undefined') {
             dom.setAttribute(name, value + '');
             return value;
@@ -225,76 +167,68 @@ export default {
         }
     },
     // 本地唯一ID，这个只要保证当前线程唯一即可，非全球唯一
-    uuid: function () {
-        var time = Date.now();
-        var rnd = Math.floor(Math.random() * 10000000000);
+    uuid() {
+        const time = Date.now();
+        const rnd = Math.floor(Math.random() * 10000000000);
         return (time + rnd).toString();
     },
     // 把图片旋转一定角度，返回base64
-    rotateImage: function (url, rotation) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                return [2 /*return*/, new Promise(function (resolve, reject) {
-                        var img = new Image();
-                        img.onload = function (e) {
-                            var cvs = document.createElement('canvas');
-                            cvs.width = img.width;
-                            cvs.height = img.height;
-                            var ctx = cvs.getContext('2d');
-                            ctx.clearRect(0, 0, cvs.width, cvs.height);
-                            ctx.translate(cvs.width / 2, cvs.height / 2);
-                            ctx.rotate(rotation);
-                            ctx.translate(-cvs.width / 2, -cvs.height / 2);
-                            ctx.drawImage(img, 0, 0);
-                            var data = cvs.toDataURL();
-                            resolve(data);
-                        };
-                        img.onerror = function (e) {
-                            reject && reject(e);
-                        };
-                        img.src = url;
-                    })];
-            });
+    async rotateImage(url, rotation) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = function (e) {
+                const cvs = document.createElement('canvas');
+                cvs.width = img.width;
+                cvs.height = img.height;
+                const ctx = cvs.getContext('2d');
+                ctx.clearRect(0, 0, cvs.width, cvs.height);
+                ctx.translate(cvs.width / 2, cvs.height / 2);
+                ctx.rotate(rotation);
+                ctx.translate(-cvs.width / 2, -cvs.height / 2);
+                ctx.drawImage(img, 0, 0);
+                const data = cvs.toDataURL();
+                resolve(data);
+            };
+            img.onerror = function (e) {
+                reject && reject(e);
+            };
+            img.src = url;
         });
     },
     // 请求远程资源
-    request: function (url, option) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                option = option || {};
-                return [2 /*return*/, new Promise(function (resolve, reject) {
-                        var request = new XMLHttpRequest(); //新建XMLHttpRequest对象
-                        if (option.headers) {
-                            for (var name_1 in option.headers) {
-                                request.setRequestHeader(name_1, option.headers[name_1]);
-                            }
-                        }
-                        var params = [];
-                        if (option.data) {
-                            for (var name_2 in option.data) {
-                                params.push("".concat(name_2, "=").concat(encodeURIComponent(option.data[name_2])));
-                            }
-                        }
-                        var method = option.method ? option.method.toUpperCase() : 'GET';
-                        if (method === 'GET') {
-                            url += (url.includes('?') ? '&' : '?') + params.join('&');
-                        }
-                        request.onreadystatechange = function (e) {
-                            if (this.readyState === 4) { //成功完成
-                                //判断相应结果：
-                                if (this.status === 200) {
-                                    resolve(this.responseText);
-                                }
-                                else {
-                                    reject(e);
-                                }
-                            }
-                        };
-                        //发送请求：
-                        request.open(method, url);
-                        request.send(method === 'POST' ? params.join('&') : null);
-                    })];
-            });
+    async request(url, option) {
+        option = option || {};
+        return new Promise((resolve, reject) => {
+            const request = new XMLHttpRequest(); //新建XMLHttpRequest对象
+            if (option.headers) {
+                for (const name in option.headers) {
+                    request.setRequestHeader(name, option.headers[name]);
+                }
+            }
+            const params = [];
+            if (option.data) {
+                for (const name in option.data) {
+                    params.push(`${name}=${encodeURIComponent(option.data[name])}`);
+                }
+            }
+            const method = option.method ? option.method.toUpperCase() : 'GET';
+            if (method === 'GET') {
+                url += (url.includes('?') ? '&' : '?') + params.join('&');
+            }
+            request.onreadystatechange = function (e) {
+                if (this.readyState === 4) { //成功完成
+                    //判断相应结果：
+                    if (this.status === 200) {
+                        resolve(this.responseText);
+                    }
+                    else {
+                        reject(e);
+                    }
+                }
+            };
+            //发送请求：
+            request.open(method, url);
+            request.send(method === 'POST' ? params.join('&') : null);
         });
     }
 };

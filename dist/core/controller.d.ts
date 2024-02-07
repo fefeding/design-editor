@@ -1,10 +1,9 @@
 import JElement from './element';
-import { IJControllerItem, IJControllerComponent, IJBaseComponent, IJEditor } from '../constant/types';
+import { IJControllerItem, IJControllerComponent, IJBaseComponent } from '../constant/types';
 export declare class JControllerItem extends JElement<HTMLDivElement> implements IJControllerItem {
     constructor(option: any);
     dir: string;
     size: number;
-    editor: IJEditor;
     protected _isMoving: boolean;
     get isMoving(): boolean;
     set isMoving(v: boolean);

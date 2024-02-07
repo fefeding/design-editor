@@ -50,8 +50,6 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
 
     dir: string = '';
     size: number = 8;
-    // 当前编辑器
-    editor: IJEditor;
 
     protected _isMoving = false;
     get isMoving() {

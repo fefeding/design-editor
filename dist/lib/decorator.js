@@ -12,20 +12,14 @@
  * @param milliseconds - 毫秒数
  * @returns
  */
-export function Debounce(milliseconds) {
-    if (milliseconds === void 0) { milliseconds = 0; }
+export function Debounce(milliseconds = 0) {
     return function (target, propertyKey, descriptor) {
-        var originalMethod = descriptor.value;
-        var timerId = null;
-        descriptor.value = function () {
-            var _this = this;
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i] = arguments[_i];
-            }
+        let originalMethod = descriptor.value;
+        let timerId = null;
+        descriptor.value = function (...args) {
             clearTimeout(timerId);
-            timerId = setTimeout(function () {
-                originalMethod.apply(_this, args);
+            timerId = setTimeout(() => {
+                originalMethod.apply(this, args);
             }, milliseconds);
         };
         return descriptor;

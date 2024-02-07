@@ -1,112 +1,86 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 import { ContainerDefaultStyle } from '../constant/styleMap';
 import JElement from '../core/element';
 /**
  * @public
  */
-var JBaseComponent = /** @class */ (function (_super) {
-    __extends(JBaseComponent, _super);
-    function JBaseComponent(option) {
-        if (option === void 0) { option = {}; }
-        var _this = this;
+export default class JBaseComponent extends JElement {
+    constructor(option = {}) {
         option.style = option.style || {};
         // position和overflow预设的值优先级最高
-        option.style = Object.assign(__assign({}, ContainerDefaultStyle), option.style, {
+        option.style = Object.assign({ ...ContainerDefaultStyle }, option.style, {
             position: ContainerDefaultStyle.position,
             overflow: ContainerDefaultStyle.overflow
         });
-        _this = _super.call(this, __assign(__assign({ 
+        super({
             // 外层只响应Z轴旋转
             transformWatchProps: [
                 'rotateZ', 'scaleX', 'scaleY'
-            ] }, option), { nodeType: 'div', className: 'j-design-editor-container', isComponent: true })) || this;
-        // 选中
-        _this._selected = false;
+            ],
+            ...option,
+            nodeType: 'div',
+            className: 'j-design-editor-container',
+            isComponent: true
+        });
         option.target = option.target || {};
         // 生成当前控制的元素
-        _this.target = new JElement(__assign(__assign({}, option), { visible: true, data: {}, 
+        this.target = new JElement({
+            ...option,
+            visible: true,
+            data: {},
             // 不响应本身的变换，只响应父级的
-            transformWatchProps: [], style: {
+            transformWatchProps: [],
+            style: {
                 display: 'block',
                 cursor: 'pointer',
                 width: '100%',
                 height: '100%',
-            } }));
-        _this.addChild(_this.target);
+            }
+        });
+        this.addChild(this.target);
         // 变换改为控制主元素
-        _this.transform.bind({
-            target: _this.target,
+        this.transform.bind({
+            target: this.target,
             watchProps: [
                 'rotateX', 'rotateY', 'translateX', 'translateY', 'skewX', 'skewY'
             ]
         });
-        _this.data.on('change', function (e) {
-            _this.emit('dataChange', {
+        this.data.on('change', (e) => {
+            this.emit('dataChange', {
                 type: 'dataChange',
-                target: _this,
+                target: this,
                 data: e
             });
         });
-        return _this;
     }
-    Object.defineProperty(JBaseComponent.prototype, "selected", {
-        get: function () {
-            return this._selected;
-        },
-        set: function (v) {
-            this._selected = v;
-            this.emit('select', {
-                type: 'select',
-                target: this,
-                selected: v
-            });
-        },
-        enumerable: false,
-        configurable: true
-    });
+    // 当前控件的核心元素
+    target;
+    // 选中
+    _selected = false;
+    get selected() {
+        return this._selected;
+    }
+    set selected(v) {
+        this._selected = v;
+        this.emit('select', {
+            type: 'select',
+            target: this,
+            selected: v
+        });
+    }
     // 设置css到dom
-    JBaseComponent.prototype.setDomStyle = function (name, value) {
+    setDomStyle(name, value) {
         // 如果外层容器的样式，则加到container上
         if (name in ContainerDefaultStyle || name === 'transform') {
-            _super.prototype.setDomStyle.call(this, name, value);
+            super.setDomStyle(name, value);
         }
         else {
             this.target && this.target.css(name, value);
         }
-    };
-    JBaseComponent.prototype.toJSON = function (props) {
-        var _this = this;
-        if (props === void 0) { props = []; }
+    }
+    toJSON(props = []) {
         // 转json忽略渲染组件
-        return _super.prototype.toJSON.call(this, props, function (el) {
-            return el !== _this.target;
+        return super.toJSON(props, (el) => {
+            return el !== this.target;
         });
-    };
-    return JBaseComponent;
-}(JElement));
-export default JBaseComponent;
+    }
+}
