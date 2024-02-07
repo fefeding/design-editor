@@ -1,14 +1,14 @@
 /**
  * 防抖装饰器
  * @example
- * ```ts
+ ```ts
  class Test {
-    @Debounce(1000)
-    log() {
-        console.log("Debounced output!");
+        @Debounce(1000)
+        log() {
+            console.log("Debounced output!");
+        }
     }
-}
- * ```
+ ```
  * @param milliseconds - 毫秒数
  * @returns
  */

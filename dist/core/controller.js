@@ -89,7 +89,7 @@ var __values = (this && this.__values) || function(o) {
 };
 import util from '../lib/util';
 import JElement from './element';
-import { topZIndex, ControlerCursors, ControlItemIcons } from '../constant/styleMap';
+import { topZIndex, ControlerCursors, ControlItemIcons, fullCircleRadius } from '../constant/styleMap';
 // 控制元素移动和矩阵变换
 var JControllerItem = /** @class */ (function (_super) {
     __extends(JControllerItem, _super);
@@ -223,7 +223,7 @@ var JControllerComponent = /** @class */ (function (_super) {
         _this = _super.call(this, option) || this;
         _this.items = [];
         // 选择框边距
-        _this.paddingSize = 1;
+        _this.paddingSize = 0;
         _this.isEditor = false; // 当前关联是否是编辑器
         if (!_this.editor.editable)
             return _this;
@@ -329,6 +329,17 @@ var JControllerComponent = /** @class */ (function (_super) {
             _this.change(e);
         });
     };
+    Object.defineProperty(JControllerComponent.prototype, "center", {
+        get: function () {
+            var center = {
+                x: util.toNumber(this.data.left) + util.toNumber(this.data.width) / 2,
+                y: util.toNumber(this.data.top) + util.toNumber(this.data.height) / 2,
+            };
+            return center;
+        },
+        enumerable: false,
+        configurable: true
+    });
     // 生成控制点
     JControllerComponent.prototype.createItem = function (id, option) {
         var item = new JControllerItem(__assign({ dir: id, editor: this.editor }, option));
@@ -358,6 +369,7 @@ var JControllerComponent = /** @class */ (function (_super) {
                 y: 0
             }
         };
+        var center = this.center;
         if (dir === 'rotate') {
             this.rotateChange(e, args);
         }
@@ -369,7 +381,7 @@ var JControllerComponent = /** @class */ (function (_super) {
         else {
             // 先回原坐标，再主算偏移量，这样保证操作更容易理解
             if (this.transform.rotateZ) {
-                var pos = this.getRotateEventPosition(e);
+                var pos = this.getRotateEventPosition(e, this.transform.rotateZ, center);
                 offX = pos.offX;
                 offY = pos.offY;
             }
@@ -436,6 +448,12 @@ var JControllerComponent = /** @class */ (function (_super) {
         if (args.height) {
             this.data.height = Math.max(util.toNumber(this.data.height) + args.height, 1);
         }
+        var newCenter = this.center;
+        // 如果中心发生了偏移，则新中心点要移到绕原中心点旋转当前旋转角度的点，才举使图形移动不正常
+        if (this.transform.rotateZ && (newCenter.x !== center.x || newCenter.y !== center.y)) {
+            var targetCenter = util.rotatePoints(__assign({}, newCenter), center, this.transform.rotateZ);
+            this.move(targetCenter.x - newCenter.x, targetCenter.y - newCenter.y);
+        }
         // x,y旋转
         if (args.skew.x || args.skew.y) {
             this.target.transform.rotateX += args.skew.x;
@@ -445,21 +463,20 @@ var JControllerComponent = /** @class */ (function (_super) {
         this.applyToTarget();
     };
     // 因为旋转后坐标要回原才好计算操作，
-    JControllerComponent.prototype.getRotateEventPosition = function (e) {
+    JControllerComponent.prototype.getRotateEventPosition = function (e, rotation, center) {
+        if (rotation === void 0) { rotation = this.transform.rotateZ; }
+        if (center === void 0) { center = this.center; }
         var offX = e.offX, offY = e.offY, oldPosition = e.oldPosition, newPosition = e.newPosition;
         // 先回原坐标，再主算偏移量，这样保证操作更容易理解
-        if (this.transform.rotateZ) {
-            var center = {
-                x: util.toNumber(this.data.left) + util.toNumber(this.data.width) / 2,
-                y: util.toNumber(this.data.top) + util.toNumber(this.data.height) / 2,
-            };
-            var _a = __read(util.rotatePoints([oldPosition, newPosition], center, -this.transform.rotateZ), 2), pos1 = _a[0], pos2 = _a[1];
+        if (rotation) {
+            var _a = __read(util.rotatePoints([oldPosition, newPosition], center, -rotation), 2), pos1 = _a[0], pos2 = _a[1];
             offX = pos2.x - pos1.x;
             offY = pos2.y - pos1.y;
         }
         return {
             offX: offX,
-            offY: offY
+            offY: offY,
+            center: center
         };
     };
     // 发生旋转
@@ -499,6 +516,8 @@ var JControllerComponent = /** @class */ (function (_super) {
         args.rotation = angle2 - angle1;
         if (args.rotation) {
             this.transform.rotateZ += args.rotation;
+            if (Math.abs(this.transform.rotateZ) > fullCircleRadius)
+                this.transform.rotateZ = this.transform.rotateZ % fullCircleRadius;
             this.transform.apply();
             try {
                 // 发生了旋转，要处理指针图标

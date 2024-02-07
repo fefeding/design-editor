@@ -24,6 +24,12 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
@@ -68,6 +74,7 @@ import JElement from './core/element';
 import JController from './core/controller';
 import JFonts from './core/fonts';
 import util from './lib/util';
+import { Debounce } from './lib/decorator';
 import { SupportEventNames } from './core/event';
 /**
  * @public
@@ -202,21 +209,17 @@ var JEditor = /** @class */ (function (_super) {
             this.elementController.unbind(el);
     };
     JEditor.prototype.resize = function (width, height) {
-        var _this = this;
         if (width === void 0) { width = this.data.width; }
         if (height === void 0) { height = this.data.height; }
-        clearTimeout(this._resizeTimer);
-        this._resizeTimer = setTimeout(function () {
-            _this.data.left = Math.max((util.toNumber(_this.view.dom.clientWidth) - util.toNumber(width)) / 2, 0);
-            _this.data.top = Math.max((util.toNumber(_this.view.dom.clientHeight) - util.toNumber(height)) / 2, 0);
-            _this.data.width = width;
-            _this.data.height = height;
-            _this.attr('data-size', "".concat(width, "*").concat(height));
-            _this.emit('resize', {
-                width: width,
-                height: height
-            });
-        }, 10);
+        this.data.left = Math.max((util.toNumber(this.view.dom.clientWidth) - util.toNumber(width)) / 2, 0);
+        this.data.top = Math.max((util.toNumber(this.view.dom.clientHeight) - util.toNumber(height)) / 2, 0);
+        this.data.width = width;
+        this.data.height = height;
+        this.attr('data-size', "".concat(width, "*").concat(height));
+        this.emit('resize', {
+            width: width,
+            height: height
+        });
     };
     // 添加元素到画布
     JEditor.prototype.addChild = function (child) {
@@ -373,6 +376,9 @@ var JEditor = /** @class */ (function (_super) {
             finally { if (e_3) throw e_3.error; }
         }
     };
+    __decorate([
+        Debounce(10)
+    ], JEditor.prototype, "resize", null);
     return JEditor;
 }(JBase));
 export default JEditor;

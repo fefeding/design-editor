@@ -63,6 +63,7 @@ var __values = (this && this.__values) || function(o) {
 import EventEmiter from './eventEmitter';
 import util from '../lib/util';
 export var topZIndex = 10000;
+export var fullCircleRadius = Math.PI * 2;
 /**
  * 支持的样式属性列表
  * @public
@@ -639,6 +640,8 @@ export var ControlerCursors = {
                     case 0:
                         if (dir === 'rotate' || dir === 'skew')
                             return [2 /*return*/, this[dir]];
+                        if (Math.abs(rotation) > fullCircleRadius)
+                            rotation = rotation % fullCircleRadius;
                         rotationKey = Number(rotation.toFixed(2));
                         key = rotationKey === 0 ? dir : "".concat(dir, "_").concat(rotationKey);
                         cursor = this[key];

@@ -29,11 +29,22 @@ export default class JControllerComponent extends JControllerItem implements IJC
     target: IJBaseComponent;
     paddingSize: number;
     isEditor: boolean;
+    get center(): {
+        x: number;
+        y: number;
+    };
     createItem(id: any, option: any): JControllerItem;
     change(e: any): void;
-    getRotateEventPosition(e: any, rotation?: number): {
+    getRotateEventPosition(e: any, rotation?: number, center?: {
+        x: number;
+        y: number;
+    }): {
         offX: any;
         offY: any;
+        center: {
+            x: number;
+            y: number;
+        };
     };
     rotateChange(e: any, args: any): void;
     applyToTarget(): void;
