@@ -46,7 +46,7 @@ describe('JFonts Class', () => {
   test('load function', async () => {
     const loadedFont = await jFontsInstance.load('Arial2', 'https://example.com/arial.ttf');
     expect(loadedFont.status).toEqual('loaded');
-    expect(jFontsInstance.fonts.has('Arial2')).toEqual(true);
+    expect(jFontsInstance.fonts.has('Arial2'.toLocaleLowerCase())).toEqual(true);
   });
 
   test('get function', () => {

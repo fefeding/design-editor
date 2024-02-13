@@ -132,7 +132,7 @@ export interface IEditorOption {
     /**
      * 初始化支持的字体
      */
-    fonts?: Array<IJFontFace>;
+    fonts?: Array<IJFontData>;
 
     /**
      * 编辑器是否可以被编辑
