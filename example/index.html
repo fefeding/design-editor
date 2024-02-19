@@ -95,7 +95,7 @@
 
 	// 元素发生改变事件
 	editor.on('elementChange', async (e) => {
-		//console.log(e);
+		//if(e.type.includes('mouse'))console.log(e);
 		if(e.type === 'styleChange') {
     		// 字体发生改变，需要做check, 并加载字体生效
 			if(e.data.name === 'fontFamily') {

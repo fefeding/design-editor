@@ -6,7 +6,4 @@ export default class JSvg extends Base<HTMLDivElement> implements IJSvgComponent
     data: JSvgData;
     renderSvg(svg: string): string;
     load(url?: string): Promise<void>;
-    toJSON(props?: any[]): {
-        children: any[];
-    };
 }

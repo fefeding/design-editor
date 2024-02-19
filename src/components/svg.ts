@@ -44,9 +44,4 @@ export default class JSvg extends Base<HTMLDivElement> implements IJSvgComponent
         const svg = await util.request(url);
         this.data.svg = svg;
     }
-
-    toJSON(props = []) {
-        props.push('src');
-        return super.toJSON(props);
-    }
 }

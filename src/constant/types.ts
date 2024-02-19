@@ -1,3 +1,4 @@
+import { Point } from 'j-design-util';
 import JElementCssStyle, { IJElementStyleDeclaration } from './styleMap';
 import { JElementData, JTextData, JImageData, IJElementData, IJTexteData, IJImageData, IJFontData, JSvgData, IJSvgData } from './data';
 import EventEmitter from './eventEmitter';
@@ -346,20 +347,11 @@ export interface IJControllerItem extends IJElement<HTMLDivElement> {
         y: number;
     };
     /**处理拖拽移动的方法 */
-    onDragMove(event: MouseEvent, pos?: {
-        x: number;
-        y: number;
-    }): void;
+    onDragMove(event: MouseEvent, pos?: Point): void;
     /**处理拖拽开始的方法 */
-    onDragStart(event: MouseEvent, pos?: {
-        x: number;
-        y: number;
-    }): void;
+    onDragStart(event: MouseEvent, pos?: Point): void;
     /**处理拖拽结束的方法 */
-    onDragEnd(event: MouseEvent, pos?: {
-        x: number;
-        y: number;
-    }): void;
+    onDragEnd(event: MouseEvent, pos?: Point): void;
     /**重置光标 */
     resetCursor(rotation: number): void;
 }
@@ -388,13 +380,6 @@ export interface IJControllerComponent extends IJControllerItem {
     createItem(id: any, option: any): IJControllerItem;
     /**控制器变更的处理方法 */
     change(e: any): void;
-    /**获取旋转事件的坐标位置 */
-    getRotateEventPosition(e: any): {
-        offX: any;
-        offY: any;
-    };
-    /** 处理旋转变更的方法*/
-    rotateChange(e: any, args: any): void;
     /**控制器应用到目标的方法*/
     applyToTarget(): void;
     /**重置控制器 */
@@ -445,13 +430,7 @@ export interface IJEditor extends IJBaseComponent {
  * @remarks 转换至编辑器的位置
  */
     /**转换至编辑器的位置 */
-    toEditorPosition(pos: {
-        x: number;
-        y: number;
-    }): {
-        x: number;
-        y: number;
-    };
+    toEditorPosition(pos: Point): Point;
     /**清空编辑器 */
     clear(): void;
     scale(x: any, y?: any): void;

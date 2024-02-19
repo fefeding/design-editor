@@ -1,8 +1,8 @@
 
-import util from '../lib/util';
+import util, { controller, ItemType } from 'j-design-util';
 import JElement from './element';
 import { IJControllerItem, IJControllerComponent, IJBaseComponent, IJEditor } from '../constant/types';
-import { topZIndex, ControlerCursors, ControlItemIcons, fullCircleRadius } from '../constant/styleMap';
+import { topZIndex } from '../constant/styleMap';
 
 // 控制元素移动和矩阵变换
 export class JControllerItem extends JElement<HTMLDivElement> implements IJControllerItem {
@@ -32,7 +32,7 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
             });
             // @ts-ignore
             this.editor.view.on('mouseout', (e: MouseEvent) => {
-                if(e.target !== this.editor.dom) return;// 不是out编辑器，不处理
+                if(!this.isMoving || e.target !== this.editor.view.dom) return;// 不是out编辑器，不处理
                 this.onDragEnd(e);
             });
             // @ts-ignore
@@ -48,7 +48,7 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
         });
     }
 
-    dir: string = '';
+    dir: ItemType|'' = '';
     size: number = 8;
 
     protected _isMoving = false;
@@ -113,7 +113,7 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
         event.preventDefault && event.preventDefault();
     }
     
-    onDragEnd(event: MouseEvent, pos: {x: number, y: number} = event)  {
+    onDragEnd(event: MouseEvent)  {
         if(this.isMoving) {
             this.isMoving = false;
         }
@@ -121,7 +121,8 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
 
     // 计算指针
     async resetCursor(rotation: number = 0) {
-        let cursor = await ControlerCursors.get(this.dir, rotation);
+        if(!this.dir) return;
+        let cursor = await controller.Cursors.get(this.dir, rotation);
         if(!cursor) return;
         // 先简单处理
         this.style.cursor = cursor.includes('\/')? `url(${cursor}) 12 12,pointer`:cursor;
@@ -269,7 +270,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
                 cursor: `pointer`,
                 ...option.itemStyle,
                 'backgroundSize': '100%',
-                backgroundImage: ControlItemIcons.rotate
+                backgroundImage: controller.ItemIcons.rotate
             },
             transform: {
                 translateX: '-50%',
@@ -287,7 +288,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
                 cursor: `pointer`,
                 ...option.itemStyle,
                 'backgroundSize': '100%',
-                backgroundImage: ControlItemIcons.skew
+                backgroundImage: controller.ItemIcons.skew
             },
             transform: {
                 translateX: '-50%',
@@ -350,9 +351,9 @@ export default class JControllerComponent extends JControllerItem implements IJC
     // 发生改变响应
     change(e) {
         if(!this.target) return;
-        let {dir, offX, offY, } = e;
+        let {dir, offX, offY, oldPosition, newPosition} = e;
         // 当前移动对原对象的改变
-        const args = {
+        let args = {
             x: 0, 
             y: 0, 
             width: 0, 
@@ -365,9 +366,20 @@ export default class JControllerComponent extends JControllerItem implements IJC
         };
 
         const center = this.center;
+        const width = util.toNumber(this.data.width);
+        const height = util.toNumber(this.data.height);
 
         if(dir === 'rotate') {
-            this.rotateChange(e, args);
+            // 编辑器坐标, 因为是在编辑器渲染区域操作，需要把坐标转到此区域再处理
+            const pos1 = this.editor.toEditorPosition(oldPosition);
+            const pos2 = this.editor.toEditorPosition(newPosition);
+            args.rotation = controller.rotateChange(pos1, pos2, center);            
+        }
+        else if(dir === 'skew') {
+            const rx = offX / width * Math.PI;
+            const ry = offY / height * Math.PI;
+            args.skew.x = ry;
+            args.skew.y = rx;
         }
         else if(dir === 'element') {
             // 元素位置控制器
@@ -375,64 +387,11 @@ export default class JControllerComponent extends JControllerItem implements IJC
             args.y = offY;
         }
         else {
-            // 先回原坐标，再主算偏移量，这样保证操作更容易理解
-            if(this.transform.rotateZ) {
-                const pos = this.getRotateEventPosition(e, this.transform.rotateZ, center);
-                offX = pos.offX;
-                offY = pos.offY;
-            }
-            
-            switch(dir) {                
-                case 'l': {
-                    args.x = offX;
-                    args.width = -offX;
-                    break;
-                }
-                case 't': {
-                    args.y = offY;
-                    args.height = -offY;
-                    break;
-                }
-                case 'r': {
-                    args.width = offX;
-                    break;
-                }
-                case 'b': {
-                    args.height = offY;
-                    break;
-                }
-                case 'lt':{   
-                    args.x = offX;
-                    args.width = -offX; 
-                    args.y = offY;
-                    args.height = -offY;
-                    break;
-                }
-                case 'tr':{   
-                    args.width = offX; 
-                    args.y = offY;
-                    args.height = -offY;
-                    break;
-                }
-                case 'rb':{   
-                    args.width = offX; 
-                    args.height = offY;
-                    break;
-                }
-                case 'lb':{   
-                    args.x = offX;
-                    args.width = -offX; 
-                    args.height = offY;
-                    break;
-                }
-                case 'skew': {                    
-                    const rx = offX / util.toNumber(this.data.width) * Math.PI;
-                    const ry = offY / util.toNumber(this.data.height) * Math.PI;
-                    args.skew.x = ry;
-                    args.skew.y = rx;
-                    break;
-                }            
-            }
+            // 根据操作参数，计算大小和偏移量
+            args = controller.getChangeData(dir, {
+                x: offX,
+                y: offY
+            }, oldPosition, newPosition, center, this.transform.rotateZ);
         }
         // 位移
         if(args.x || args.y) {
@@ -445,13 +404,6 @@ export default class JControllerComponent extends JControllerItem implements IJC
         if(args.height) {
             this.data.height = Math.max(util.toNumber(this.data.height) + args.height, 1);
         }
-
-        const newCenter = this.center;
-        // 如果中心发生了偏移，则新中心点要移到绕原中心点旋转当前旋转角度的点，才举使图形移动不正常
-        if(this.transform.rotateZ && (newCenter.x !== center.x || newCenter.y !== center.y)) {
-            const targetCenter = util.rotatePoints({...newCenter}, center, this.transform.rotateZ);
-            this.move(targetCenter.x - newCenter.x, targetCenter.y - newCenter.y);
-        }
         // x,y旋转
         if(args.skew.x || args.skew.y) {
             this.target.transform.rotateX += args.skew.x;
@@ -459,64 +411,10 @@ export default class JControllerComponent extends JControllerItem implements IJC
             this.target.transform.apply();
         }
 
-        this.applyToTarget();
-    }
-
-    // 因为旋转后坐标要回原才好计算操作，
-    getRotateEventPosition(e, rotation: number = this.transform.rotateZ, center = this.center) {
-        let {offX, offY, oldPosition, newPosition} = e;
-
-        // 先回原坐标，再主算偏移量，这样保证操作更容易理解
-        if(rotation) {
-            const [pos1, pos2] = util.rotatePoints([oldPosition, newPosition], center, -rotation);
-            offX = pos2.x - pos1.x;
-            offY = pos2.y - pos1.y;
-        }
-        return {
-            offX,
-            offY,
-            center
-        }
-    }
-
-    // 发生旋转
-    rotateChange(e, args) {
-        const {oldPosition, newPosition} = e;
-        const center = {
-            x: util.toNumber(this.data.left) + util.toNumber(this.data.width)/2,
-            y: util.toNumber(this.data.top) + util.toNumber(this.data.height)/2,
-        };
-
-        // 编辑器坐标
-        const pos1 = this.editor.toEditorPosition(oldPosition);
-        const pos2 = this.editor.toEditorPosition(newPosition);
-        
-        // 因为center是相对于编辑器的，所以事件坐标也需要转到编辑器
-        const cx1 = pos1.x - center.x;
-        const cy1 = pos1.y - center.y;
-        let angle1 = Math.atan(cy1 / cx1);
-        const cx2 = pos2.x - center.x;
-        const cy2 = pos2.y - center.y;
-        let angle2 = Math.atan(cy2 / cx2);
-
-
-        if(angle1 >= 0 && angle2 < 0) {
-            if(cx1 >= 0 && cy1 >= 0 && cx2 <= 0 && cy2 >= 0) angle2 = Math.PI + angle2;
-            else if(cx1 <= 0 && cy1 <=0 && cx2 >= 0 && cy2 <= 0) angle2 = Math.PI + angle2;
-            //else if(cx1 <= 0 && cy1 <=0 && cx2 >= 0 && cy2 >= 0) angle2 = Math.PI + angle2;
-        }
-        else if(angle1 <= 0 && angle2 >= 0) {
-            if(cx1 >= 0 && cy1 <= 0 && cx2 < 0) angle2 = angle2 - Math.PI;
-            else angle2 = -angle2;
-        }
-        else if(angle1 >= 0 && angle2 > 0) {
-            //if(cy2 === 0) angle2 = 0;
-        }
-        args.rotation = angle2 - angle1;
-
+        // 如果有操作旋转
         if(args.rotation) {
             this.transform.rotateZ += args.rotation;
-            if(Math.abs(this.transform.rotateZ) > fullCircleRadius) this.transform.rotateZ = this.transform.rotateZ % fullCircleRadius;
+            if(Math.abs(this.transform.rotateZ) > controller.fullCircleRadius) this.transform.rotateZ = this.transform.rotateZ % controller.fullCircleRadius;
             this.transform.apply();
 
             // 发生了旋转，要处理指针图标
@@ -524,6 +422,8 @@ export default class JControllerComponent extends JControllerItem implements IJC
                 item.resetCursor(this.transform.rotateZ);
             }
         }
+
+        this.applyToTarget();
     }
 
     // 把变换应用到目标元素

@@ -146,16 +146,6 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
     }
 
     /**
-     * Div元素的JSON表现形式，包括 'text' 等属性
-     * @param props - 要序列化的属性列表
-     * @returns JSON对象，表示div元素
-     */
-    toJSON(props = []) {
-        props.push('text');
-        return super.toJSON(props);
-    }
-
-    /**
      * 移除 JText 实例
      */
     dispose(): void {

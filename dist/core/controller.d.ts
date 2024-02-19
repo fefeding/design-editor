@@ -1,8 +1,9 @@
+import { ItemType } from 'j-design-util';
 import JElement from './element';
 import { IJControllerItem, IJControllerComponent, IJBaseComponent } from '../constant/types';
 export declare class JControllerItem extends JElement<HTMLDivElement> implements IJControllerItem {
     constructor(option: any);
-    dir: string;
+    dir: ItemType | '';
     size: number;
     protected _isMoving: boolean;
     get isMoving(): boolean;
@@ -13,10 +14,7 @@ export declare class JControllerItem extends JElement<HTMLDivElement> implements
     };
     onDragMove(event: MouseEvent): void;
     onDragStart(event: MouseEvent): void;
-    onDragEnd(event: MouseEvent, pos?: {
-        x: number;
-        y: number;
-    }): void;
+    onDragEnd(event: MouseEvent): void;
     resetCursor(rotation?: number): Promise<void>;
 }
 export default class JControllerComponent extends JControllerItem implements IJControllerComponent {
@@ -34,18 +32,6 @@ export default class JControllerComponent extends JControllerItem implements IJC
     };
     createItem(id: any, option: any): JControllerItem;
     change(e: any): void;
-    getRotateEventPosition(e: any, rotation?: number, center?: {
-        x: number;
-        y: number;
-    }): {
-        offX: any;
-        offY: any;
-        center: {
-            x: number;
-            y: number;
-        };
-    };
-    rotateChange(e: any, args: any): void;
     applyToTarget(): void;
     reset(isEditor?: boolean): void;
     bind(target: IJBaseComponent): void;

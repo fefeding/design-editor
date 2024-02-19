@@ -1,4 +1,4 @@
-var util = {
+var util$1 = {
     // 是否是数字
     isNumber(v) {
         return typeof v === 'number' || /^\s*[\d\.]+\s*$/.test(v);
@@ -231,6 +231,180 @@ var util = {
             request.send(method === 'POST' ? params.join('&') : null);
         });
     }
+};
+
+const nwse = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAAe1BMVEUAAAD///////////////////////////////////////////////////////////////////+anqaeoqqjpq7e3+Li4uRpbXhiZ3NjaHRfZHFZX2tAR1c/RlU7QVH////9/f3////////9/f3////9/f3///8PFyr////UYjabAAAAJ3RSTlMABAUMDRAREhckKS4wMjU2N6jAwMDHyMrMzM3P2tvd5Ojo6evr7PowgHoyAAAAAWJLR0QovbC1sgAAAJVJREFUKM+90dsSgiAQgGHIDkBUoqaVGRXE7vs/YSgz5QDX/pd8HGYWQpZqLQ8+WSTrb5yyLII91jdfi8cIJPYAUKEiObgaJ3JwgcFonkL1ucPjOUrJ5o+f0QURCi39QWFRCT2J83s2/yPsRAgP0vRzmOLaDNBBCkQ400EOFDaQgxLbcTB1AsyGUb5ofBXdjW1Xi/32F3U3EU6pnu/zAAAAAElFTkSuQmCC';
+const ns = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAAmVBMVEUAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+oq7KusLevsriZm6Wdoamipa2jpq6Tl6CNkZqIjJX///98gYv///////////////8PFyr///8ipdpMAAAAMXRSTlMAAQIDBAUHCVpcXV5faGl3gIKDhIWImJydnp+mqaqxuLu/v7/AwMDAwcLDxMX7/P3+tV+LYwAAAAFiS0dEMkDSTMgAAAC/SURBVCjPfZLZEoIwDEWhClhAxQVFVDYVF1xI/v/jJBbRVvA8dJgcyL0zRdMamOsyrQV9gRiy1nmWtxgWYAaQ40oxbIk7ADKBbAZiDnBELgmOFQB0OnI09wsShW/rarxHwpPfHhMJieT1yMVXNtaIDMJudsjUGztF56qqKlHXJbj+vy5hDt91R6YkZp+MuSQm94sodL1NJWHF5Z7m50dsKSFReQA4lZGpxhsbTFPcGr+X3gsR1/2234Q5zte1PgEi+SemTJG1vwAAAABJRU5ErkJggg==';
+const fullCircleRadius = Math.PI * 2;
+// 操作杠指针
+const Cursors = {
+    'l': '',
+    'lt': nwse,
+    't': ns,
+    'tr': '',
+    'r': '',
+    'rb': nwse,
+    'b': ns,
+    'lb': '',
+    'rotate': 'pointer',
+    'skew': 'pointer',
+    // 根据角度旋转指针
+    async get(dir, rotation = 0) {
+        if (dir === 'rotate' || dir === 'skew')
+            return this[dir];
+        if (Math.abs(rotation) > fullCircleRadius)
+            rotation = rotation % fullCircleRadius;
+        // 2PI 为一个圆，把角度转为一个圆内的值，以免重复生成图片
+        const rotationKey = Number(rotation.toFixed(2)); // 精度只取小数2位
+        const key = rotationKey === 0 ? dir : `${dir}_${rotationKey}`;
+        let cursor = this[key];
+        if (!cursor) {
+            if (dir === 'l' || dir === 'r' || dir === 't' || dir === 'b') {
+                // 如果没有旋转角度，则把ns转90度即可
+                if (rotation === 0) {
+                    cursor = await util$1.rotateImage(ns, Math.PI / 2);
+                    this['l'] = this['r'] = cursor;
+                }
+                // 如果有旋转角度，则获取标准的再转对应的角度
+                else {
+                    const normal = await this.get(dir, 0);
+                    cursor = await util$1.rotateImage(normal, rotation);
+                    this[key] = cursor;
+                }
+            }
+            else if (dir === 'tr' || dir === 'lb' || dir === 'lt' || dir === 'rb') {
+                // 如果没有旋转角度，则把nwse转90度即可
+                if (rotation === 0) {
+                    cursor = await util$1.rotateImage(nwse, Math.PI / 2);
+                    return this['tr'] = this['lb'] = cursor;
+                }
+                // 如果有旋转角度，则获取标准的再转对应的角度
+                else {
+                    const normal = await this.get(dir, 0);
+                    cursor = await util$1.rotateImage(normal, rotation);
+                    this[key] = cursor;
+                }
+            }
+        }
+        return cursor;
+    }
+};
+const ItemIcons = {
+    'rotate': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAgVBMVEUAAAAiK9MjKdUfKNYjKdUiKNYiKdUeHuAjKNYjKNYiKNYyMswiKNYiKNYiKNYiKNYhKNYiKdUiKNYiKNYjKdUjKNYgJ9cjJdYiKNYiKNYiKdUhJ9cjKNYiKdUdLNMrK9MiKNYiKNYiKdUiKNYjKNYjKdUjKdUjKNYjKdUjKdUjKdaUW7eVAAAAKnRSTlMAFdMY1/v4CPXo4wXuyLh6RfKRjWpAJxykb1tSTjARC8OslYVgOivQrqey7caqAAABM0lEQVRIx+2U6W6DMBCEDdSE+2wg950e3/s/YGOBQI0hMf+qKvODHYsZe9derXjh32C2PsU+BIcyCw3kVhnRIUj3z/TvEcTp1RGizs42BJvH+kqSbPtlFkP52LFc353oshCTMM8pJzpchuuwrLEs8fdDes9zRhwH0gG9DbY1khR+OKQfd9hkuv4Nbp/hrFIKXe+ANebIiHW9gJbod2fhN7zTq+Shpb/3UusQ2fGeuMw6rtBv1vxraX9UgNNwPV1l0NONmbdMd7jUenkFqRhzyKEr3/DZENNHDSOuKpq3zZlEBfPG3EVcVDRv/RX5VkzCAv9jkiFMyO+GwHb1eOgt4Kvq104hverJIMshea/CG61X3y6yeDb7nJMHyChwVTia1LS7HAMJ+MmyNp/gO2cmXvjD+AHprhpoJKiYYAAAAABJRU5ErkJggg==',
+    'skew': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAdVBMVEUAAABlY/97e/9kYv9kY/9nZ/9lY/9kYv9kY/9kYv9kY/9lY/9kYv9kY/9pYP9oYP9kYv9kYv9kY/9kYv9iYv9nY/9kYv9lYv9kYv9lYv9lY/9kYv9lYv9kY/9kYv9lZf9lY/9kYv9kYv9lYv9kYv9lY/9lY/+ktQNRAAAAJnRSTlMA/ATv3xHmW/V0TtO3khcNy8XBUh8U6ti+ppt5bksnGTqygmNEZ0ctpdUAAAEmSURBVEjH7VPbloIwDKSloAUqF6kgd123//+Ja+jSSpGqD74xbynJycxkcDZs+BIOAa2ygrgIuaQoKxocbN03FooFQnZ73u1RIlZQUG/ZvzsJC9zGaOeZkEAJa9ou9zD28q5tWIKERDZb0kvu+3MQm5vj4LyXWh7k42Rce/VW1F1d+J5g9fILddmv29eX0PGj6vReRdhmOI7uLakqgWTnWNGBRFWBo7l9IAeRqgKGFzulCzirjyZAxGRb6/tHM2GREq1VC7eWtvpCoN3M1nq0NX3gwAt9OBiACfNwZKaSRyoaVST0xJBN0UjNMzVG+NCog0zho0tP4noebwKP/2zq+Ll5AwuNAYpEyIZXv+hJU3I4d17iiKToN6Fs/WDgg34djQ0bvo4/naYvgs8xmvwAAAAASUVORK5CYII='
+};
+// 因为旋转后坐标要回原才好计算操作，
+const getRotateEventPosition = (offset, oldPosition, newPosition, rotation, center) => {
+    // 先回原坐标，再主算偏移量，这样保证操作更容易理解
+    if (rotation) {
+        const [pos1, pos2] = util$1.rotatePoints([oldPosition, newPosition], center, -rotation);
+        offset.x = pos2.x - pos1.x;
+        offset.y = pos2.y - pos1.y;
+    }
+    return offset;
+};
+// 发生旋转, 计算得到的旋转角度
+const rotateChange = (oldPosition, newPosition, center) => {
+    // 因为center是相对于编辑器的，所以事件坐标也需要转到编辑器
+    const cx1 = oldPosition.x - center.x;
+    const cy1 = oldPosition.y - center.y;
+    let angle1 = Math.atan(cy1 / cx1);
+    const cx2 = newPosition.x - center.x;
+    const cy2 = newPosition.y - center.y;
+    let angle2 = Math.atan(cy2 / cx2);
+    if (angle1 >= 0 && angle2 < 0) {
+        if (cx1 >= 0 && cy1 >= 0 && cx2 <= 0 && cy2 >= 0)
+            angle2 = Math.PI + angle2;
+        else if (cx1 <= 0 && cy1 <= 0 && cx2 >= 0 && cy2 <= 0)
+            angle2 = Math.PI + angle2;
+        //else if(cx1 <= 0 && cy1 <=0 && cx2 >= 0 && cy2 >= 0) angle2 = Math.PI + angle2;
+    }
+    else if (angle1 <= 0 && angle2 >= 0) {
+        if (cx1 >= 0 && cy1 <= 0 && cx2 < 0)
+            angle2 = angle2 - Math.PI;
+        else
+            angle2 = -angle2;
+    }
+    else ;
+    return angle2 - angle1;
+};
+// 根据操作参数，计算位移，大小和旋转角度等
+const getChangeData = (dir, offset, oldPosition, newPosition, center, rotation = 0) => {
+    // 当前移动对原对象的改变
+    const args = {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+        rotation: 0,
+        skew: {
+            x: 0,
+            y: 0
+        }
+    };
+    // 先回原坐标，再主算偏移量，这样保证操作更容易理解
+    if (rotation) {
+        offset = getRotateEventPosition(offset, oldPosition, newPosition, rotation, center);
+    }
+    switch (dir) {
+        case 'l': {
+            args.x = offset.x;
+            args.width = -offset.x;
+            break;
+        }
+        case 't': {
+            args.y = offset.y;
+            args.height = -offset.y;
+            break;
+        }
+        case 'r': {
+            args.width = offset.x;
+            break;
+        }
+        case 'b': {
+            args.height = offset.y;
+            break;
+        }
+        case 'lt': {
+            args.x = offset.x;
+            args.width = -offset.x;
+            args.y = offset.y;
+            args.height = -offset.y;
+            break;
+        }
+        case 'tr': {
+            args.width = offset.x;
+            args.y = offset.y;
+            args.height = -offset.y;
+            break;
+        }
+        case 'rb': {
+            args.width = offset.x;
+            args.height = offset.y;
+            break;
+        }
+        case 'lb': {
+            args.x = offset.x;
+            args.width = -offset.x;
+            args.height = offset.y;
+            break;
+        }
+    }
+    // 如果中心发生了偏移，则新中心点要移到绕原中心点旋转当前旋转角度的点，才举使图形移动不正常
+    if (rotation && (args.x || args.y || args.width || args.height)) {
+        const newCenter = {
+            x: center.x + args.x + args.width / 2,
+            y: center.y + args.y + args.height / 2
+        };
+        const targetCenter = util$1.rotatePoints({ ...newCenter }, center, rotation);
+        args.x += targetCenter.x - newCenter.x;
+        args.y += targetCenter.y - newCenter.y;
+    }
+    return args;
+};
+
+var util = {
+    ...util$1
 };
 
 function getDefaultExportFromCjs (x) {
@@ -632,7 +806,6 @@ class EventEmitter extends EventEmitter$1 {
 }
 
 const topZIndex = 10000;
-const fullCircleRadius = Math.PI * 2;
 /**
  * 支持的样式属性列表
  * @public
@@ -1562,65 +1735,6 @@ const ContainerDefaultStyle = {
     zIndex: '0',
     display: 'inline-block',
     overflow: 'visible'
-};
-const nwse = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAAe1BMVEUAAAD///////////////////////////////////////////////////////////////////+anqaeoqqjpq7e3+Li4uRpbXhiZ3NjaHRfZHFZX2tAR1c/RlU7QVH////9/f3////////9/f3////9/f3///8PFyr////UYjabAAAAJ3RSTlMABAUMDRAREhckKS4wMjU2N6jAwMDHyMrMzM3P2tvd5Ojo6evr7PowgHoyAAAAAWJLR0QovbC1sgAAAJVJREFUKM+90dsSgiAQgGHIDkBUoqaVGRXE7vs/YSgz5QDX/pd8HGYWQpZqLQ8+WSTrb5yyLII91jdfi8cIJPYAUKEiObgaJ3JwgcFonkL1ucPjOUrJ5o+f0QURCi39QWFRCT2J83s2/yPsRAgP0vRzmOLaDNBBCkQ400EOFDaQgxLbcTB1AsyGUb5ofBXdjW1Xi/32F3U3EU6pnu/zAAAAAElFTkSuQmCC';
-const ns = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAAmVBMVEUAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+oq7KusLevsriZm6Wdoamipa2jpq6Tl6CNkZqIjJX///98gYv///////////////8PFyr///8ipdpMAAAAMXRSTlMAAQIDBAUHCVpcXV5faGl3gIKDhIWImJydnp+mqaqxuLu/v7/AwMDAwcLDxMX7/P3+tV+LYwAAAAFiS0dEMkDSTMgAAAC/SURBVCjPfZLZEoIwDEWhClhAxQVFVDYVF1xI/v/jJBbRVvA8dJgcyL0zRdMamOsyrQV9gRiy1nmWtxgWYAaQ40oxbIk7ADKBbAZiDnBELgmOFQB0OnI09wsShW/rarxHwpPfHhMJieT1yMVXNtaIDMJudsjUGztF56qqKlHXJbj+vy5hDt91R6YkZp+MuSQm94sodL1NJWHF5Z7m50dsKSFReQA4lZGpxhsbTFPcGr+X3gsR1/2234Q5zte1PgEi+SemTJG1vwAAAABJRU5ErkJggg==';
-// 操作杠指针
-const ControlerCursors = {
-    'l': '',
-    'lt': nwse,
-    't': ns,
-    'tr': '',
-    'r': '',
-    'rb': nwse,
-    'b': ns,
-    'lb': '',
-    'rotate': 'pointer',
-    'skew': 'pointer',
-    // 根据角度旋转指针
-    async get(dir, rotation = 0) {
-        if (dir === 'rotate' || dir === 'skew')
-            return this[dir];
-        if (Math.abs(rotation) > fullCircleRadius)
-            rotation = rotation % fullCircleRadius;
-        // 2PI 为一个圆，把角度转为一个圆内的值，以免重复生成图片
-        const rotationKey = Number(rotation.toFixed(2)); // 精度只取小数2位
-        const key = rotationKey === 0 ? dir : `${dir}_${rotationKey}`;
-        let cursor = this[key];
-        if (!cursor) {
-            if (dir === 'l' || dir === 'r' || dir === 't' || dir === 'b') {
-                // 如果没有旋转角度，则把ns转90度即可
-                if (rotation === 0) {
-                    cursor = await util.rotateImage(ns, Math.PI / 2);
-                    this['l'] = this['r'] = cursor;
-                }
-                // 如果有旋转角度，则获取标准的再转对应的角度
-                else {
-                    const normal = await this.get(dir, 0);
-                    cursor = await util.rotateImage(normal, rotation);
-                    this[key] = cursor;
-                }
-            }
-            else if (dir === 'tr' || dir === 'lb' || dir === 'lt' || dir === 'rb') {
-                // 如果没有旋转角度，则把nwse转90度即可
-                if (rotation === 0) {
-                    cursor = await util.rotateImage(nwse, Math.PI / 2);
-                    return this['tr'] = this['lb'] = cursor;
-                }
-                // 如果有旋转角度，则获取标准的再转对应的角度
-                else {
-                    const normal = await this.get(dir, 0);
-                    cursor = await util.rotateImage(normal, rotation);
-                    this[key] = cursor;
-                }
-            }
-        }
-        return cursor;
-    }
-};
-const ControlItemIcons = {
-    'rotate': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAgVBMVEUAAAAiK9MjKdUfKNYjKdUiKNYiKdUeHuAjKNYjKNYiKNYyMswiKNYiKNYiKNYiKNYhKNYiKdUiKNYiKNYjKdUjKNYgJ9cjJdYiKNYiKNYiKdUhJ9cjKNYiKdUdLNMrK9MiKNYiKNYiKdUiKNYjKNYjKdUjKdUjKNYjKdUjKdUjKdaUW7eVAAAAKnRSTlMAFdMY1/v4CPXo4wXuyLh6RfKRjWpAJxykb1tSTjARC8OslYVgOivQrqey7caqAAABM0lEQVRIx+2U6W6DMBCEDdSE+2wg950e3/s/YGOBQI0hMf+qKvODHYsZe9derXjh32C2PsU+BIcyCw3kVhnRIUj3z/TvEcTp1RGizs42BJvH+kqSbPtlFkP52LFc353oshCTMM8pJzpchuuwrLEs8fdDes9zRhwH0gG9DbY1khR+OKQfd9hkuv4Nbp/hrFIKXe+ANebIiHW9gJbod2fhN7zTq+Shpb/3UusQ2fGeuMw6rtBv1vxraX9UgNNwPV1l0NONmbdMd7jUenkFqRhzyKEr3/DZENNHDSOuKpq3zZlEBfPG3EVcVDRv/RX5VkzCAv9jkiFMyO+GwHb1eOgt4Kvq104hverJIMshea/CG61X3y6yeDb7nJMHyChwVTia1LS7HAMJ+MmyNp/gO2cmXvjD+AHprhpoJKiYYAAAAABJRU5ErkJggg==',
-    'skew': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAdVBMVEUAAABlY/97e/9kYv9kY/9nZ/9lY/9kYv9kY/9kYv9kY/9lY/9kYv9kY/9pYP9oYP9kYv9kYv9kY/9kYv9iYv9nY/9kYv9lYv9kYv9lYv9lY/9kYv9lYv9kY/9kYv9lZf9lY/9kYv9kYv9lYv9kYv9lY/9lY/+ktQNRAAAAJnRSTlMA/ATv3xHmW/V0TtO3khcNy8XBUh8U6ti+ppt5bksnGTqygmNEZ0ctpdUAAAEmSURBVEjH7VPbloIwDKSloAUqF6kgd123//+Ja+jSSpGqD74xbynJycxkcDZs+BIOAa2ygrgIuaQoKxocbN03FooFQnZ73u1RIlZQUG/ZvzsJC9zGaOeZkEAJa9ou9zD28q5tWIKERDZb0kvu+3MQm5vj4LyXWh7k42Rce/VW1F1d+J5g9fILddmv29eX0PGj6vReRdhmOI7uLakqgWTnWNGBRFWBo7l9IAeRqgKGFzulCzirjyZAxGRb6/tHM2GREq1VC7eWtvpCoN3M1nq0NX3gwAt9OBiACfNwZKaSRyoaVST0xJBN0UjNMzVG+NCog0zho0tP4noebwKP/2zq+Ll5AwuNAYpEyIZXv+hJU3I4d17iiKToN6Fs/WDgg34djQ0bvo4/naYvgs8xmvwAAAAASUVORK5CYII='
 };
 
 class Transform extends EventEmitter {
@@ -2566,15 +2680,6 @@ class JText extends JBaseComponent {
         }
     }
     /**
-     * Div元素的JSON表现形式，包括 'text' 等属性
-     * @param props - 要序列化的属性列表
-     * @returns JSON对象，表示div元素
-     */
-    toJSON(props = []) {
-        props.push('text');
-        return super.toJSON(props);
-    }
-    /**
      * 移除 JText 实例
      */
     dispose() {
@@ -2626,15 +2731,6 @@ class JImage extends JBaseComponent {
         const src = option.url || option.src;
         if (src)
             this.data.src = src;
-    }
-    /**
-     * img元素的JSON表现形式，包括'src'等属性。
-     * @param props - 序列化时需要包括的属性
-     * @returns JSON对象，表示img元素。
-     */
-    toJSON(props = []) {
-        props.push('src');
-        return super.toJSON(props);
     }
 }
 
@@ -2702,10 +2798,6 @@ class JSvg extends JBaseComponent {
         const svg = await util.request(url);
         this.data.svg = svg;
     }
-    toJSON(props = []) {
-        props.push('src');
-        return super.toJSON(props);
-    }
 }
 
 // 控制元素移动和矩阵变换
@@ -2731,7 +2823,7 @@ class JControllerItem extends JElement {
             });
             // @ts-ignore
             this.editor.view.on('mouseout', (e) => {
-                if (e.target !== this.editor.dom)
+                if (!this.isMoving || e.target !== this.editor.view.dom)
                     return; // 不是out编辑器，不处理
                 this.onDragEnd(e);
             });
@@ -2801,14 +2893,16 @@ class JControllerItem extends JElement {
         event.stopPropagation && event.stopPropagation();
         event.preventDefault && event.preventDefault();
     }
-    onDragEnd(event, pos = event) {
+    onDragEnd(event) {
         if (this.isMoving) {
             this.isMoving = false;
         }
     }
     // 计算指针
     async resetCursor(rotation = 0) {
-        let cursor = await ControlerCursors.get(this.dir, rotation);
+        if (!this.dir)
+            return;
+        let cursor = await Cursors.get(this.dir, rotation);
         if (!cursor)
             return;
         // 先简单处理
@@ -2947,7 +3041,7 @@ class JControllerComponent extends JControllerItem {
                 cursor: `pointer`,
                 ...option.itemStyle,
                 'backgroundSize': '100%',
-                backgroundImage: ControlItemIcons.rotate
+                backgroundImage: ItemIcons.rotate
             },
             transform: {
                 translateX: '-50%',
@@ -2965,7 +3059,7 @@ class JControllerComponent extends JControllerItem {
                 cursor: `pointer`,
                 ...option.itemStyle,
                 'backgroundSize': '100%',
-                backgroundImage: ControlItemIcons.skew
+                backgroundImage: ItemIcons.skew
             },
             transform: {
                 translateX: '-50%',
@@ -2992,8 +3086,8 @@ class JControllerComponent extends JControllerItem {
     isEditor = false; // 当前关联是否是编辑器
     get center() {
         const center = {
-            x: util.toNumber(this.data.left) + util.toNumber(this.data.width) / 2,
-            y: util.toNumber(this.data.top) + util.toNumber(this.data.height) / 2,
+            x: util$1.toNumber(this.data.left) + util$1.toNumber(this.data.width) / 2,
+            y: util$1.toNumber(this.data.top) + util$1.toNumber(this.data.height) / 2,
         };
         return center;
     }
@@ -3017,9 +3111,9 @@ class JControllerComponent extends JControllerItem {
     change(e) {
         if (!this.target)
             return;
-        let { dir, offX, offY, } = e;
+        let { dir, offX, offY, oldPosition, newPosition } = e;
         // 当前移动对原对象的改变
-        const args = {
+        let args = {
             x: 0,
             y: 0,
             width: 0,
@@ -3031,8 +3125,19 @@ class JControllerComponent extends JControllerItem {
             }
         };
         const center = this.center;
+        const width = util$1.toNumber(this.data.width);
+        const height = util$1.toNumber(this.data.height);
         if (dir === 'rotate') {
-            this.rotateChange(e, args);
+            // 编辑器坐标, 因为是在编辑器渲染区域操作，需要把坐标转到此区域再处理
+            const pos1 = this.editor.toEditorPosition(oldPosition);
+            const pos2 = this.editor.toEditorPosition(newPosition);
+            args.rotation = rotateChange(pos1, pos2, center);
+        }
+        else if (dir === 'skew') {
+            const rx = offX / width * Math.PI;
+            const ry = offY / height * Math.PI;
+            args.skew.x = ry;
+            args.skew.y = rx;
         }
         else if (dir === 'element') {
             // 元素位置控制器
@@ -3040,80 +3145,22 @@ class JControllerComponent extends JControllerItem {
             args.y = offY;
         }
         else {
-            // 先回原坐标，再主算偏移量，这样保证操作更容易理解
-            if (this.transform.rotateZ) {
-                const pos = this.getRotateEventPosition(e, this.transform.rotateZ, center);
-                offX = pos.offX;
-                offY = pos.offY;
-            }
-            switch (dir) {
-                case 'l': {
-                    args.x = offX;
-                    args.width = -offX;
-                    break;
-                }
-                case 't': {
-                    args.y = offY;
-                    args.height = -offY;
-                    break;
-                }
-                case 'r': {
-                    args.width = offX;
-                    break;
-                }
-                case 'b': {
-                    args.height = offY;
-                    break;
-                }
-                case 'lt': {
-                    args.x = offX;
-                    args.width = -offX;
-                    args.y = offY;
-                    args.height = -offY;
-                    break;
-                }
-                case 'tr': {
-                    args.width = offX;
-                    args.y = offY;
-                    args.height = -offY;
-                    break;
-                }
-                case 'rb': {
-                    args.width = offX;
-                    args.height = offY;
-                    break;
-                }
-                case 'lb': {
-                    args.x = offX;
-                    args.width = -offX;
-                    args.height = offY;
-                    break;
-                }
-                case 'skew': {
-                    const rx = offX / util.toNumber(this.data.width) * Math.PI;
-                    const ry = offY / util.toNumber(this.data.height) * Math.PI;
-                    args.skew.x = ry;
-                    args.skew.y = rx;
-                    break;
-                }
-            }
+            // 根据操作参数，计算大小和偏移量
+            args = getChangeData(dir, {
+                x: offX,
+                y: offY
+            }, oldPosition, newPosition, center, this.transform.rotateZ);
         }
         // 位移
         if (args.x || args.y) {
             this.move(args.x, args.y);
         }
         if (args.width) {
-            const width = util.toNumber(this.data.width) + args.width;
+            const width = util$1.toNumber(this.data.width) + args.width;
             this.data.width = Math.max(width, 1);
         }
         if (args.height) {
-            this.data.height = Math.max(util.toNumber(this.data.height) + args.height, 1);
-        }
-        const newCenter = this.center;
-        // 如果中心发生了偏移，则新中心点要移到绕原中心点旋转当前旋转角度的点，才举使图形移动不正常
-        if (this.transform.rotateZ && (newCenter.x !== center.x || newCenter.y !== center.y)) {
-            const targetCenter = util.rotatePoints({ ...newCenter }, center, this.transform.rotateZ);
-            this.move(targetCenter.x - newCenter.x, targetCenter.y - newCenter.y);
+            this.data.height = Math.max(util$1.toNumber(this.data.height) + args.height, 1);
         }
         // x,y旋转
         if (args.skew.x || args.skew.y) {
@@ -3121,55 +3168,7 @@ class JControllerComponent extends JControllerItem {
             this.target.transform.rotateY += args.skew.y;
             this.target.transform.apply();
         }
-        this.applyToTarget();
-    }
-    // 因为旋转后坐标要回原才好计算操作，
-    getRotateEventPosition(e, rotation = this.transform.rotateZ, center = this.center) {
-        let { offX, offY, oldPosition, newPosition } = e;
-        // 先回原坐标，再主算偏移量，这样保证操作更容易理解
-        if (rotation) {
-            const [pos1, pos2] = util.rotatePoints([oldPosition, newPosition], center, -rotation);
-            offX = pos2.x - pos1.x;
-            offY = pos2.y - pos1.y;
-        }
-        return {
-            offX,
-            offY,
-            center
-        };
-    }
-    // 发生旋转
-    rotateChange(e, args) {
-        const { oldPosition, newPosition } = e;
-        const center = {
-            x: util.toNumber(this.data.left) + util.toNumber(this.data.width) / 2,
-            y: util.toNumber(this.data.top) + util.toNumber(this.data.height) / 2,
-        };
-        // 编辑器坐标
-        const pos1 = this.editor.toEditorPosition(oldPosition);
-        const pos2 = this.editor.toEditorPosition(newPosition);
-        // 因为center是相对于编辑器的，所以事件坐标也需要转到编辑器
-        const cx1 = pos1.x - center.x;
-        const cy1 = pos1.y - center.y;
-        let angle1 = Math.atan(cy1 / cx1);
-        const cx2 = pos2.x - center.x;
-        const cy2 = pos2.y - center.y;
-        let angle2 = Math.atan(cy2 / cx2);
-        if (angle1 >= 0 && angle2 < 0) {
-            if (cx1 >= 0 && cy1 >= 0 && cx2 <= 0 && cy2 >= 0)
-                angle2 = Math.PI + angle2;
-            else if (cx1 <= 0 && cy1 <= 0 && cx2 >= 0 && cy2 <= 0)
-                angle2 = Math.PI + angle2;
-            //else if(cx1 <= 0 && cy1 <=0 && cx2 >= 0 && cy2 >= 0) angle2 = Math.PI + angle2;
-        }
-        else if (angle1 <= 0 && angle2 >= 0) {
-            if (cx1 >= 0 && cy1 <= 0 && cx2 < 0)
-                angle2 = angle2 - Math.PI;
-            else
-                angle2 = -angle2;
-        }
-        else ;
-        args.rotation = angle2 - angle1;
+        // 如果有操作旋转
         if (args.rotation) {
             this.transform.rotateZ += args.rotation;
             if (Math.abs(this.transform.rotateZ) > fullCircleRadius)
@@ -3180,14 +3179,15 @@ class JControllerComponent extends JControllerItem {
                 item.resetCursor(this.transform.rotateZ);
             }
         }
+        this.applyToTarget();
     }
     // 把变换应用到目标元素
     applyToTarget() {
         if (!this.target)
             return;
         const pos = {
-            x: util.toNumber(this.data.left) + (this.isEditor ? util.toNumber(this.target.data.left) : 0),
-            y: util.toNumber(this.data.top) + (this.isEditor ? util.toNumber(this.target.data.top) : 0)
+            x: util$1.toNumber(this.data.left) + (this.isEditor ? util$1.toNumber(this.target.data.left) : 0),
+            y: util$1.toNumber(this.data.top) + (this.isEditor ? util$1.toNumber(this.target.data.top) : 0)
         };
         this.target.data.left = pos.x;
         this.target.data.top = pos.y;
@@ -3201,8 +3201,8 @@ class JControllerComponent extends JControllerItem {
             //skewY: this.transform.skewY,
             rotateZ: this.transform.rotateZ,
         });
-        const width = util.toNumber(this.data.width) - this.paddingSize * 2;
-        const height = util.toNumber(this.data.height) - this.paddingSize * 2;
+        const width = util$1.toNumber(this.data.width) - this.paddingSize * 2;
+        const height = util$1.toNumber(this.data.height) - this.paddingSize * 2;
         if (this.target.data.width !== width)
             this.target.data.width = width;
         if (this.target.data.height !== height)
@@ -3228,13 +3228,13 @@ class JControllerComponent extends JControllerItem {
         this.reset(this.isEditor);
         // 编辑器的话，需要把它的坐标转为相对于容器的
         const pos = {
-            x: (this.isEditor ? 0 : util.toNumber(target.data.left)),
-            y: (this.isEditor ? 0 : util.toNumber(target.data.top))
+            x: (this.isEditor ? 0 : util$1.toNumber(target.data.left)),
+            y: (this.isEditor ? 0 : util$1.toNumber(target.data.top))
         };
         this.data.left = pos.x;
         this.data.top = pos.y;
-        this.data.width = util.toNumber(target.data.width) + this.paddingSize * 2;
-        this.data.height = util.toNumber(target.data.height) + this.paddingSize * 2;
+        this.data.width = util$1.toNumber(target.data.width) + this.paddingSize * 2;
+        this.data.height = util$1.toNumber(target.data.height) + this.paddingSize * 2;
         this.transform.from({
             // rotateX: target.transform.rotateX,
             // rotateY: target.transform.rotateY,

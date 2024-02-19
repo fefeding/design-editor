@@ -1,3 +1,4 @@
+import { Point } from 'j-design-util';
 import JBase from './core/baseComponent';
 import JText from './components/text';
 import JImage from './components/image';
@@ -231,7 +232,7 @@ export default class JEditor extends JBase implements IJEditor {
     }
 
     // 把domcument坐标转为编辑器相对坐标
-    toEditorPosition(pos: {x: number, y: number}) {
+    toEditorPosition(pos: Point) {
         // 编辑器坐标
         const editorPos = util.getElementBoundingRect(this.target.dom);
         return {

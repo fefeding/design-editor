@@ -57,14 +57,4 @@ export default class JImage extends Base<HTMLImageElement> implements IJImageCom
      * JImageData 数据
      */
     declare data: JImageData;
-
-    /**
-     * img元素的JSON表现形式，包括'src'等属性。
-     * @param props - 序列化时需要包括的属性
-     * @returns JSON对象，表示img元素。
-     */
-    toJSON(props = []) {
-        props.push('src');
-        return super.toJSON(props);
-    }
 }

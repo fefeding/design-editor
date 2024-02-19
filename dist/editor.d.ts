@@ -1,3 +1,4 @@
+import { Point } from 'j-design-util';
 import JBase from './core/baseComponent';
 import JText from './components/text';
 import JImage from './components/image';
@@ -22,10 +23,7 @@ export default class JEditor extends JBase implements IJEditor {
     removeChild(el: IJElement | HTMLElement): IJElement<HTMLElement>[];
     bindElementEvent(el: IJElement): void;
     getChild(id: string): IJElement | undefined;
-    toEditorPosition(pos: {
-        x: number;
-        y: number;
-    }): {
+    toEditorPosition(pos: Point): {
         x: number;
         y: number;
     };
