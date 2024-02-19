@@ -4,6 +4,9 @@
   "description": "design html 设计图片编辑库",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
   "scripts": {
     "dev": "node test/dev",
     "build": "gulp && node build.js",

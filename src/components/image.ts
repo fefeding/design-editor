@@ -56,7 +56,7 @@ export default class JImage extends Base<HTMLImageElement> implements IJImageCom
     /**
      * JImageData 数据
      */
-    data: JImageData;
+    declare data: JImageData;
 
     /**
      * img元素的JSON表现形式，包括'src'等属性。

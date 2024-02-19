@@ -26,7 +26,7 @@ export default {
     // 带像素或其它单位的转换为数字
     toNumber(v: string|number) {
         if(this.isNumber(v)) return Number(v);
-        else if(typeof v === 'string') return parseFloat(v);
+        else if(typeof v === 'string') return parseFloat(v) || 0;
     },
     // 弧度转角度
     radToDeg(v: number) {

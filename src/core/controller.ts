@@ -2,7 +2,7 @@
 import util from '../lib/util';
 import JElement from './element';
 import { IJControllerItem, IJControllerComponent, IJBaseComponent, IJEditor } from '../constant/types';
-import { topZIndex, ControlerCursors, ControlItemIcons } from '../constant/styleMap';
+import { topZIndex, ControlerCursors, ControlItemIcons, fullCircleRadius } from '../constant/styleMap';
 
 // 控制元素移动和矩阵变换
 export class JControllerItem extends JElement<HTMLDivElement> implements IJControllerItem {
@@ -50,8 +50,6 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
 
     dir: string = '';
     size: number = 8;
-    // 当前编辑器
-    editor: IJEditor;
 
     protected _isMoving = false;
     get isMoving() {
@@ -317,9 +315,17 @@ export default class JControllerComponent extends JControllerItem implements IJC
 
     target: IJBaseComponent;
     // 选择框边距
-    paddingSize = 1;
+    paddingSize = 0;
 
     isEditor = false;// 当前关联是否是编辑器
+
+    get center() {
+        const center = {
+            x: util.toNumber(this.data.left) + util.toNumber(this.data.width)/2,
+            y: util.toNumber(this.data.top) + util.toNumber(this.data.height)/2,
+        };
+        return center;
+    }
 
     // 生成控制点
     createItem(id, option) {
@@ -357,6 +363,9 @@ export default class JControllerComponent extends JControllerItem implements IJC
                 y: 0
             }
         };
+
+        const center = this.center;
+
         if(dir === 'rotate') {
             this.rotateChange(e, args);
         }
@@ -368,7 +377,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
         else {
             // 先回原坐标，再主算偏移量，这样保证操作更容易理解
             if(this.transform.rotateZ) {
-                const pos = this.getRotateEventPosition(e);
+                const pos = this.getRotateEventPosition(e, this.transform.rotateZ, center);
                 offX = pos.offX;
                 offY = pos.offY;
             }
@@ -436,6 +445,13 @@ export default class JControllerComponent extends JControllerItem implements IJC
         if(args.height) {
             this.data.height = Math.max(util.toNumber(this.data.height) + args.height, 1);
         }
+
+        const newCenter = this.center;
+        // 如果中心发生了偏移，则新中心点要移到绕原中心点旋转当前旋转角度的点，才举使图形移动不正常
+        if(this.transform.rotateZ && (newCenter.x !== center.x || newCenter.y !== center.y)) {
+            const targetCenter = util.rotatePoints({...newCenter}, center, this.transform.rotateZ);
+            this.move(targetCenter.x - newCenter.x, targetCenter.y - newCenter.y);
+        }
         // x,y旋转
         if(args.skew.x || args.skew.y) {
             this.target.transform.rotateX += args.skew.x;
@@ -447,21 +463,19 @@ export default class JControllerComponent extends JControllerItem implements IJC
     }
 
     // 因为旋转后坐标要回原才好计算操作，
-    getRotateEventPosition(e) {
+    getRotateEventPosition(e, rotation: number = this.transform.rotateZ, center = this.center) {
         let {offX, offY, oldPosition, newPosition} = e;
+
         // 先回原坐标，再主算偏移量，这样保证操作更容易理解
-        if(this.transform.rotateZ) {
-            const center = {
-                x: util.toNumber(this.data.left) + util.toNumber(this.data.width)/2,
-                y: util.toNumber(this.data.top) + util.toNumber(this.data.height)/2,
-            };
-            const [pos1, pos2] = util.rotatePoints([oldPosition, newPosition], center, -this.transform.rotateZ);
+        if(rotation) {
+            const [pos1, pos2] = util.rotatePoints([oldPosition, newPosition], center, -rotation);
             offX = pos2.x - pos1.x;
             offY = pos2.y - pos1.y;
         }
         return {
             offX,
-            offY
+            offY,
+            center
         }
     }
 
@@ -502,6 +516,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
 
         if(args.rotation) {
             this.transform.rotateZ += args.rotation;
+            if(Math.abs(this.transform.rotateZ) > fullCircleRadius) this.transform.rotateZ = this.transform.rotateZ % fullCircleRadius;
             this.transform.apply();
 
             // 发生了旋转，要处理指针图标

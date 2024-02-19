@@ -1,10 +1,9 @@
 import JElement from './element';
-import { IJControllerItem, IJControllerComponent, IJBaseComponent, IJEditor } from '../constant/types';
+import { IJControllerItem, IJControllerComponent, IJBaseComponent } from '../constant/types';
 export declare class JControllerItem extends JElement<HTMLDivElement> implements IJControllerItem {
     constructor(option: any);
     dir: string;
     size: number;
-    editor: IJEditor;
     protected _isMoving: boolean;
     get isMoving(): boolean;
     set isMoving(v: boolean);
@@ -29,11 +28,22 @@ export default class JControllerComponent extends JControllerItem implements IJC
     target: IJBaseComponent;
     paddingSize: number;
     isEditor: boolean;
+    get center(): {
+        x: number;
+        y: number;
+    };
     createItem(id: any, option: any): JControllerItem;
     change(e: any): void;
-    getRotateEventPosition(e: any): {
+    getRotateEventPosition(e: any, rotation?: number, center?: {
+        x: number;
+        y: number;
+    }): {
         offX: any;
         offY: any;
+        center: {
+            x: number;
+            y: number;
+        };
     };
     rotateChange(e: any, args: any): void;
     applyToTarget(): void;

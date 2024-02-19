@@ -29,7 +29,7 @@ export default class JSvg extends Base<HTMLDivElement> implements IJSvgComponent
         });
     }
 
-    data: JSvgData;
+    declare data: JSvgData;
 
     // 替换变量
     renderSvg(svg: string) {
