@@ -97,19 +97,21 @@ export default class JData<T extends object> extends EventEmiter implements IDat
         else {
             value = this.data[name];
         }
-        const watches = this.watcher.get(name);
-        if(watches && watches.length) {
-            for(const w of watches) {
-                w && w.set && w.set({
-                    name,
-                    value
-                 });
-            }
-         }
-         this.emit('change', {
-            name,
-            value
-         });
+        setTimeout(()=>{
+            const watches = this.watcher.get(name);
+            if(watches && watches.length) {
+                for(const w of watches) {
+                    w && w.set && w.set({
+                        name,
+                        value
+                     });
+                }
+             }
+             this.emit('change', {
+                name,
+                value
+             });
+        });
     }
 
     // 读取属性

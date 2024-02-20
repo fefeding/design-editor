@@ -25,9 +25,10 @@ export default class JControllerComponent extends JControllerItem implements IJC
     skewItem: JControllerItem;
     positionItem: JControllerItem | undefined;
     sizeItem: JControllerItem | undefined;
-    target: IJBaseComponent;
+    target: IJBaseComponent | undefined;
     paddingSize: number;
     isEditor: boolean;
+    private bindTargetPositionAndSizeHandler;
     get center(): {
         x: number;
         y: number;
@@ -36,8 +37,10 @@ export default class JControllerComponent extends JControllerItem implements IJC
     change(e: any): void;
     applyToTarget(): void;
     reset(isEditor?: boolean): void;
+    get isControling(): boolean;
     resetCursor(rotation?: number): Promise<void>;
     bind(target: IJBaseComponent): void;
+    bindTargetPositionAndSize(): void;
     setTip(): void;
     unbind(target: IJBaseComponent): void;
 }

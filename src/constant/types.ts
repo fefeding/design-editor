@@ -404,7 +404,7 @@ export interface IJControllerComponent extends IJControllerItem {
     /**控制偏移的控制器项 */
     skewItem: IJControllerItem;
     /**控制器关联的目标元素 */
-    target: IJElement;
+    target: IJElement|undefined;
     /**控制器的内边距大小 */
     paddingSize: number;
     /**是否是编辑态 */

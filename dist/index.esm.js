@@ -2076,18 +2076,20 @@ class JData extends EventEmitter {
         else {
             value = this.data[name];
         }
-        const watches = this.watcher.get(name);
-        if (watches && watches.length) {
-            for (const w of watches) {
-                w && w.set && w.set({
-                    name,
-                    value
-                });
+        setTimeout(() => {
+            const watches = this.watcher.get(name);
+            if (watches && watches.length) {
+                for (const w of watches) {
+                    w && w.set && w.set({
+                        name,
+                        value
+                    });
+                }
             }
-        }
-        this.emit('change', {
-            name,
-            value
+            this.emit('change', {
+                name,
+                value
+            });
         });
     }
     // 读取属性
@@ -3232,6 +3234,7 @@ class JControllerComponent extends JControllerItem {
     // 选择框边距
     paddingSize = 0;
     isEditor = false; // 当前关联是否是编辑器
+    bindTargetPositionAndSizeHandler;
     get center() {
         const center = {
             x: util$1.toNumber(this.data.left) + util$1.toNumber(this.data.width) / 2,
@@ -3368,6 +3371,16 @@ class JControllerComponent extends JControllerItem {
             rotateZ: 0,
         });
     }
+    // 是否正在操控中
+    get isControling() {
+        if (this.isMoving)
+            return true;
+        for (const item of this.items) {
+            if (item.isMoving)
+                return true;
+        }
+        return false;
+    }
     async resetCursor(rotation = this.transform.rotateZ) {
         // 发生了旋转，要处理指针图标
         for (const item of this.items) {
@@ -3380,30 +3393,43 @@ class JControllerComponent extends JControllerItem {
             return;
         this.isEditor = target === this.editor;
         this.reset(this.isEditor);
-        // 编辑器的话，需要把它的坐标转为相对于容器的
-        const pos = {
-            x: (this.isEditor ? 0 : util$1.toNumber(target.data.left)),
-            y: (this.isEditor ? 0 : util$1.toNumber(target.data.top))
-        };
-        this.data.left = pos.x;
-        this.data.top = pos.y;
-        this.data.width = util$1.toNumber(target.data.width) + this.paddingSize * 2;
-        this.data.height = util$1.toNumber(target.data.height) + this.paddingSize * 2;
-        this.transform.from({
-            // rotateX: target.transform.rotateX,
-            // rotateY: target.transform.rotateY,
-            rotateZ: target.transform.rotateZ,
-            //scaleX: target.transform.scaleX,
-            //scaleY: target.transform.scaleY,
-            //scaleZ: target.transform.scaleZ,
-        });
         this.target = target;
+        this.bindTargetPositionAndSize();
         this.data.visible = true;
         // 编辑器不让旋转和skew
         const itemVisible = !this.isEditor && target.editable;
         for (const item of this.items) {
             item.data.visible = itemVisible;
         }
+        this.bindTargetPositionAndSizeHandler = (e) => {
+            if (e.target !== this.target || this.isControling)
+                return;
+            this.bindTargetPositionAndSize();
+        };
+        // 如果数据改变，则响应
+        this.target.on('dataChange', this.bindTargetPositionAndSizeHandler);
+    }
+    // 同步目标位置等信息
+    bindTargetPositionAndSize() {
+        if (!this.target)
+            return;
+        // 编辑器的话，需要把它的坐标转为相对于容器的
+        const pos = {
+            x: (this.isEditor ? 0 : util$1.toNumber(this.target.data.left)),
+            y: (this.isEditor ? 0 : util$1.toNumber(this.target.data.top))
+        };
+        this.data.left = pos.x;
+        this.data.top = pos.y;
+        this.data.width = util$1.toNumber(this.target.data.width) + this.paddingSize * 2;
+        this.data.height = util$1.toNumber(this.target.data.height) + this.paddingSize * 2;
+        this.transform.from({
+            // rotateX: target.transform.rotateX,
+            // rotateY: target.transform.rotateY,
+            rotateZ: this.target.transform.rotateZ,
+            //scaleX: target.transform.scaleX,
+            //scaleY: target.transform.scaleY,
+            //scaleZ: target.transform.scaleZ,
+        });
         // 初始化图标
         this.resetCursor();
         this.setTip();
@@ -3417,9 +3443,14 @@ class JControllerComponent extends JControllerItem {
     }
     // 解除绑定
     unbind(target) {
-        if (this.target === target) {
+        if (target && this.target === target) {
             this.reset(false);
             this.data.visible = false;
+            // 如果数据改变，则响应
+            if (this.bindTargetPositionAndSizeHandler) {
+                target.off('dataChange', this.bindTargetPositionAndSizeHandler);
+                delete this.bindTargetPositionAndSizeHandler;
+            }
         }
     }
 }
