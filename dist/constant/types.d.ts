@@ -227,12 +227,14 @@ export interface IJElement<T extends HTMLElement = HTMLElement> extends EventEmi
     get className(): string;
     set className(v: string);
     transform: ITransform;
+    get childrenMaxLevel(): number;
     editable: boolean;
     visible: boolean;
     setDomStyle(name: string, value: string): void;
     css(name: string | Object, value?: string | number): this;
     attr(name: string, value?: string | number | undefined): any;
     move(dx: any, dy: any): void;
+    childrenSort(): Array<IJElement>;
     resize(w: any, h: any): void;
     addChild(child: IJElement | HTMLElement, parent?: IJElement): IJElement<HTMLElement>;
     remove(): void;
@@ -253,6 +255,7 @@ export interface IJBaseComponent<T extends HTMLElement = HTMLElement> extends IJ
     target: IJElement<T>;
     get selected(): boolean;
     set selected(v: boolean);
+    setLevel(level: number | 'next' | 'pre' | 'top' | 'bottom'): void;
 }
 /**
  * 文字组件接口.
@@ -369,7 +372,7 @@ export interface IJEditor extends IJBaseComponent {
      * @remarks 转换至编辑器的位置
      */
     /**转换至编辑器的位置 */
-    toEditorPosition(pos: Point): Point;
+    toEditorPosition(pos: Point, dom?: HTMLElement): Point;
     /**清空编辑器 */
     clear(): void;
     scale(x: any, y?: any): void;

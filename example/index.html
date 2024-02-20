@@ -13,12 +13,10 @@
 			padding: 0;
 		}
 
-		#mycanvas_container {
+		#myeditor_container {
 			overflow: auto;
-			text-align: center;
 			height: 100%;
 			position: relative;
-			margin: auto;
 			background-color: #eee;
 		}
 	</style>
@@ -45,6 +43,15 @@
 					background-color: #fff;" />
 					<img id="btn_zoomout" src="images/zoom_out.png" style="position: fixed; left: 65%; bottom: 10px; z-index:100;box-shadow: 0 0 10px 10px #fff; transform:scale(0.6);
 					background-color: #fff;" />
+
+					<ul class="dropdown-menu" id="element_menu">
+						<li><h6 class="dropdown-header title">Dropdown header</h6></li>
+						<li><a class="dropdown-item" href="#" data-action="delete">移除</a></li>
+						<li><a class="dropdown-item" href="#" data-action="toplevel">顶层</a></li>
+						<li><a class="dropdown-item" href="#" data-action="prelevel">上一层</a></li>
+						<li><a class="dropdown-item" href="#" data-action="nextlevel">下一层</a></li>
+						<li><a class="dropdown-item" href="#" data-action="bottomlevel">底层</a></li>
+					</ul>
 				</div>
 			</div>
 			<div class="col-2" style="height:100%; overflow:auto;">
@@ -56,7 +63,7 @@
 </body>
 <script type="module">
 	import './lib/html-to-image.js';
-	import JEditor from "../dist/index.esm.js";
+	import JEditor, { util } from "../dist/index.esm.js";
 
 	const container = document.getElementById('myeditor_container');
 	container.style.height = window.innerHeight + 'px';
@@ -108,7 +115,59 @@
 				}
 			}
 		}
+		// 元素的右健菜单
+		else if(e.type == 'mousedown' && e.event.button == 2) {
+			showElementMenu(e.target.id, e.event);
+		}
 	});
+
+	// 操作元素菜单
+	function showElementMenu(id, pos) {
+		pos = editor.toEditorPosition(pos, editor.view.dom); // 因为菜单放在最外层，所以要指定相对位置是最外层的view
+		const menu = document.getElementById('element_menu');
+		menu.querySelector('.title').innerHTML = id;
+		menu.style.left = (pos.x ) + 'px';
+		menu.style.top = (pos.y) + 'px';
+		menu.style.display = 'inline';
+
+		menu.removeEventListener('click', menuClick);
+		menu.addEventListener('click', menuClick);
+	}
+	// 菜单点击
+	function menuClick(e) {
+
+		const item = e.srcElement;			
+		const action = util.attr(item, 'data-action');
+		if(!action) return;
+
+		const menu = document.getElementById('element_menu');
+		const id = menu.querySelector('.title').innerHTML;
+		const el = editor.getChild(id);
+		if(!el) return;
+
+		if(action === 'delete') {
+			if(confirm('确定删除？')) {				
+				if(el) el.remove();
+			}
+		}
+		else if(action === 'prelevel') {
+			// 上一层
+			el.setLevel('pre');
+		}
+		else if(action === 'nextlevel') {
+			// 下一层
+			el.setLevel('next');
+		}
+		else if(action === 'toplevel') {
+			// 顶层
+			el.setLevel('top');
+		}
+		else if(action === 'bottomlevel') {
+			// 底层
+			el.setLevel('bottom');
+		}
+		menu.style.display = 'none';
+	}
 
     //editor.fromJSON({"children":[{"children":[],"type":"image","data":{"x":300,"left":300,"y":400,"top":400,"width":100,"height":100,"rotation":0,"src":"https://pixijs.com/assets/bunny.png"},"style":{"bottom":"auto","display":"inline-block","height":100,"left":300,"margin":"0","overflow":"visible","padding":"0","position":"absolute","right":"auto","top":400,"transform":"rotateZ(0rad) scaleX(1) scaleY(1)","width":100,"zIndex":"0"},"transform":{"translateX":0,"translateY":0,"translateZ":0,"rotateX":0,"rotateY":0,"rotateZ":0,"scaleX":1,"scaleY":1,"scaleZ":1,"skewX":0,"skewY":0},"id":"a1acb6d480ad4f1b94cc47c04c8d5cd7"},{"children":[],"type":"text","data":{"x":300,"left":300,"y":100,"top":100,"width":461,"height":39,"rotation":0,"text":"Basic text, 中文测试, complete"},"style":{"bottom":"auto","color":"#004620","display":"inline-block","fontFamily":"Crosterian","fontSize":22,"fontStyle":"normal","fontWeight":"lighter","height":39,"left":300,"margin":"0","overflow":"visible","padding":"0","position":"absolute","right":"auto","textAlign":"left","top":100,"transform":"rotateZ(0rad) scaleX(1) scaleY(1)","width":461,"wordBreak":"keep-all","zIndex":"0"},"transform":{"translateX":0,"translateY":0,"translateZ":0,"rotateX":0,"rotateY":0,"rotateZ":0,"scaleX":1,"scaleY":1,"scaleZ":1,"skewX":0,"skewY":0},"id":"224601617ac14a89a786a8ecc8dcc77f"},{"children":[],"type":"image","data":{"x":100,"left":100,"y":200,"top":200,"width":400,"height":400,"rotation":1.0471975511965976,"src":"https://jtcospublic.ciccten.com/config-server/1703730310545220869/idcard_qrcode.png"},"style":{"bottom":"auto","display":"inline-block","height":400,"left":100,"margin":"0","overflow":"visible","padding":"0","position":"absolute","right":"auto","top":200,"transform":"rotateZ(0rad) scaleX(1) scaleY(1)","width":400,"zIndex":"0"},"transform":{"translateX":0,"translateY":0,"translateZ":0,"rotateX":0,"rotateY":0,"rotateZ":0,"scaleX":1,"scaleY":1,"scaleZ":1,"skewX":0,"skewY":0},"id":"9828932c46f740759dcedd170e0adb54"}],"type":"","data":{"x":198.5,"left":198.5,"y":252.5,"top":252.5,"width":600,"height":800},"style":{"backgroundColor":"#fffffff","backgroundImage":"https://jtcospublic.ciccten.com/public/image/bf.jpg","backgroundSize":"100% 100%","bottom":"auto","boxShadow":"0 0 10px 10px #ccc","display":"inline-block","height":800,"left":198.5,"margin":"0","overflow":"visible","padding":"0","position":"absolute","right":"auto","top":252.5,"transform":"rotateZ(0rad) scaleX(1) scaleY(1)","width":600,"zIndex":"0"},"transform":{"translateX":0,"translateY":0,"translateZ":0,"rotateX":0,"rotateY":0,"rotateZ":0,"scaleX":1,"scaleY":1,"scaleZ":1,"skewX":0,"skewY":0},"id":"f8390b94642049f494934be4052fcaf0"})
 

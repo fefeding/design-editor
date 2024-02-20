@@ -9,6 +9,9 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
     private _selected;
     get selected(): boolean;
     set selected(v: boolean);
+    setLevel(level: number | 'next' | 'pre' | 'top' | 'bottom'): void;
+    private getMyNextLevelChildren;
+    private getMyPreLevelChildren;
     setDomStyle(name: string, value: string): void;
     toJSON(props?: any[]): {
         children: any[];

@@ -23,7 +23,7 @@ export default class JEditor extends JBase implements IJEditor {
     removeChild(el: IJElement | HTMLElement): IJElement<HTMLElement>[];
     bindElementEvent(el: IJElement): void;
     getChild(id: string): IJElement | undefined;
-    toEditorPosition(pos: Point): {
+    toEditorPosition(pos: Point, dom?: HTMLElement): {
         x: number;
         y: number;
     };

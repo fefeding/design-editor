@@ -2360,6 +2360,14 @@ class JElement extends EventEmitter {
     editable = true;
     // 变换
     transform;
+    // 当前子元素最大的level层
+    get childrenMaxLevel() {
+        let level = 0;
+        for (const c of this.children) {
+            level = Math.max(c.data.zIndex, level);
+        }
+        return level;
+    }
     // 设置css到dom
     setDomStyle(name, value) {
         if (name === 'backgroundImage' && value) {
@@ -2383,6 +2391,10 @@ class JElement extends EventEmitter {
         this.data.top = util.toNumber(this.data.top) + dy;
         this.emit('move', { dx, dy });
     }
+    // 把子元素按zIndex排序
+    childrenSort() {
+        return this.children.sort((a, b) => a.data.zIndex - b.data.zIndex);
+    }
     // 重置大小
     resize(w, h) {
         if (typeof w === 'number') {
@@ -2402,6 +2414,10 @@ class JElement extends EventEmitter {
         }
         if (child instanceof JElement) {
             child.parent = parent;
+            // 如果没有指定层级，则新加的都在最大
+            if (!child.data.zIndex || child.data.zIndex == 0) {
+                child.data.zIndex = this.childrenMaxLevel + 1;
+            }
             parent.dom.appendChild(child.dom);
             parent.children.push(child);
         }
@@ -2508,7 +2524,7 @@ class JBaseComponent extends JElement {
                 height: '100%',
             }
         });
-        this.addChild(this.target);
+        this.addChild(this.target.dom);
         // 变换改为控制主元素
         this.transform.bind({
             target: this.target,
@@ -2538,6 +2554,92 @@ class JBaseComponent extends JElement {
             target: this,
             selected: v
         });
+    }
+    // 设置层级，指定数字或操作, next下一层，pre上一层，top顶层，bottom最底层
+    setLevel(level) {
+        if (typeof level === 'number')
+            this.data.zIndex = level;
+        if (!this.parent)
+            return;
+        const maxLevel = this.parent.childrenMaxLevel;
+        switch (level) {
+            case 'next': {
+                const res = this.getMyNextLevelChildren();
+                if (res.level < 0)
+                    this.data.zIndex = 0; // 如果没找到下一层的，则直接赋到bottom层0
+                else {
+                    res.elements.map((el) => {
+                        el.data.zIndex = this.data.zIndex;
+                    });
+                    this.data.zIndex = res.level;
+                }
+                break;
+            }
+            case 'pre': {
+                const res = this.getMyPreLevelChildren();
+                if (res.level < 0)
+                    this.data.zIndex = maxLevel; // 如果没找到上一层的，则直接赋到top层
+                else {
+                    res.elements.map((el) => {
+                        el.data.zIndex = this.data.zIndex;
+                    });
+                    this.data.zIndex = res.level;
+                }
+                break;
+            }
+            case 'top': {
+                this.data.zIndex = maxLevel + 1;
+                break;
+            }
+            case 'bottom': {
+                this.parent.children.map((el) => {
+                    el !== this && (el.data.zIndex += 1);
+                }); // 所有子元素上移一层，除了当前元素
+                this.data.zIndex = 0;
+            }
+        }
+    }
+    // 获取我下一层的所有元素
+    getMyNextLevelChildren() {
+        const elements = [];
+        if (!this.parent)
+            return;
+        const children = this.parent.childrenSort();
+        let nextLevel = -1;
+        for (let i = children.length - 1; i >= 0; i--) {
+            const c = children[i];
+            if (c.data.zIndex < this.data.zIndex && c !== this) {
+                if (nextLevel < 0)
+                    nextLevel = c.data.zIndex;
+                if (c.data.zIndex === nextLevel)
+                    elements.push(c);
+            }
+        }
+        return {
+            elements,
+            level: nextLevel
+        };
+    }
+    // 获取我上一层的所有元素
+    getMyPreLevelChildren() {
+        const elements = [];
+        if (!this.parent)
+            return;
+        const children = this.parent.childrenSort();
+        let preLevel = -1;
+        for (let i = 0; i < children.length; i++) {
+            const c = children[i];
+            if (c.data.zIndex > this.data.zIndex && c !== this) {
+                if (preLevel < 0)
+                    preLevel = c.data.zIndex;
+                if (c.data.zIndex === preLevel)
+                    elements.push(c);
+            }
+        }
+        return {
+            elements,
+            level: preLevel
+        };
     }
     // 设置css到dom
     setDomStyle(name, value) {
@@ -3523,7 +3625,7 @@ class JEditor extends JBaseComponent {
     }
     // 添加元素到画布
     addChild(child) {
-        if (child === this.target) {
+        if (child === this.target || child instanceof HTMLElement) {
             return super.addChild(child);
         }
         this.bindElementEvent(child);
@@ -3555,9 +3657,10 @@ class JEditor extends JBaseComponent {
             'styleChange', 'select', 'dataChange'
         ], function (e) {
             // 左健选中
-            if (e.type === 'mousedown' && e.button === 0) {
+            if (e.type === 'mousedown') {
                 this.selected = true;
-                self.elementController.onDragStart(e);
+                if (e.button === 0)
+                    self.elementController.onDragStart(e);
             }
             // 选中状态改变
             else if (e.type === 'select') {
@@ -3588,9 +3691,9 @@ class JEditor extends JBaseComponent {
         }
     }
     // 把domcument坐标转为编辑器相对坐标
-    toEditorPosition(pos) {
+    toEditorPosition(pos, dom = this.target.dom) {
         // 编辑器坐标
-        const editorPos = util.getElementBoundingRect(this.target.dom);
+        const editorPos = util.getElementBoundingRect(dom);
         return {
             x: pos.x - editorPos.x,
             y: pos.y - editorPos.y

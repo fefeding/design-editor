@@ -145,10 +145,9 @@ export default class JEditor extends JBase {
     }
     // 添加元素到画布
     addChild(child) {
-        if (child === this.target) {
+        if (child === this.target || child instanceof HTMLElement) {
             return super.addChild(child);
         }
-        const self = this;
         this.bindElementEvent(child);
         child.parent = this; // 把父设置成编辑器
         child.editor = this;
@@ -178,9 +177,10 @@ export default class JEditor extends JBase {
             'styleChange', 'select', 'dataChange'
         ], function (e) {
             // 左健选中
-            if (e.type === 'mousedown' && e.button === 0) {
+            if (e.type === 'mousedown') {
                 this.selected = true;
-                self.elementController.onDragStart(e);
+                if (e.button === 0)
+                    self.elementController.onDragStart(e);
             }
             // 选中状态改变
             else if (e.type === 'select') {
@@ -211,9 +211,9 @@ export default class JEditor extends JBase {
         }
     }
     // 把domcument坐标转为编辑器相对坐标
-    toEditorPosition(pos) {
+    toEditorPosition(pos, dom = this.target.dom) {
         // 编辑器坐标
-        const editorPos = util.getElementBoundingRect(this.target.dom);
+        const editorPos = util.getElementBoundingRect(dom);
         return {
             x: pos.x - editorPos.x,
             y: pos.y - editorPos.y

@@ -160,6 +160,14 @@ export default class JElement extends EventEmiter {
     editable = true;
     // 变换
     transform;
+    // 当前子元素最大的level层
+    get childrenMaxLevel() {
+        let level = 0;
+        for (const c of this.children) {
+            level = Math.max(c.data.zIndex, level);
+        }
+        return level;
+    }
     // 设置css到dom
     setDomStyle(name, value) {
         if (name === 'backgroundImage' && value) {
@@ -183,6 +191,10 @@ export default class JElement extends EventEmiter {
         this.data.top = util.toNumber(this.data.top) + dy;
         this.emit('move', { dx, dy });
     }
+    // 把子元素按zIndex排序
+    childrenSort() {
+        return this.children.sort((a, b) => a.data.zIndex - b.data.zIndex);
+    }
     // 重置大小
     resize(w, h) {
         if (typeof w === 'number') {
@@ -202,6 +214,10 @@ export default class JElement extends EventEmiter {
         }
         if (child instanceof JElement) {
             child.parent = parent;
+            // 如果没有指定层级，则新加的都在最大
+            if (!child.data.zIndex || child.data.zIndex == 0) {
+                child.data.zIndex = this.childrenMaxLevel + 1;
+            }
             parent.dom.appendChild(child.dom);
             parent.children.push(child);
         }

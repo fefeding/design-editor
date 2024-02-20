@@ -29,10 +29,12 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     set visible(v: boolean);
     editable: boolean;
     transform: ITransform;
+    get childrenMaxLevel(): number;
     setDomStyle(name: string, value: string): void;
     css(name: string | Object, value?: string | number): this;
     attr(name: string, value?: string | number | undefined): any;
     move(dx: any, dy: any): void;
+    childrenSort(): IJElement<HTMLElement>[];
     resize(w: any, h: any): void;
     addChild(child: IJElement | HTMLElement, parent?: IJElement): IJElement<HTMLElement>;
     remove(): void;
