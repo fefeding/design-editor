@@ -105,7 +105,9 @@ export interface IEditorOption {
     /**
      * 初始化支持的字体
      */
-    fonts?: Array<IJFontData>;
+    fonts?: Array<IJFontData> | {
+        [key: string]: IJFontData;
+    };
     /**
      * 编辑器是否可以被编辑
      */
