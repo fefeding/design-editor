@@ -24,7 +24,7 @@ export class JControllerItem extends JElement {
                     this.onDragEnd(e);
             });
             // @ts-ignore
-            this.editor.view.on('mouseout', (e) => {
+            this.editor.view.on('mouseleave', (e) => {
                 if (!this.isMoving || e.target !== this.editor.view.dom)
                     return; // 不是out编辑器，不处理
                 this.onDragEnd(e);

@@ -32,7 +32,7 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
                 if(e.button === 0) this.onDragEnd(e);
             });
             // @ts-ignore
-            this.editor.view.on('mouseout', (e: MouseEvent) => {
+            this.editor.view.on('mouseleave', (e: MouseEvent) => {
                 if(!this.isMoving || e.target !== this.editor.view.dom) return;// 不是out编辑器，不处理
                 this.onDragEnd(e);
             });
