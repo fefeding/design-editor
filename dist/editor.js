@@ -61,8 +61,9 @@ export default class JEditor extends JBase {
             this.dom.style.backgroundColor = option.style.containerBackgroundColor;
         // 生成控制器
         this.elementController = new JController({
+            ...option.controllerOption,
+            visible: false,
             editor: this,
-            visible: false
         });
         const styleNode = document.createElement('style');
         styleNode.innerHTML = `.j-design-editor-container {
@@ -197,7 +198,10 @@ export default class JEditor extends JBase {
             }
             self.emit('elementChange', {
                 type: e.type,
-                data: e.data || {},
+                data: {
+                    id: this.id,
+                    ...e.data
+                },
                 event: e,
                 target: this
             });

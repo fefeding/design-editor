@@ -203,10 +203,11 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         return util.attr(this.dom, name, value);
     }
     // 移位
-    move(dx, dy) {
-        this.data.left = util.toNumber(this.data.left) + dx;
-        this.data.top = util.toNumber(this.data.top) + dy;
-
+    move(dx: number, dy: number) {
+        const x = util.toNumber(this.data.left) + dx;
+        const y = util.toNumber(this.data.top) + dy;
+        this.data.left = Number(x.toFixed(2));
+        this.data.top = Number(y.toFixed(2));
         this.emit('move', {dx, dy});
     }
 

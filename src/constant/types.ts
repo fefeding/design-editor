@@ -1,4 +1,4 @@
-import { Point } from 'j-design-util';
+import { Point, ItemType } from 'j-design-util';
 import JElementCssStyle, { IJElementStyleDeclaration } from './styleMap';
 import { JElementData, JTextData, JImageData, IJElementData, IJTexteData, IJImageData, IJFontData, JSvgData, IJSvgData } from './data';
 import EventEmitter from './eventEmitter';
@@ -115,6 +115,25 @@ export interface ISvgOption extends IElementOption<IJSvgData> {
     dataType?: JSvgData;
 }
 
+export interface IControllerItemOption extends IElementOption {    
+    dir?: ItemType | string;
+    size?: number;
+}
+
+export interface IControllerStyle extends IJElementStyleDeclaration {
+    itemStyle?: IJElementStyleDeclaration;
+    // 标线
+    markingLineStyle?: IJElementStyleDeclaration;
+    // 提示信息
+    tipStyle?: IJElementStyleDeclaration;
+}
+
+export interface IControllerOption extends IControllerItemOption {
+    style?: IControllerStyle;
+    itemSize?: number;
+    tipVisible?: boolean;
+}
+
 /**
  * 编辑器选项接口
  * @public
@@ -128,7 +147,10 @@ export interface IEditorOption {
     /**
      * 样式选项。
      */
-    style?: IJElementStyleDeclaration;
+    style?: IJElementStyleDeclaration & {
+        // 容器背景色
+        containerBackgroundColor?: string;
+    };
     
     /**
      * 初始化支持的字体
@@ -144,6 +166,11 @@ export interface IEditorOption {
      * 初始属性值
      */
     data?: {width?: string|number; height?: string|number;}
+
+    /**
+     * 控制器选项
+     */
+    controllerOption?: IControllerOption;
 }
 /**
  * 样式转换接口，用于描述元素在空间中的定位、旋转和缩放。
@@ -340,7 +367,7 @@ export interface IJSvgComponent extends IJBaseComponent<HTMLDivElement> {
  */
 export interface IJControllerItem extends IJElement<HTMLDivElement> {
     /**控制器的方向（在画布中的位置） */
-    dir: string;
+    dir: ItemType | string;
     /**控制器的尺寸 */
     size: number;
     /**控制器关联的编辑器 */
@@ -405,9 +432,6 @@ export interface IJControllerComponent extends IJControllerItem {
 export interface IJEditor extends IJBaseComponent {
     /** 查看元素属性 */
     view: IJElement<HTMLDivElement>;
-
-    /** 控制器组件 */
-    elementController: IJControllerComponent;
 
     /** 文本编辑元素 */
     textEditElement?: IJElement<HTMLTextAreaElement>;

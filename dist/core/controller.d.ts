@@ -1,9 +1,9 @@
 import { ItemType } from 'j-design-util';
 import JElement from './element';
-import { IJControllerItem, IJControllerComponent, IJBaseComponent } from '../constant/types';
+import { IJControllerItem, IJControllerComponent, IJBaseComponent, IControllerOption, IControllerItemOption } from '../constant/types';
 export declare class JControllerItem extends JElement<HTMLDivElement> implements IJControllerItem {
-    constructor(option: any);
-    dir: ItemType | '';
+    constructor(option: IControllerItemOption);
+    dir: ItemType | string;
     size: number;
     protected _isMoving: boolean;
     get isMoving(): boolean;
@@ -18,11 +18,13 @@ export declare class JControllerItem extends JElement<HTMLDivElement> implements
     resetCursor(rotation?: number): Promise<void>;
 }
 export default class JControllerComponent extends JControllerItem implements IJControllerComponent {
-    constructor(option: any);
-    init(option: any): void;
+    constructor(option: IControllerOption);
+    init(option: IControllerOption): void;
     items: JControllerItem[];
     rotateItem: JControllerItem;
     skewItem: JControllerItem;
+    positionItem: JControllerItem | undefined;
+    sizeItem: JControllerItem | undefined;
     target: IJBaseComponent;
     paddingSize: number;
     isEditor: boolean;
@@ -30,10 +32,12 @@ export default class JControllerComponent extends JControllerItem implements IJC
         x: number;
         y: number;
     };
-    createItem(id: any, option: any): JControllerItem;
+    createItem(id: string, option: IControllerItemOption): JControllerItem;
     change(e: any): void;
     applyToTarget(): void;
     reset(isEditor?: boolean): void;
+    resetCursor(rotation?: number): Promise<void>;
     bind(target: IJBaseComponent): void;
+    setTip(): void;
     unbind(target: IJBaseComponent): void;
 }

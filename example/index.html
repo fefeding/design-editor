@@ -87,6 +87,16 @@
 		style: {
 			backgroundColor: '#fff',
 			containerBackgroundColor: '#eee'
+		},
+		controllerOption: {
+			tipVisible: true, // 是否展示坐标和大小数据
+			style: {
+				//itemStyle?: IJElementStyleDeclaration
+				// 标线
+				//markingLineStyle?: IJElementStyleDeclaration
+				// 提示信息
+				//tipStyle?: IJElementStyleDeclaration
+			}
 		}
 	});
 
@@ -118,6 +128,9 @@
 		// 元素的右健菜单
 		else if(e.type == 'mousedown' && e.event.button == 2) {
 			showElementMenu(e.target.id, e.event);
+		}
+		else if(e.type === 'select') {
+			
 		}
 	});
 

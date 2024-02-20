@@ -33,7 +33,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     setDomStyle(name: string, value: string): void;
     css(name: string | Object, value?: string | number): this;
     attr(name: string, value?: string | number | undefined): any;
-    move(dx: any, dy: any): void;
+    move(dx: number, dy: number): void;
     childrenSort(): IJElement<HTMLElement>[];
     resize(w: any, h: any): void;
     addChild(child: IJElement | HTMLElement, parent?: IJElement): IJElement<HTMLElement>;

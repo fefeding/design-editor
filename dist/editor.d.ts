@@ -3,16 +3,16 @@ import JBase from './core/baseComponent';
 import JText from './components/text';
 import JImage from './components/image';
 import JElement from './core/element';
-import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent, IJFonts, IElementOption, IEditorOption, ITextOption, IImageOption } from './constant/types';
+import { IJElement, IJEditor, IJBaseComponent, IJFonts, IElementOption, IEditorOption, ITextOption, IImageOption } from './constant/types';
 /**
  * @public
  */
 export default class JEditor extends JBase implements IJEditor {
     constructor(option?: IEditorOption);
-    init(option: any): void;
+    init(option: IEditorOption): void;
     view: JElement<HTMLDivElement>;
     protected shapes: Map<string, IJBaseComponent<HTMLElement>>;
-    elementController: IJControllerComponent;
+    private elementController;
     fonts: IJFonts;
     get children(): IJElement<HTMLElement>[];
     get selectedElements(): Array<JBase>;

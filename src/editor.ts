@@ -56,14 +56,15 @@ export default class JEditor extends JBase implements IJEditor {
     }
 
     // 初始化整个编辑器
-    init(option) {
+    init(option: IEditorOption) {
 
         if(option.style.containerBackgroundColor) this.dom.style.backgroundColor = option.style.containerBackgroundColor;
 
         // 生成控制器
         this.elementController = new JController({
+            ...option.controllerOption,
+            visible: false,
             editor: this,
-            visible: false
         });
         
         const styleNode = document.createElement('style');
@@ -103,7 +104,7 @@ export default class JEditor extends JBase implements IJEditor {
     protected shapes = new Map<string, IJBaseComponent>();
 
     // 元素控帛器
-    elementController: IJControllerComponent;
+    private elementController: IJControllerComponent;
 
     fonts: IJFonts; // 字体管理器
 
@@ -215,7 +216,10 @@ export default class JEditor extends JBase implements IJEditor {
 
             self.emit('elementChange', {
                 type: e.type,
-                data: e.data || {},
+                data: {
+                    id: this.id,
+                    ...e.data
+                },
                 event: e,
                 target: this
             });

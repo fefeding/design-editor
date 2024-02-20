@@ -13,8 +13,9 @@ export class JControllerItem extends JElement {
         };
         super(option);
         this.dir = option.dir || '';
-        this.size = option.size || 8;
-        this.data.width = this.data.height = this.size;
+        if (option.size) {
+            this.data.width = this.data.height = this.size = option.size;
+        }
         this.editor = option.editor;
         if (this.editor) {
             // @ts-ignore
@@ -41,7 +42,7 @@ export class JControllerItem extends JElement {
         });
     }
     dir = '';
-    size = 8;
+    size = 0;
     _isMoving = false;
     get isMoving() {
         return this._isMoving;
@@ -132,10 +133,11 @@ export default class JControllerComponent extends JControllerItem {
         this.resetCursor(this.transform.rotateZ);
     }
     init(option) {
+        const itemSize = option.itemSize || 8;
         this.createItem('l', {
-            shape: 'rect',
+            size: itemSize,
             style: {
-                ...option.itemStyle,
+                ...option.style.itemStyle,
                 left: 0,
                 top: '50%',
             },
@@ -145,9 +147,9 @@ export default class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('lt', {
-            shape: 'rect',
+            size: itemSize,
             style: {
-                ...option.itemStyle,
+                ...option.style.itemStyle,
                 left: 0,
                 top: 0,
             },
@@ -157,9 +159,9 @@ export default class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('t', {
-            shape: 'rect',
+            size: itemSize,
             style: {
-                ...option.itemStyle,
+                ...option.style.itemStyle,
                 left: '50%',
                 top: 0,
             },
@@ -169,9 +171,9 @@ export default class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('tr', {
-            shape: 'rect',
+            size: itemSize,
             style: {
-                ...option.itemStyle,
+                ...option.style.itemStyle,
                 left: '100%',
                 top: 0,
             },
@@ -181,9 +183,9 @@ export default class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('r', {
-            shape: 'rect',
+            size: itemSize,
             style: {
-                ...option.itemStyle,
+                ...option.style.itemStyle,
                 left: '100%',
                 top: '50%',
             },
@@ -193,9 +195,9 @@ export default class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('rb', {
-            shape: 'rect',
+            size: itemSize,
             style: {
-                ...option.itemStyle,
+                ...option.style.itemStyle,
                 left: '100%',
                 top: '100%',
             },
@@ -205,9 +207,9 @@ export default class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('b', {
-            shape: 'rect',
+            size: itemSize,
             style: {
-                ...option.itemStyle,
+                ...option.style.itemStyle,
                 left: '50%',
                 top: '100%',
             },
@@ -217,9 +219,9 @@ export default class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('lb', {
-            shape: 'rect',
+            size: itemSize,
             style: {
-                ...option.itemStyle,
+                ...option.style.itemStyle,
                 left: 0,
                 top: '100%',
             },
@@ -230,7 +232,6 @@ export default class JControllerComponent extends JControllerItem {
         });
         // 旋转块
         this.rotateItem = this.createItem('rotate', {
-            shape: 'circle',
             size: 24,
             style: {
                 left: '50%',
@@ -240,7 +241,7 @@ export default class JControllerComponent extends JControllerItem {
                 boxShadow: '0 0 2px 2px #ccc',
                 borderRadius: '50%',
                 cursor: `pointer`,
-                ...option.itemStyle,
+                ...option.style.itemStyle,
                 'backgroundSize': '100%',
                 backgroundImage: controller.ItemIcons.rotate
             },
@@ -249,7 +250,6 @@ export default class JControllerComponent extends JControllerItem {
             }
         });
         this.skewItem = this.createItem('skew', {
-            shape: 'circle',
             size: 24,
             style: {
                 left: '50%',
@@ -258,7 +258,7 @@ export default class JControllerComponent extends JControllerItem {
                 boxShadow: '0 0 2px 2px #ccc',
                 borderRadius: '50%',
                 cursor: `pointer`,
-                ...option.itemStyle,
+                ...option.style.itemStyle,
                 'backgroundSize': '100%',
                 backgroundImage: controller.ItemIcons.skew
             },
@@ -267,6 +267,45 @@ export default class JControllerComponent extends JControllerItem {
                 translateY: '-50%'
             }
         }); // 旋转块 
+        if (option.tipVisible !== false) {
+            const tipOption = {
+                data: {
+                    height: '14px',
+                    width: 'auto'
+                },
+                style: {
+                    left: '2px',
+                    top: '0',
+                    border: 'none',
+                    backgroundColor: 'rgba(100, 100, 100, 0.1)',
+                    color: 'blue',
+                    fontSize: '10px',
+                    padding: '2px',
+                    overflow: 'hidden',
+                    ...option.style.tipStyle,
+                    pointerEvents: 'none',
+                }
+            };
+            //提示信息
+            this.positionItem = this.createItem('tip', {
+                ...tipOption,
+                transform: {
+                    translateY: '-100%'
+                }
+            });
+            this.sizeItem = this.createItem('tip', {
+                ...tipOption,
+                style: {
+                    ...tipOption.style,
+                    left: 'auto',
+                    top: '100%',
+                    right: '4px'
+                },
+                transform: {
+                    translateY: '-100%'
+                }
+            });
+        }
         if (this.editor) {
             this.editor.on('mousedown', (e) => {
                 if (!this.isEditor || e.button === 2)
@@ -281,6 +320,8 @@ export default class JControllerComponent extends JControllerItem {
     items = [];
     rotateItem;
     skewItem;
+    positionItem;
+    sizeItem;
     target;
     // 选择框边距
     paddingSize = 0;
@@ -352,16 +393,17 @@ export default class JControllerComponent extends JControllerItem {
                 y: offY
             }, oldPosition, newPosition, center, this.transform.rotateZ);
         }
-        // 位移
+        // 位移 
         if (args.x || args.y) {
             this.move(args.x, args.y);
         }
         if (args.width) {
             const width = util.toNumber(this.data.width) + args.width;
-            this.data.width = Math.max(width, 1);
+            this.data.width = Math.max(Number(width.toFixed(2)), 1);
         }
         if (args.height) {
-            this.data.height = Math.max(util.toNumber(this.data.height) + args.height, 1);
+            const height = util.toNumber(this.data.height) + args.height;
+            this.data.height = Math.max(Number(height.toFixed(2)), 1);
         }
         // x,y旋转
         if (args.skew.x || args.skew.y) {
@@ -376,9 +418,7 @@ export default class JControllerComponent extends JControllerItem {
                 this.transform.rotateZ = this.transform.rotateZ % controller.fullCircleRadius;
             this.transform.apply();
             // 发生了旋转，要处理指针图标
-            for (const item of this.items) {
-                item.resetCursor(this.transform.rotateZ);
-            }
+            this.resetCursor();
         }
         this.applyToTarget();
     }
@@ -408,6 +448,7 @@ export default class JControllerComponent extends JControllerItem {
             this.target.data.width = width;
         if (this.target.data.height !== height)
             this.target.data.height = height;
+        this.setTip();
     }
     // 重置
     reset(isEditor = this.isEditor) {
@@ -420,6 +461,12 @@ export default class JControllerComponent extends JControllerItem {
         this.transform.from({
             rotateZ: 0,
         });
+    }
+    async resetCursor(rotation = this.transform.rotateZ) {
+        // 发生了旋转，要处理指针图标
+        for (const item of this.items) {
+            item.resetCursor(rotation);
+        }
     }
     // 绑定到操作的对象
     bind(target) {
@@ -447,13 +494,20 @@ export default class JControllerComponent extends JControllerItem {
         this.target = target;
         this.data.visible = true;
         // 编辑器不让旋转和skew
+        const itemVisible = !this.isEditor && target.editable;
         for (const item of this.items) {
-            item.data.visible = !this.isEditor && target.editable;
+            item.data.visible = itemVisible;
         }
-        // 如果是编辑器，则不能捕获事件
-        /*this.css({
-            pointerEvents: this.isEditor? 'none' : 'auto'
-        });*/
+        // 初始化图标
+        this.resetCursor();
+        this.setTip();
+    }
+    // 显示提示信息
+    setTip() {
+        if (this.positionItem && this.positionItem.visible)
+            this.positionItem.dom.innerHTML = `x: ${this.data.left} y: ${this.data.top}`;
+        if (this.sizeItem && this.sizeItem.visible)
+            this.sizeItem.dom.innerHTML = `${this.data.width} X ${this.data.height}`;
     }
     // 解除绑定
     unbind(target) {
