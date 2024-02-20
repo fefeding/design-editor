@@ -270,7 +270,7 @@ export default class JControllerComponent extends JControllerItem {
         if (option.tipVisible !== false) {
             const tipOption = {
                 data: {
-                    height: '14px',
+                    height: '16px',
                     width: 'auto'
                 },
                 style: {
@@ -300,9 +300,6 @@ export default class JControllerComponent extends JControllerItem {
                     left: 'auto',
                     top: '100%',
                     right: '4px'
-                },
-                transform: {
-                    translateY: '-100%'
                 }
             });
         }
@@ -505,7 +502,7 @@ export default class JControllerComponent extends JControllerItem {
     // 显示提示信息
     setTip() {
         if (this.positionItem && this.positionItem.visible)
-            this.positionItem.dom.innerHTML = `x: ${this.data.left} y: ${this.data.top}`;
+            this.positionItem.dom.innerHTML = `X: ${this.data.left} Y: ${this.data.top}`;
         if (this.sizeItem && this.sizeItem.visible)
             this.sizeItem.dom.innerHTML = `${this.data.width} X ${this.data.height}`;
     }
