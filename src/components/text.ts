@@ -46,13 +46,15 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
 
         // 'text' 属性变化映射到 innerText
         this.data.watch([
-            'text'
+            'text', 'fontFamily', 'fontSize'
         ], {
             set: (item) => {
-                this.target.dom.innerText = item.value;
+                if(item.name === 'text') this.target.dom.innerText = item.value;
+                else this.style[item.name] = item.value;
             },
             get: (name: string) => {
-                return this.target.dom.innerText;
+                if(name === 'text') return this.target.dom.innerText;
+                else return this.style[name];
             }
         });
 

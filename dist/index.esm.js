@@ -2202,6 +2202,10 @@ class JSvgData extends JImageData {
  */
 class JTextData extends JElementData {
     text;
+    // 字体名
+    fontFamily;
+    // 字体大小
+    fontSize;
 }
 
 /**
@@ -2698,13 +2702,19 @@ class JText extends JBaseComponent {
         });
         // 'text' 属性变化映射到 innerText
         this.data.watch([
-            'text'
+            'text', 'fontFamily', 'fontSize'
         ], {
             set: (item) => {
-                this.target.dom.innerText = item.value;
+                if (item.name === 'text')
+                    this.target.dom.innerText = item.value;
+                else
+                    this.style[item.name] = item.value;
             },
             get: (name) => {
-                return this.target.dom.innerText;
+                if (name === 'text')
+                    return this.target.dom.innerText;
+                else
+                    return this.style[name];
             }
         });
         // 如果在选项中提供，设置 'text' 属性
