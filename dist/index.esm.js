@@ -2076,20 +2076,18 @@ class JData extends EventEmitter {
         else {
             value = this.data[name];
         }
-        setTimeout(() => {
-            const watches = this.watcher.get(name);
-            if (watches && watches.length) {
-                for (const w of watches) {
-                    w && w.set && w.set({
-                        name,
-                        value
-                    });
-                }
+        const watches = this.watcher.get(name);
+        if (watches && watches.length) {
+            for (const w of watches) {
+                w && w.set && w.set({
+                    name,
+                    value
+                });
             }
-            this.emit('change', {
-                name,
-                value
-            });
+        }
+        this.emit('change', {
+            name,
+            value
         });
     }
     // 读取属性
