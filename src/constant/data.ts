@@ -275,10 +275,6 @@ export class JSvgData extends JImageData implements IJSvgData {
 export interface IJTexteData extends IJElementData {
 
     text?: string;
-    // 字体名
-    fontFamily?: string;
-    // 字体大小
-    fontSize?: string;
 }
 
 /**
@@ -287,10 +283,6 @@ export interface IJTexteData extends IJElementData {
  */
 export class JTextData extends JElementData implements IJTexteData {
     text: string;
-    // 字体名
-    fontFamily?: string;
-    // 字体大小
-    fontSize?: string;
 }
 
 /**

@@ -2202,10 +2202,6 @@ class JSvgData extends JImageData {
  */
 class JTextData extends JElementData {
     text;
-    // 字体名
-    fontFamily;
-    // 字体大小
-    fontSize;
 }
 
 /**

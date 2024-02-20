@@ -1,6 +1,6 @@
 {
   "name": "j-html-design-editor",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "description": "design html 设计图片编辑库",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

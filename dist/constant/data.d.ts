@@ -136,8 +136,6 @@ export declare class JSvgData extends JImageData implements IJSvgData {
  */
 export interface IJTexteData extends IJElementData {
     text?: string;
-    fontFamily?: string;
-    fontSize?: string;
 }
 /**
  * 文本元素的数据类，继承自元素的基础数据类 JElementData
@@ -145,8 +143,6 @@ export interface IJTexteData extends IJElementData {
  */
 export declare class JTextData extends JElementData implements IJTexteData {
     text: string;
-    fontFamily?: string;
-    fontSize?: string;
 }
 /**
  * 定义字体的数据接口
