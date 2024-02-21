@@ -9,11 +9,11 @@
   ],
   "scripts": {
     "dev": "node test/dev",
-    "build": "gulp && node build.js",
+    "build": "gulp && node build.js && npm run docs:build",
     "test": "vitest",
     "update": "npx taze major  -w",
     "release": "npx bumpp --commit --tag --push",
-    "api:json": "npm run build && npx api-extractor run",
+    "api:json": "npx api-extractor run",
     "api:md": "npx api-documenter markdown -i ./docs/.api -o ./docs/api && node ./build/md.js",
     "api": "npm run api:json && npm run api:md",
     "push": "npm publish --registry=https://registry.npmjs.org",
@@ -54,8 +54,8 @@
     "vitest": "^1.2.2"
   },
   "dependencies": {
-    "eventemitter3": "^5.0.1",
-    "j-design-util": "^1.0.4"
+    "j-design-util": "^1.0.4",
+    "j-eventemitter": "^1.0.1"
   },
   "author": "fefeding",
   "license": "MIT"

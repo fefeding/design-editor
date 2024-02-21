@@ -1,4 +1,4 @@
-import EventEmiter from '../constant/eventEmitter';
+import EventEmiter from 'j-eventemitter';
 import JEvent from '../core/event';
 import JElementCssStyle from '../constant/styleMap';
 import { IJElement, ITransform, IJEditor, IElementOption } from '../constant/types';

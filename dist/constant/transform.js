@@ -1,4 +1,4 @@
-import EventEmiter from './eventEmitter';
+import EventEmiter from 'j-eventemitter';
 import util from '../lib/util';
 export default class Transform extends EventEmiter {
     constructor(option, targetOption) {

@@ -1,5 +1,5 @@
 
-import EventEmiter from './eventEmitter';
+import EventEmiter from 'j-eventemitter';
 
 /**
  * 数据项，包含名字和值

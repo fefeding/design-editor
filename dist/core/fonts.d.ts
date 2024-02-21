@@ -1,6 +1,6 @@
 import { IJFonts, IJFontFace } from '../constant/types';
 import { IJFontData } from '../constant/data';
-import EventEmiter from '../constant/eventEmitter';
+import EventEmiter from 'j-eventemitter';
 export declare class JFontData implements IJFontFace {
     constructor(family: string, url?: string, font?: FontFace);
     family: string;

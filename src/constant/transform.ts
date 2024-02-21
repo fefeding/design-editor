@@ -1,4 +1,4 @@
-import EventEmiter from './eventEmitter';
+import EventEmiter from 'j-eventemitter';
 import util from '../lib/util';
 import { IStyleTransform, ITransform, TransformWatcher } from './types';
 

@@ -752,14 +752,14 @@ var eventemitter3 = {exports: {}};
 } (eventemitter3));
 
 var eventemitter3Exports = eventemitter3.exports;
-var EventEmitter$1 = /*@__PURE__*/getDefaultExportFromCjs(eventemitter3Exports);
+var EventEmitter = /*@__PURE__*/getDefaultExportFromCjs(eventemitter3Exports);
 
 /**
  * EventEmitter 类，继承自 'eventemitter3' 模块的 EventEmiter 类。
  * 用于进行事件的发布与订阅。
  * @public
  */
-class EventEmitter extends EventEmitter$1 {
+class JEventEmitter extends EventEmitter {
     /**
      * 私有方法，用于规范化事件名
      * @param name - 可以是字符串、符号或字符串数组
@@ -810,7 +810,7 @@ const topZIndex = 10000;
  * 支持的样式属性列表
  * @public
  */
-class JElementStyleDeclaration extends EventEmitter {
+class JElementStyleDeclaration extends JEventEmitter {
     accentColor;
     alignContent;
     alignItems;
@@ -1737,7 +1737,7 @@ const ContainerDefaultStyle = {
     overflow: 'visible'
 };
 
-class Transform extends EventEmitter {
+class Transform extends JEventEmitter {
     constructor(option, targetOption) {
         super();
         if (option)
@@ -2040,7 +2040,7 @@ class JEvent {
  * JData 类：提供了一种方式来处理和管理数据
  * @public
  */
-class JData extends EventEmitter {
+class JData extends JEventEmitter {
     constructor(data = {}) {
         super();
         this.from(data);
@@ -2207,7 +2207,7 @@ class JTextData extends JElementData {
 /**
  * @public
  */
-class JElement extends EventEmitter {
+class JElement extends JEventEmitter {
     constructor(option = {}) {
         super();
         this._id = this.id || option.id || util.uuid();
@@ -3481,7 +3481,7 @@ class JFontData {
         return `@font-face {font-family: "${this.family}"; src: url("${this.url}")}`;
     }
 }
-class JFonts extends EventEmitter {
+class JFonts extends JEventEmitter {
     constructor(fonts) {
         super();
         // 初始化默认支持的字体
@@ -3856,4 +3856,4 @@ __decorate([
     Debounce(10)
 ], JEditor.prototype, "resize", null);
 
-export { EventEmitter, JBaseComponent, JData, JEditor, JElement, JElementCssStyle, JElementData, JElementStyleDeclaration, JElementStyleProperty, JEvent, JImage, JImageData, JSvgData, JText, JTextData, JEditor as default, util };
+export { JBaseComponent, JData, JEditor, JElement, JElementCssStyle, JElementData, JElementStyleDeclaration, JElementStyleProperty, JEvent, JImage, JImageData, JSvgData, JText, JTextData, JEditor as default, util };

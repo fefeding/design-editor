@@ -1,4 +1,4 @@
-import EventEmiter from '../constant/eventEmitter';
+import EventEmiter from 'j-eventemitter';
 import JTransform from '../constant/transform';
 import JStyle from './style';
 import util from '../lib/util';

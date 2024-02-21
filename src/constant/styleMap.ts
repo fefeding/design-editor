@@ -1,5 +1,5 @@
 
-import EventEmiter from './eventEmitter';
+import EventEmiter from 'j-eventemitter';
 
 export const topZIndex = 10000;
 

@@ -1,4 +1,4 @@
-import EventEmiter from '../constant/eventEmitter';
+import EventEmiter from 'j-eventemitter';
 export class JFontData {
     constructor(family, url, font) {
         this.family = family;

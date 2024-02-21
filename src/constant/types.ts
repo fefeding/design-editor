@@ -1,7 +1,7 @@
 import { Point, ItemType } from 'j-design-util';
 import JElementCssStyle, { IJElementStyleDeclaration } from './styleMap';
 import { JElementData, JTextData, JImageData, IJElementData, IJTexteData, IJImageData, IJFontData, JSvgData, IJSvgData } from './data';
-import EventEmitter from './eventEmitter';
+import type EventEmitter from 'j-eventemitter';
 
 export {
     EventEmitter,

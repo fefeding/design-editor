@@ -1,4 +1,4 @@
-import EventEmiter from './eventEmitter';
+import EventEmiter from 'j-eventemitter';
 export declare const topZIndex = 10000;
 /**
  * 支持的样式属性列表
