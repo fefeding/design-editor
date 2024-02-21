@@ -92,8 +92,8 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
         this.dragStartPosition.x = pos.x;
         this.dragStartPosition.y = pos.y;
 
-        event.stopPropagation();
-        event.preventDefault();
+        //event.stopPropagation();
+        event.preventDefault && event.preventDefault();
     }
     
     onDragStart(event: MouseEvent)   {

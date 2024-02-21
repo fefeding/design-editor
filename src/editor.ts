@@ -104,7 +104,7 @@ export default class JEditor extends JBase implements IJEditor {
     protected shapes = new Map<string, IJBaseComponent>();
 
     // 元素控帛器
-    private elementController: IJControllerComponent;
+    public elementController: IJControllerComponent;
 
     fonts: IJFonts; // 字体管理器
 

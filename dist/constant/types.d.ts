@@ -378,6 +378,10 @@ export interface IJEditor extends IJBaseComponent {
     fonts: IJFonts;
     /** 获取选定的元素 */
     get selectedElements(): Array<IJBaseComponent>;
+    /**
+     * 控制器
+     */
+    elementController: IJControllerComponent;
     /** 绑定事件 */
     bindEvent(dom?: HTMLElement): void;
     /** 选择元素 */

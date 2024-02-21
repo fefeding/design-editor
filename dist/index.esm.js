@@ -2302,17 +2302,6 @@ class JElement extends JEventEmitter {
         // 事件托管
         this.event = new JEvent(dom || this.dom);
         this.event.init((e) => {
-            if (e.type === 'mouseup') {
-                // 右健则取消选择
-                if (e instanceof MouseEvent && e.button === 2) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-            }
-            if (e.type === 'contextmenu') {
-                e.preventDefault();
-                e.stopPropagation();
-            }
             this.emit(e.type, e);
         });
     }
@@ -2724,6 +2713,10 @@ class JText extends JBaseComponent {
         });
         // 添加选择事件监听器，退出编辑状态
         this.on('select', () => {
+            if (!this.selected)
+                this.closeEdit();
+        });
+        this.target.on('blur', () => {
             this.closeEdit();
         });
         JText.TextControlCache.set(this.id, this); // 缓存起来
@@ -2736,58 +2729,26 @@ class JText extends JBaseComponent {
     edit() {
         if (!this.editable)
             return;
-        let editEl = this.editor.textEditElement;
-        if (!editEl) {
-            editEl = this.editor.textEditElement = new JElement({
-                nodeType: 'textarea',
-                visible: false,
-                style: {
-                    boxSizing: 'border-box',
-                    padding: '4px',
-                    position: 'absolute',
-                    zIndex: topZIndex,
-                    resize: 'both'
-                }
-            });
-            editEl.on('blur', (e) => {
-                this.closeEdit();
-            });
-            editEl.on('click dblclick mousedown', (e) => {
-                e.stopPropagation();
-            });
-            this.editor.dom.appendChild(editEl.dom);
+        this.editor.elementController.visible = false;
+        util.attr(this.target.dom, 'contenteditable', 'true');
+        // 把光标置于最后
+        const range = document.createRange();
+        const nodes = this.target.dom.childNodes;
+        if (nodes.length) {
+            const last = nodes[nodes.length - 1];
+            range.setStart(last, last.textContent.length);
         }
-        editEl.dom.value = this.data.text;
-        editEl.attr('data-target', this.id);
-        const w = util.toNumber(this.data.width) * 1.5;
-        const h = util.toNumber(this.data.height) * 1.2;
-        const style = {};
-        style.width = Math.max(w, 100) + 'px';
-        style.height = Math.max(h, 100) + 'px';
-        style.top = util.toNumber(this.data.top) - 4;
-        style.left = util.toNumber(this.data.left) - 4;
-        style.fontSize = this.style.fontSize;
-        style.fontFamily = this.style.fontFamily;
-        style.fontWeight = this.style.fontWeight;
-        style.display = 'inline-block';
-        util.css(editEl, style);
-        editEl.dom.focus(); // 进入控件
+        const sel = window.getSelection();
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        this.target.dom.focus(); // 进入控件
     }
     /**
      * 退出文本编辑状态
      */
     closeEdit() {
-        const editEl = this.editor.textEditElement;
-        if (!editEl || !editEl.visible)
-            return;
-        // 编辑的是当前元素，才采用它的值
-        const id = editEl.attr('data-target');
-        const target = JText.TextControlCache.get(id);
-        if (target instanceof JText) {
-            target.data.text = editEl.dom.value;
-            editEl.data.visible = false;
-            editEl.dom.value = ''; // 置空
-        }
+        util.attr(this.target.dom, 'contenteditable', 'false');
     }
     /**
      * 移除 JText 实例
@@ -2987,8 +2948,8 @@ class JControllerItem extends JElement {
         // 选中的是渲染层的坐标，转为控制层的
         this.dragStartPosition.x = pos.x;
         this.dragStartPosition.y = pos.y;
-        event.stopPropagation();
-        event.preventDefault();
+        //event.stopPropagation();
+        event.preventDefault && event.preventDefault();
     }
     onDragStart(event) {
         const pos = {

@@ -110,6 +110,11 @@
 		}
 	});
 
+	// 禁止编辑器默认菜单
+	editor.on('contextmenu', (e) => {
+		e.preventDefault();
+	});
+
 	// 元素发生改变事件
 	editor.on('elementChange', async (e) => {
 		//if(e.type.includes('mouse'))console.log(e);
@@ -127,7 +132,11 @@
 		}
 		// 元素的右健菜单
 		else if(e.type == 'mousedown' && e.event.button == 2) {
+			e.event.preventDefault();
 			showElementMenu(e.target.id, e.event);
+		}
+		else if(e.type === 'contextmenu') {
+			e.event.preventDefault();
 		}
 		else if(e.type === 'select') {
 			

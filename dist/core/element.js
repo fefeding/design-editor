@@ -102,17 +102,6 @@ export default class JElement extends EventEmiter {
         // 事件托管
         this.event = new JEvent(dom || this.dom);
         this.event.init((e) => {
-            if (e.type === 'mouseup') {
-                // 右健则取消选择
-                if (e instanceof MouseEvent && e.button === 2) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-            }
-            if (e.type === 'contextmenu') {
-                e.preventDefault();
-                e.stopPropagation();
-            }
             this.emit(e.type, e);
         });
     }

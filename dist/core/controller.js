@@ -78,8 +78,8 @@ export class JControllerItem extends JElement {
         // 选中的是渲染层的坐标，转为控制层的
         this.dragStartPosition.x = pos.x;
         this.dragStartPosition.y = pos.y;
-        event.stopPropagation();
-        event.preventDefault();
+        //event.stopPropagation();
+        event.preventDefault && event.preventDefault();
     }
     onDragStart(event) {
         const pos = {
