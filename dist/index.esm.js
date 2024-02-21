@@ -2426,6 +2426,9 @@ class JElement extends JEventEmitter {
         // @ts-ignore
         if (el.dom && el.dom.parentElement === this.dom)
             this.dom.removeChild(el.dom || el);
+        // @ts-ignore
+        if (el.selected)
+            el.selected = false;
         for (let i = this.children.length - 1; i > -1; i--) {
             if (this.children[i] === el)
                 return this.children.splice(i, 1);

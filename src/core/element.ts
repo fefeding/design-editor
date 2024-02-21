@@ -108,7 +108,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     bindEvent(dom?: HTMLElement) {
         // 事件托管
         this.event = new JEvent(dom || this.dom);
-        this.event.init((e: Event|MouseEvent) => {     
+        this.event.init((e: Event|MouseEvent) => {  
             this.emit(e.type, e);
         });
     }
@@ -246,6 +246,9 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     removeChild(el: IJElement|HTMLElement) {
         // @ts-ignore
         if(el.dom && el.dom.parentElement === this.dom) this.dom.removeChild(el.dom || el);
+
+        // @ts-ignore
+        if(el.selected) el.selected = false;
 
         for(let i=this.children.length-1;i>-1; i--) {
             if(this.children[i] === el) return this.children.splice(i, 1);
