@@ -1,6 +1,6 @@
 {
   "name": "j-html-design-editor",
-  "version": "1.0.31",
+  "version": "1.0.32",
   "description": "design html 设计图片编辑库",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -56,7 +56,7 @@
   "dependencies": {
     "j-design-util": "^1.0.4",
     "j-eventemitter": "^1.0.1",
-    "j-image-filters": "^1.0.7"
+    "j-image-filters": "^1.0.9"
   },
   "author": "fefeding",
   "license": "MIT"

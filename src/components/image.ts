@@ -35,8 +35,10 @@ export default class JImage extends Base<HTMLImageElement> implements IJImageCom
 
         // 如果有滤镜，则添加上
         if(option.filters) {
-            for(const name in option.filters) {
-                this.addFilter(name, option.filters[name]);
+            if(Array.isArray(option.filters)) {
+                for(const filter of option.filters) {
+                    this.addFilter(filter.name, filter);
+                }
             }
         }
 
@@ -68,7 +70,7 @@ export default class JImage extends Base<HTMLImageElement> implements IJImageCom
     filters = new ImageFilterManager();
 
     // 滤镜生效刷新
-    private async refreshImage(url: string) {
+    private async refreshImage(url: string = this.data.src) {
         if(!url) return;
         // 如果有指定滤镜
         if(this.filters.count) {
@@ -92,10 +94,12 @@ export default class JImage extends Base<HTMLImageElement> implements IJImageCom
         }
         else {
             this.filters.add(filter);
+
+            this.refreshImage();// 添加了滤镜，需要刷新
         }
     }
 
-    toJSON(props?: any[])  {
+    toJSON(props = [])  {
         return super.toJSON([
             'filters',
             ...props

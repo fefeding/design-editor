@@ -3092,7 +3092,9 @@ class ImageFilters {
     get context() {
         if (this._ctx)
             return this._ctx;
-        this._ctx = this.canvas.getContext('2d');
+        this._ctx = this.canvas.getContext('2d', {
+            willReadFrequently: true
+        });
         return this._ctx;
     }
     // 所有支持的滤镜
@@ -3127,6 +3129,7 @@ class ImageFilters {
             el.src = img;
             return this.convertToImageData(el);
         }
+        img.crossOrigin = 'anonymous';
         return new Promise((resolve) => {
             if (!img.complete) {
                 img.onload = async (e) => {
@@ -3256,8 +3259,10 @@ class JImage extends JBaseComponent {
         this.target.attr('crossorigin', 'anonymous');
         // 如果有滤镜，则添加上
         if (option.filters) {
-            for (const name in option.filters) {
-                this.addFilter(name, option.filters[name]);
+            if (Array.isArray(option.filters)) {
+                for (const filter of option.filters) {
+                    this.addFilter(filter.name, filter);
+                }
             }
         }
         // 'src' 属性变化映射到 style
@@ -3282,7 +3287,7 @@ class JImage extends JBaseComponent {
      */
     filters = new ImageFilters();
     // 滤镜生效刷新
-    async refreshImage(url) {
+    async refreshImage(url = this.data.src) {
         if (!url)
             return;
         // 如果有指定滤镜
@@ -3306,9 +3311,10 @@ class JImage extends JBaseComponent {
         }
         else {
             this.filters.add(filter);
+            this.refreshImage(); // 添加了滤镜，需要刷新
         }
     }
-    toJSON(props) {
+    toJSON(props = []) {
         return super.toJSON([
             'filters',
             ...props

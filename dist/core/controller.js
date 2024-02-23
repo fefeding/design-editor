@@ -232,7 +232,7 @@ export default class JControllerComponent extends JControllerItem {
         });
         // 旋转块
         this.rotateItem = this.createItem('rotate', {
-            size: 24,
+            size: 20,
             style: {
                 left: '50%',
                 top: '-40px',
@@ -250,7 +250,7 @@ export default class JControllerComponent extends JControllerItem {
             }
         });
         this.skewItem = this.createItem('skew', {
-            size: 24,
+            size: 10,
             style: {
                 left: '50%',
                 top: '50%',
