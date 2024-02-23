@@ -198,8 +198,10 @@ import './lib/html-to-image.js';
 			if(el instanceof JImage) {
 				el.filters.clear();// 只支持一个滤镜先，可以设置多个，但最好同一个滤镜不要重复
 				el.addFilter(filter);
+                return;
 			}
 		}
+        alert('未选择图片，无法设置滤镜');
 	}
 	for(const name in ImageFilters) {
 		const filter = new ImageFilters[name]();
