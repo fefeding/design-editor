@@ -1,3 +1,4 @@
+import ImageFilterManager, { IFilter, FilterOption } from 'j-image-filters';
 import Base from '../core/baseComponent';
 import { JImageData } from '../constant/data';
 import { IJImageComponent, IImageOption } from '../constant/types';
@@ -15,4 +16,13 @@ export default class JImage extends Base<HTMLImageElement> implements IJImageCom
      * JImageData 数据
      */
     data: JImageData;
+    /**
+     * 图片滤镜
+     */
+    filters: ImageFilterManager;
+    private refreshImage;
+    addFilter(filter: string | IFilter, option?: FilterOption): void;
+    toJSON(props?: any[]): {
+        children: any[];
+    };
 }

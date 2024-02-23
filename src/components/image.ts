@@ -1,3 +1,4 @@
+import ImageFilterManager, { filters, IFilter, FilterOption } from 'j-image-filters';
 import Base from '../core/baseComponent';
 import { JImageData } from '../constant/data';
 import { IJImageComponent, IImageOption } from '../constant/types';
@@ -32,18 +33,21 @@ export default class JImage extends Base<HTMLImageElement> implements IJImageCom
         // 允许跨域获取图像资源（避免CORS问题）
         this.target.attr('crossorigin', 'anonymous');
 
-        
+        // 如果有滤镜，则添加上
+        if(option.filters) {
+            for(const name in option.filters) {
+                this.addFilter(name, option.filters[name]);
+            }
+        }
+
         // 'src' 属性变化映射到 style
         this.data.watch([
             'src'
         ], {
             // 设置 'src' 属性
             set: (item) => {
-                this.target.dom.src = item.value;
-            },
-            // 获取 'src' 属性
-            get: (name: string) => {
-                return this.target.dom.src;
+                //this.target.dom.src = item.value;
+                if(item.name === 'src') this.refreshImage(item.value);
             }
         });
 
@@ -57,4 +61,44 @@ export default class JImage extends Base<HTMLImageElement> implements IJImageCom
      * JImageData 数据
      */
     declare data: JImageData;
+
+    /**
+     * 图片滤镜
+     */
+    filters = new ImageFilterManager();
+
+    // 滤镜生效刷新
+    private async refreshImage(url: string) {
+        if(!url) return;
+        // 如果有指定滤镜
+        if(this.filters.count) {
+            const data = await this.filters.convertToImageData(url);
+            const res = await this.filters.filter(data);
+            url = this.filters.toBase64(res);
+        }
+        this.target.dom.src = url;
+    }
+
+    // 增加滤镜
+    addFilter(filter: string | IFilter, option?: FilterOption) {
+        if(typeof filter === 'string') {
+            const filterType = filters[filter];// filter类型
+            if(!filterType) {
+                console.error(`不支持的滤镜${filter}`);
+                return;
+            }
+            filter = new filterType(option);
+            this.addFilter(filter, option);
+        }
+        else {
+            this.filters.add(filter);
+        }
+    }
+
+    toJSON(props?: any[])  {
+        return super.toJSON([
+            'filters',
+            ...props
+        ]);
+    }
 }

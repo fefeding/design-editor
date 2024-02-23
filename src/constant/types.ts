@@ -1,4 +1,5 @@
 import { Point, ItemType } from 'j-design-util';
+import { IFilterManager, FilterOption } from 'j-image-filters';
 import JElementCssStyle, { IJElementStyleDeclaration } from './styleMap';
 import { JElementData, JTextData, JImageData, IJElementData, IJTexteData, IJImageData, IJFontData, JSvgData, IJSvgData } from './data';
 import type EventEmitter from 'j-eventemitter';
@@ -107,6 +108,13 @@ export interface IImageOption extends IElementOption<IJImageData> {
      * 数据类型，应为JImageData
      */
     dataType?: JImageData;
+
+    /**
+     * 滤镜
+     */
+    filters?: {
+        [name: string]: FilterOption
+    };
 }
 /**
  * @public
@@ -351,6 +359,10 @@ export interface IJTextComponent extends IJBaseComponent<HTMLDivElement> {
  */
 export interface IJImageComponent extends IJBaseComponent<HTMLImageElement> {
     data: JImageData;
+    /**
+     * 滤镜
+     */
+    filters: IFilterManager;
 }
 /**
  * @public
