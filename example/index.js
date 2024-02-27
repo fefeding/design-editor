@@ -1,5 +1,5 @@
 import './lib/html-to-image.js';
-	import JEditor, { util, ImageFilters, JImage } from "../dist/index.esm.js";
+	import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 
 	const container = document.getElementById('myeditor_container');
 	container.style.height = window.innerHeight + 'px';
@@ -187,24 +187,20 @@ import './lib/html-to-image.js';
 		}
 	});
 
-	// 图片滤镜
-	const buttonContainer = document.getElementById('img_filters');
+	// 滤镜
+	const buttonContainer = document.getElementById('css_filters');
 	function buttonClick(e) {
 		const name = this.getAttribute('data-filter');
-		const filter = new ImageFilters[name]();
+		const filter = CssFilters[name];
 		
 		const elements = editor.selectedElements;
 		for(const el of elements) {
-			if(el instanceof JImage) {
-				el.filters.clear();// 只支持一个滤镜先，可以设置多个，但最好同一个滤镜不要重复
-				el.addFilter(filter);
-                return;
-			}
+			//el.filters.clear();// 只支持一个滤镜先，可以设置多个，但最好同一个滤镜不要重复
+			el.filters.add(filter);
 		}
-        alert('未选择图片，无法设置滤镜');
 	}
-	for(const name in ImageFilters) {
-		const filter = new ImageFilters[name]();
+	for(const name in CssFilters) {
+		const filter = CssFilters[name];
 		const button = document.createElement('button');
 		button.textContent = filter.displayName || name;
 		button.setAttribute('data-filter', name);

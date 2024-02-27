@@ -259,7 +259,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
 
     // 转为json
     toJSON(props=[], ig=(p: IJElement)=>true) {
-        const fields = ['type', 'data', 'style', 'transform', 'id', ...props];
+        const fields = ['type', 'data', 'style', 'transform', 'id', 'filters',  ...props];
         const obj = {
             children: []
         };

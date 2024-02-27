@@ -1,3 +1,4 @@
+import CssFilterManager from 'j-css-filters';
 import { ContainerDefaultStyle } from '../constant/styleMap';
 import JElement from '../core/element';
 /**
@@ -44,6 +45,7 @@ export default class JBaseComponent extends JElement {
                 'rotateX', 'rotateY', 'translateX', 'translateY', 'skewX', 'skewY'
             ]
         });
+        this.filters = new CssFilterManager(this.target, option.filters); // 滤镜
         this.data.on('change', (e) => {
             this.emit('dataChange', {
                 type: 'dataChange',
@@ -54,6 +56,7 @@ export default class JBaseComponent extends JElement {
     }
     // 当前控件的核心元素
     target;
+    filters;
     // 选中
     _selected = false;
     get selected() {

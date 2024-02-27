@@ -7,7 +7,7 @@ import JElement from './core/element';
 import JEditor from './editor';
 import JData  from './constant/data';
 import JEvent from './core/event';
-import { filters as ImageFilters } from 'j-image-filters';
+import { filters as CssFilters } from 'j-css-filters';
 
 export {JElementStyleDeclaration, JElementStyleProperty} from './constant/styleMap';
 export  * from './constant/data';
@@ -22,7 +22,7 @@ export {
     JImage,
     JElement,
     JEditor,
-    ImageFilters
+    CssFilters
 }
 
 export default JEditor;

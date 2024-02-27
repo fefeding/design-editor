@@ -1,4 +1,5 @@
 
+import CssFilterManager, { filters as cssFilters, IFilterManager } from 'j-css-filters';
 import { IJBaseComponent, IJElement } from '../constant/types';
 import { ContainerDefaultStyle } from '../constant/styleMap';
 import JElement from '../core/element';
@@ -49,6 +50,8 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
             ]
         });
 
+        this.filters = new CssFilterManager(this.target, option.filters);// 滤镜
+
         this.data.on('change', (e) => {
             this.emit('dataChange', {
                 type: 'dataChange',
@@ -60,6 +63,8 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
 
     // 当前控件的核心元素
     target: IJElement<T>;
+
+    filters: IFilterManager;
 
     // 选中
     private _selected = false;
