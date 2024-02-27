@@ -1,5 +1,5 @@
 import JElementCssStyle, { JElementStyleDeclaration, JElementStyleProperty, IJElementStyleDeclaration } from '../constant/styleMap';
-import util from '../lib/util';
+import util from 'j-design-util';
 
 const NumberStyleMap = ['left', 'top', 'right', 'bottom', 'width', 'height'];
 

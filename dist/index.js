@@ -1,4 +1,4 @@
-import util from './lib/util';
+import util from 'j-design-util';
 import JBaseComponent from './core/baseComponent';
 import JText from './components/text';
 import JImage from './components/image';

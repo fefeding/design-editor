@@ -1,5 +1,5 @@
 import EventEmiter from 'j-eventemitter';
-import util from '../lib/util';
+import util from 'j-design-util';
 export default class Transform extends EventEmiter {
     constructor(option, targetOption) {
         super();

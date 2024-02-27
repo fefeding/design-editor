@@ -11,7 +11,7 @@ import JSvg from './components/svg';
 import JElement from './core/element';
 import JController from './core/controller';
 import JFonts from './core/fonts';
-import util from './lib/util';
+import util from 'j-design-util';
 import { Debounce } from './lib/decorator';
 import { SupportEventNames } from './core/event';
 /**

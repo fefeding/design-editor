@@ -1,5 +1,5 @@
 import EventEmiter from 'j-eventemitter';
-import util from '../lib/util';
+import util from 'j-design-util';
 import { IStyleTransform, ITransform, TransformWatcher } from './types';
 
 export default class Transform extends EventEmiter implements ITransform {

@@ -1,5 +1,5 @@
 import Base from '../core/baseComponent';
-import util from '../lib/util';
+import util from 'j-design-util';
 import { JSvgData } from '../constant/data';
 import { IJSvgComponent, ISvgOption } from '../constant/types';
 

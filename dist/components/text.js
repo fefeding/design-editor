@@ -1,6 +1,6 @@
 import Base from '../core/baseComponent';
 import { JTextData } from '../constant/data';
-import util from '../lib/util';
+import util from 'j-design-util';
 /**
  * 文本组件类 JText，继承于基础组件 Base。
  * @public
@@ -59,13 +59,16 @@ export default class JText extends Base {
         if (text)
             this.data.text = text;
         // 添加双击事件监听器，进入编辑状态
-        this.on('dblclick', () => {
-            this.edit();
+        this.on('dblclick', (e) => {
+            this.edit(e);
         });
         // 添加选择事件监听器，退出编辑状态
         this.on('select', () => {
             if (!this.selected)
                 this.closeEdit();
+        });
+        this.target.on('click', (e) => {
+            util.setRange(this.target.dom, e); // 光标位置在点击位置
         });
         this.target.on('blur', () => {
             this.closeEdit();
@@ -75,31 +78,32 @@ export default class JText extends Base {
     // 所有 JText 实例的缓存
     static TextControlCache = new Map();
     /**
+     * 当前编辑状态
+     */
+    get contenteditable() {
+        return util.attr(this.target.dom, 'contenteditable');
+    }
+    set contenteditable(v) {
+        if (!this.editable && v)
+            return; // 组件不支持编辑则不处理
+        util.attr(this.target.dom, 'contenteditable', v.toString());
+    }
+    /**
      * 进入文本编辑状态
      */
-    edit() {
+    edit(e) {
         if (!this.editable)
             return;
         this.editor.elementController.visible = false;
-        util.attr(this.target.dom, 'contenteditable', 'true');
-        // 把光标置于最后
-        const range = document.createRange();
-        const nodes = this.target.dom.childNodes;
-        if (nodes.length) {
-            const last = nodes[nodes.length - 1];
-            range.setStart(last, last.textContent.length);
-        }
-        const sel = window.getSelection();
-        range.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(range);
+        this.contenteditable = true; // 编辑态
+        util.setRange(this.target.dom, e); // 光标位置在最后
         this.target.dom.focus(); // 进入控件
     }
     /**
      * 退出文本编辑状态
      */
     closeEdit() {
-        util.attr(this.target.dom, 'contenteditable', 'false');
+        this.contenteditable = false;
     }
     /**
      * 移除 JText 实例

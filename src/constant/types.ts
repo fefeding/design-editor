@@ -345,6 +345,10 @@ export interface IJBaseComponent<T extends HTMLElement = HTMLElement> extends IJ
 export interface IJTextComponent extends IJBaseComponent<HTMLDivElement> {
     /**该文字组件的数据 */
     data: JTextData;
+    /**
+     * 编辑状态
+     */
+    contenteditable:boolean;
 }
 
 /**

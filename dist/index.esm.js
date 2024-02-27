@@ -1,42 +1,78 @@
-var util$1 = {
-    // 是否是数字
+var util = {
+    /**
+     * 是否是数字，字符串数字或配身就是number返回true
+     * @param v 原字符串或数字
+     * @returns true/false
+     */
     isNumber(v) {
-        return typeof v === 'number' || /^\s*[\d\.]+\s*$/.test(v);
+        return typeof v === 'number' || /^\s*[\d]+(\.\d+)?\s*$/.test(v);
     },
-    // 是否是带像素单位的字符串
+    /**
+     * 是否是带像素单位(px)的字符串
+     * @param v
+     * @returns
+     */
     isPXNumber(v) {
         return /^\s*[\d\.]+\s*px\s*/i.test(v);
     },
-    // 是否是带角度单位的字符串
+    /**
+     * 是否是带角度单位(deg)的字符串
+     * @param v
+     * @returns
+     */
     isDegNumber(v) {
         return /^\s*[\d\.]+\s*deg\s*/i.test(v);
     },
-    // 是否是带弧度单位的字符串
+    /**
+     * 是否是带弧度单位(rad)的字符串
+     * @param v
+     * @returns
+     */
     isRadNumber(v) {
         return /^\s*[\d\.]+\s*rad\s*/i.test(v);
     },
-    // 转为像素字符串格式 
+    /**
+     * 转为像素字符串格式 : 2 -> 2px
+     * @param v
+     * @returns
+     */
     toPX(v) {
         if (this.isNumber(v))
             return v + 'px';
         return v;
     },
-    // 带像素或其它单位的转换为数字
+    /**
+     * 带像素或其它单位的转换为数字: 2px -> 2
+     * @param v
+     * @returns
+     */
     toNumber(v) {
         if (this.isNumber(v))
             return Number(v);
         else if (typeof v === 'string')
             return parseFloat(v) || 0;
     },
-    // 弧度转角度
+    /**
+     * 弧度转角度: Math.PI -> 180
+     * @param v
+     * @returns
+     */
     radToDeg(v) {
         return v * (180 / Math.PI);
     },
-    // 角度转弧度
+    /**
+     * 角度转弧度 180 -> Math.PI
+     * @param v
+     * @returns
+     */
     degToRad(v) {
         return v * (Math.PI / 180);
     },
-    // 转为角度格式
+    /**
+     * 转为角度格式 1 -> 1deg, 3.14rad -> 180deg
+     * @param v
+     * @returns
+     */
     toDeg(v) {
         if (this.isNumber(v))
             return v + 'deg';
@@ -44,7 +80,11 @@ var util$1 = {
             return this.toDeg(this.radToDeg(parseFloat(v)));
         return v;
     },
-    // 转为弧度格式
+    /**
+     * 转为弧度格式, 1 -> 1rad,  180deg -> 3.14rad
+     * @param v
+     * @returns
+     */
     toRad(v) {
         if (this.isNumber(v))
             return v + 'rad';
@@ -80,7 +120,11 @@ var util$1 = {
         }
         return pos;
     },
-    // 获取元素bounds
+    /**
+     * 获取元素bounds
+     * @param el
+     * @returns
+     */
     getElementBoundingRect(el) {
         let bounds = {
             height: 0,
@@ -104,7 +148,12 @@ var util$1 = {
         }
         return bounds;
     },
-    // 把domcument坐标转为指定元素相对坐标
+    /**
+     * 把domcument坐标转为指定元素相对坐标
+     * @param pos
+     * @param dom
+     * @returns
+     */
     toDomPosition(pos, dom) {
         const domPos = this.getElementBoundingRect(dom);
         return {
@@ -142,7 +191,13 @@ var util$1 = {
         }
         return p;
     },
-    // 设置样式
+    /**
+     * 设置dom样式
+     * @param dom
+     * @param name
+     * @param value
+     * @returns
+     */
     css(dom, name, value) {
         if (!name)
             return;
@@ -156,7 +211,13 @@ var util$1 = {
         }
         return this;
     },
-    // dom属性
+    /**
+     * 设置或读取dom属性
+     * @param dom
+     * @param name
+     * @param value
+     * @returns
+     */
     attr(dom, name, value) {
         if (typeof value !== 'undefined') {
             dom.setAttribute(name, value + '');
@@ -166,13 +227,44 @@ var util$1 = {
             return dom.getAttribute(name);
         }
     },
+    /**
+     * 设置光标位置
+     * @param dom 元素 htmlelement
+     */
+    setRange(dom, position) {
+        let range;
+        if (position) {
+            //document.caretPositionFromPoint();
+            range = document.caretRangeFromPoint(position.x, position.y);
+        }
+        else {
+            // 把光标置于最后
+            range = document.createRange();
+            if (dom) {
+                const nodes = dom.childNodes;
+                if (nodes.length) {
+                    const last = nodes[nodes.length - 1];
+                    range.setStart(last, last.textContent.length);
+                }
+            }
+        }
+        const sel = window.getSelection();
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+    },
     // 本地唯一ID，这个只要保证当前线程唯一即可，非全球唯一
     uuid() {
         const time = Date.now();
         const rnd = Math.floor(Math.random() * 10000000000);
         return (time + rnd).toString();
     },
-    // 把图片旋转一定角度，返回base64
+    /**
+     * 把图片旋转一定角度，返回base64
+     * @param url
+     * @param rotation
+     * @returns
+     */
     async rotateImage(url, rotation) {
         return new Promise((resolve, reject) => {
             const img = new Image();
@@ -195,7 +287,12 @@ var util$1 = {
             img.src = url;
         });
     },
-    // 请求远程资源
+    /**
+     * 请求远程资源
+     * @param url
+     * @param option
+     * @returns
+     */
     async request(url, option) {
         option = option || {};
         return new Promise((resolve, reject) => {
@@ -236,7 +333,9 @@ var util$1 = {
 const nwse = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAAe1BMVEUAAAD///////////////////////////////////////////////////////////////////+anqaeoqqjpq7e3+Li4uRpbXhiZ3NjaHRfZHFZX2tAR1c/RlU7QVH////9/f3////////9/f3////9/f3///8PFyr////UYjabAAAAJ3RSTlMABAUMDRAREhckKS4wMjU2N6jAwMDHyMrMzM3P2tvd5Ojo6evr7PowgHoyAAAAAWJLR0QovbC1sgAAAJVJREFUKM+90dsSgiAQgGHIDkBUoqaVGRXE7vs/YSgz5QDX/pd8HGYWQpZqLQ8+WSTrb5yyLII91jdfi8cIJPYAUKEiObgaJ3JwgcFonkL1ucPjOUrJ5o+f0QURCi39QWFRCT2J83s2/yPsRAgP0vRzmOLaDNBBCkQ400EOFDaQgxLbcTB1AsyGUb5ofBXdjW1Xi/32F3U3EU6pnu/zAAAAAElFTkSuQmCC';
 const ns = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAAmVBMVEUAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+oq7KusLevsriZm6Wdoamipa2jpq6Tl6CNkZqIjJX///98gYv///////////////8PFyr///8ipdpMAAAAMXRSTlMAAQIDBAUHCVpcXV5faGl3gIKDhIWImJydnp+mqaqxuLu/v7/AwMDAwcLDxMX7/P3+tV+LYwAAAAFiS0dEMkDSTMgAAAC/SURBVCjPfZLZEoIwDEWhClhAxQVFVDYVF1xI/v/jJBbRVvA8dJgcyL0zRdMamOsyrQV9gRiy1nmWtxgWYAaQ40oxbIk7ADKBbAZiDnBELgmOFQB0OnI09wsShW/rarxHwpPfHhMJieT1yMVXNtaIDMJudsjUGztF56qqKlHXJbj+vy5hDt91R6YkZp+MuSQm94sodL1NJWHF5Z7m50dsKSFReQA4lZGpxhsbTFPcGr+X3gsR1/2234Q5zte1PgEi+SemTJG1vwAAAABJRU5ErkJggg==';
 const fullCircleRadius = Math.PI * 2;
-// 操作杠指针
+/**
+ * 操作杠指针配置
+ */
 const Cursors = {
     'l': '',
     'lt': nwse,
@@ -262,26 +361,26 @@ const Cursors = {
             if (dir === 'l' || dir === 'r' || dir === 't' || dir === 'b') {
                 // 如果没有旋转角度，则把ns转90度即可
                 if (rotation === 0) {
-                    cursor = await util$1.rotateImage(ns, Math.PI / 2);
+                    cursor = await util.rotateImage(ns, Math.PI / 2);
                     this['l'] = this['r'] = cursor;
                 }
                 // 如果有旋转角度，则获取标准的再转对应的角度
                 else {
                     const normal = await this.get(dir, 0);
-                    cursor = await util$1.rotateImage(normal, rotation);
+                    cursor = await util.rotateImage(normal, rotation);
                     this[key] = cursor;
                 }
             }
             else if (dir === 'tr' || dir === 'lb' || dir === 'lt' || dir === 'rb') {
                 // 如果没有旋转角度，则把nwse转90度即可
                 if (rotation === 0) {
-                    cursor = await util$1.rotateImage(nwse, Math.PI / 2);
+                    cursor = await util.rotateImage(nwse, Math.PI / 2);
                     return this['tr'] = this['lb'] = cursor;
                 }
                 // 如果有旋转角度，则获取标准的再转对应的角度
                 else {
                     const normal = await this.get(dir, 0);
-                    cursor = await util$1.rotateImage(normal, rotation);
+                    cursor = await util.rotateImage(normal, rotation);
                     this[key] = cursor;
                 }
             }
@@ -289,21 +388,34 @@ const Cursors = {
         return cursor;
     }
 };
+/**
+ * 图标配置
+ */
 const ItemIcons = {
     'rotate': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAgVBMVEUAAAAiK9MjKdUfKNYjKdUiKNYiKdUeHuAjKNYjKNYiKNYyMswiKNYiKNYiKNYiKNYhKNYiKdUiKNYiKNYjKdUjKNYgJ9cjJdYiKNYiKNYiKdUhJ9cjKNYiKdUdLNMrK9MiKNYiKNYiKdUiKNYjKNYjKdUjKdUjKNYjKdUjKdUjKdaUW7eVAAAAKnRSTlMAFdMY1/v4CPXo4wXuyLh6RfKRjWpAJxykb1tSTjARC8OslYVgOivQrqey7caqAAABM0lEQVRIx+2U6W6DMBCEDdSE+2wg950e3/s/YGOBQI0hMf+qKvODHYsZe9derXjh32C2PsU+BIcyCw3kVhnRIUj3z/TvEcTp1RGizs42BJvH+kqSbPtlFkP52LFc353oshCTMM8pJzpchuuwrLEs8fdDes9zRhwH0gG9DbY1khR+OKQfd9hkuv4Nbp/hrFIKXe+ANebIiHW9gJbod2fhN7zTq+Shpb/3UusQ2fGeuMw6rtBv1vxraX9UgNNwPV1l0NONmbdMd7jUenkFqRhzyKEr3/DZENNHDSOuKpq3zZlEBfPG3EVcVDRv/RX5VkzCAv9jkiFMyO+GwHb1eOgt4Kvq104hverJIMshea/CG61X3y6yeDb7nJMHyChwVTia1LS7HAMJ+MmyNp/gO2cmXvjD+AHprhpoJKiYYAAAAABJRU5ErkJggg==',
     'skew': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAdVBMVEUAAABlY/97e/9kYv9kY/9nZ/9lY/9kYv9kY/9kYv9kY/9lY/9kYv9kY/9pYP9oYP9kYv9kYv9kY/9kYv9iYv9nY/9kYv9lYv9kYv9lYv9lY/9kYv9lYv9kY/9kYv9lZf9lY/9kYv9kYv9lYv9kYv9lY/9lY/+ktQNRAAAAJnRSTlMA/ATv3xHmW/V0TtO3khcNy8XBUh8U6ti+ppt5bksnGTqygmNEZ0ctpdUAAAEmSURBVEjH7VPbloIwDKSloAUqF6kgd123//+Ja+jSSpGqD74xbynJycxkcDZs+BIOAa2ygrgIuaQoKxocbN03FooFQnZ73u1RIlZQUG/ZvzsJC9zGaOeZkEAJa9ou9zD28q5tWIKERDZb0kvu+3MQm5vj4LyXWh7k42Rce/VW1F1d+J5g9fILddmv29eX0PGj6vReRdhmOI7uLakqgWTnWNGBRFWBo7l9IAeRqgKGFzulCzirjyZAxGRb6/tHM2GREq1VC7eWtvpCoN3M1nq0NX3gwAt9OBiACfNwZKaSRyoaVST0xJBN0UjNMzVG+NCog0zho0tP4noebwKP/2zq+Ll5AwuNAYpEyIZXv+hJU3I4d17iiKToN6Fs/WDgg34djQ0bvo4/naYvgs8xmvwAAAAASUVORK5CYII='
 };
-// 因为旋转后坐标要回原才好计算操作，
+/**
+ * 因为旋转后坐标要回原才好计算操作，
+ * @param offset
+ * @param oldPosition
+ * @param newPosition
+ * @param rotation
+ * @param center
+ * @returns
+ */
 const getRotateEventPosition = (offset, oldPosition, newPosition, rotation, center) => {
     // 先回原坐标，再主算偏移量，这样保证操作更容易理解
     if (rotation) {
-        const [pos1, pos2] = util$1.rotatePoints([oldPosition, newPosition], center, -rotation);
+        const [pos1, pos2] = util.rotatePoints([oldPosition, newPosition], center, -rotation);
         offset.x = pos2.x - pos1.x;
         offset.y = pos2.y - pos1.y;
     }
     return offset;
 };
-// 发生旋转, 计算得到的旋转角度
+/**
+ *  发生旋转, 计算得到的旋转角度
+ */
 const rotateChange = (oldPosition, newPosition, center) => {
     // 因为center是相对于编辑器的，所以事件坐标也需要转到编辑器
     const cx1 = oldPosition.x - center.x;
@@ -328,7 +440,9 @@ const rotateChange = (oldPosition, newPosition, center) => {
     else ;
     return angle2 - angle1;
 };
-// 根据操作参数，计算位移，大小和旋转角度等
+/**
+ *  根据操作参数，计算位移，大小和旋转角度等
+ */
 const getChangeData = (dir, offset, oldPosition, newPosition, center, rotation = 0) => {
     // 当前移动对原对象的改变
     const args = {
@@ -396,15 +510,11 @@ const getChangeData = (dir, offset, oldPosition, newPosition, center, rotation =
             x: center.x + args.x + args.width / 2,
             y: center.y + args.y + args.height / 2
         };
-        const targetCenter = util$1.rotatePoints({ ...newCenter }, center, rotation);
+        const targetCenter = util.rotatePoints({ ...newCenter }, center, rotation);
         args.x += targetCenter.x - newCenter.x;
         args.y += targetCenter.y - newCenter.y;
     }
     return args;
-};
-
-var util = {
-    ...util$1
 };
 
 /**
@@ -3144,13 +3254,16 @@ class JText extends JBaseComponent {
         if (text)
             this.data.text = text;
         // 添加双击事件监听器，进入编辑状态
-        this.on('dblclick', () => {
-            this.edit();
+        this.on('dblclick', (e) => {
+            this.edit(e);
         });
         // 添加选择事件监听器，退出编辑状态
         this.on('select', () => {
             if (!this.selected)
                 this.closeEdit();
+        });
+        this.target.on('click', (e) => {
+            util.setRange(this.target.dom, e); // 光标位置在点击位置
         });
         this.target.on('blur', () => {
             this.closeEdit();
@@ -3160,31 +3273,32 @@ class JText extends JBaseComponent {
     // 所有 JText 实例的缓存
     static TextControlCache = new Map();
     /**
+     * 当前编辑状态
+     */
+    get contenteditable() {
+        return util.attr(this.target.dom, 'contenteditable');
+    }
+    set contenteditable(v) {
+        if (!this.editable && v)
+            return; // 组件不支持编辑则不处理
+        util.attr(this.target.dom, 'contenteditable', v.toString());
+    }
+    /**
      * 进入文本编辑状态
      */
-    edit() {
+    edit(e) {
         if (!this.editable)
             return;
         this.editor.elementController.visible = false;
-        util.attr(this.target.dom, 'contenteditable', 'true');
-        // 把光标置于最后
-        const range = document.createRange();
-        const nodes = this.target.dom.childNodes;
-        if (nodes.length) {
-            const last = nodes[nodes.length - 1];
-            range.setStart(last, last.textContent.length);
-        }
-        const sel = window.getSelection();
-        range.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(range);
+        this.contenteditable = true; // 编辑态
+        util.setRange(this.target.dom, e); // 光标位置在最后
         this.target.dom.focus(); // 进入控件
     }
     /**
      * 退出文本编辑状态
      */
     closeEdit() {
-        util.attr(this.target.dom, 'contenteditable', 'false');
+        this.contenteditable = false;
     }
     /**
      * 移除 JText 实例
@@ -3639,8 +3753,8 @@ class JControllerComponent extends JControllerItem {
     bindTargetPositionAndSizeHandler;
     get center() {
         const center = {
-            x: util$1.toNumber(this.data.left) + util$1.toNumber(this.data.width) / 2,
-            y: util$1.toNumber(this.data.top) + util$1.toNumber(this.data.height) / 2,
+            x: util.toNumber(this.data.left) + util.toNumber(this.data.width) / 2,
+            y: util.toNumber(this.data.top) + util.toNumber(this.data.height) / 2,
         };
         return center;
     }
@@ -3678,8 +3792,8 @@ class JControllerComponent extends JControllerItem {
             }
         };
         const center = this.center;
-        const width = util$1.toNumber(this.data.width);
-        const height = util$1.toNumber(this.data.height);
+        const width = util.toNumber(this.data.width);
+        const height = util.toNumber(this.data.height);
         if (dir === 'rotate') {
             // 编辑器坐标, 因为是在编辑器渲染区域操作，需要把坐标转到此区域再处理
             const pos1 = this.editor.toEditorPosition(oldPosition);
@@ -3709,11 +3823,11 @@ class JControllerComponent extends JControllerItem {
             this.move(args.x, args.y);
         }
         if (args.width) {
-            const width = util$1.toNumber(this.data.width) + args.width;
+            const width = util.toNumber(this.data.width) + args.width;
             this.data.width = Math.max(Number(width.toFixed(2)), 1);
         }
         if (args.height) {
-            const height = util$1.toNumber(this.data.height) + args.height;
+            const height = util.toNumber(this.data.height) + args.height;
             this.data.height = Math.max(Number(height.toFixed(2)), 1);
         }
         // x,y旋转
@@ -3738,8 +3852,8 @@ class JControllerComponent extends JControllerItem {
         if (!this.target)
             return;
         const pos = {
-            x: util$1.toNumber(this.data.left) + (this.isEditor ? util$1.toNumber(this.target.data.left) : 0),
-            y: util$1.toNumber(this.data.top) + (this.isEditor ? util$1.toNumber(this.target.data.top) : 0)
+            x: util.toNumber(this.data.left) + (this.isEditor ? util.toNumber(this.target.data.left) : 0),
+            y: util.toNumber(this.data.top) + (this.isEditor ? util.toNumber(this.target.data.top) : 0)
         };
         this.target.data.left = pos.x;
         this.target.data.top = pos.y;
@@ -3753,8 +3867,8 @@ class JControllerComponent extends JControllerItem {
             //skewY: this.transform.skewY,
             rotateZ: this.transform.rotateZ,
         });
-        const width = util$1.toNumber(this.data.width) - this.paddingSize * 2;
-        const height = util$1.toNumber(this.data.height) - this.paddingSize * 2;
+        const width = util.toNumber(this.data.width) - this.paddingSize * 2;
+        const height = util.toNumber(this.data.height) - this.paddingSize * 2;
         if (this.target.data.width !== width)
             this.target.data.width = width;
         if (this.target.data.height !== height)
@@ -3817,13 +3931,13 @@ class JControllerComponent extends JControllerItem {
             return;
         // 编辑器的话，需要把它的坐标转为相对于容器的
         const pos = {
-            x: (this.isEditor ? 0 : util$1.toNumber(this.target.data.left)),
-            y: (this.isEditor ? 0 : util$1.toNumber(this.target.data.top))
+            x: (this.isEditor ? 0 : util.toNumber(this.target.data.left)),
+            y: (this.isEditor ? 0 : util.toNumber(this.target.data.top))
         };
         this.data.left = pos.x;
         this.data.top = pos.y;
-        this.data.width = util$1.toNumber(this.target.data.width) + this.paddingSize * 2;
-        this.data.height = util$1.toNumber(this.target.data.height) + this.paddingSize * 2;
+        this.data.width = util.toNumber(this.target.data.width) + this.paddingSize * 2;
+        this.data.height = util.toNumber(this.target.data.height) + this.paddingSize * 2;
         this.transform.from({
             // rotateX: target.transform.rotateX,
             // rotateY: target.transform.rotateY,

@@ -37,7 +37,8 @@ declare const _default: {
         y: number;
     }, r: number): T;
     css(dom: any, name: string | Object, value?: string | number): any;
-    attr(dom: any, name: string, value: string | number): any;
+    attr(dom: any, name: string, value?: string | number): any;
+    setRange(dom?: HTMLElement, position?: import("j-design-util").Point): void;
     uuid(): string;
     rotateImage(url: string, rotation: number): Promise<string>;
     request(url: string, option?: {
