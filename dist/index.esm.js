@@ -1,78 +1,42 @@
 var util$1 = {
-    /**
-     * 是否是数字，字符串数字或配身就是number返回true
-     * @param v 原字符串或数字
-     * @returns true/false
-     */
+    // 是否是数字
     isNumber(v) {
-        return typeof v === 'number' || /^\s*[\d]+(\.\d+)?\s*$/.test(v);
+        return typeof v === 'number' || /^\s*[\d\.]+\s*$/.test(v);
     },
-    /**
-     * 是否是带像素单位(px)的字符串
-     * @param v
-     * @returns
-     */
+    // 是否是带像素单位的字符串
     isPXNumber(v) {
         return /^\s*[\d\.]+\s*px\s*/i.test(v);
     },
-    /**
-     * 是否是带角度单位(deg)的字符串
-     * @param v
-     * @returns
-     */
+    // 是否是带角度单位的字符串
     isDegNumber(v) {
         return /^\s*[\d\.]+\s*deg\s*/i.test(v);
     },
-    /**
-     * 是否是带弧度单位(rad)的字符串
-     * @param v
-     * @returns
-     */
+    // 是否是带弧度单位的字符串
     isRadNumber(v) {
         return /^\s*[\d\.]+\s*rad\s*/i.test(v);
     },
-    /**
-     * 转为像素字符串格式 : 2 -> 2px
-     * @param v
-     * @returns
-     */
+    // 转为像素字符串格式 
     toPX(v) {
         if (this.isNumber(v))
             return v + 'px';
         return v;
     },
-    /**
-     * 带像素或其它单位的转换为数字: 2px -> 2
-     * @param v
-     * @returns
-     */
+    // 带像素或其它单位的转换为数字
     toNumber(v) {
         if (this.isNumber(v))
             return Number(v);
         else if (typeof v === 'string')
             return parseFloat(v) || 0;
     },
-    /**
-     * 弧度转角度: Math.PI -> 180
-     * @param v
-     * @returns
-     */
+    // 弧度转角度
     radToDeg(v) {
         return v * (180 / Math.PI);
     },
-    /**
-     * 角度转弧度 180 -> Math.PI
-     * @param v
-     * @returns
-     */
+    // 角度转弧度
     degToRad(v) {
         return v * (Math.PI / 180);
     },
-    /**
-     * 转为角度格式 1 -> 1deg, 3.14rad -> 180deg
-     * @param v
-     * @returns
-     */
+    // 转为角度格式
     toDeg(v) {
         if (this.isNumber(v))
             return v + 'deg';
@@ -80,11 +44,7 @@ var util$1 = {
             return this.toDeg(this.radToDeg(parseFloat(v)));
         return v;
     },
-    /**
-     * 转为弧度格式, 1 -> 1rad,  180deg -> 3.14rad
-     * @param v
-     * @returns
-     */
+    // 转为弧度格式
     toRad(v) {
         if (this.isNumber(v))
             return v + 'rad';
@@ -120,11 +80,7 @@ var util$1 = {
         }
         return pos;
     },
-    /**
-     * 获取元素bounds
-     * @param el
-     * @returns
-     */
+    // 获取元素bounds
     getElementBoundingRect(el) {
         let bounds = {
             height: 0,
@@ -148,12 +104,7 @@ var util$1 = {
         }
         return bounds;
     },
-    /**
-     * 把domcument坐标转为指定元素相对坐标
-     * @param pos
-     * @param dom
-     * @returns
-     */
+    // 把domcument坐标转为指定元素相对坐标
     toDomPosition(pos, dom) {
         const domPos = this.getElementBoundingRect(dom);
         return {
@@ -191,13 +142,7 @@ var util$1 = {
         }
         return p;
     },
-    /**
-     * 设置dom样式
-     * @param dom
-     * @param name
-     * @param value
-     * @returns
-     */
+    // 设置样式
     css(dom, name, value) {
         if (!name)
             return;
@@ -211,13 +156,7 @@ var util$1 = {
         }
         return this;
     },
-    /**
-     * 设置或读取dom属性
-     * @param dom
-     * @param name
-     * @param value
-     * @returns
-     */
+    // dom属性
     attr(dom, name, value) {
         if (typeof value !== 'undefined') {
             dom.setAttribute(name, value + '');
@@ -233,12 +172,7 @@ var util$1 = {
         const rnd = Math.floor(Math.random() * 10000000000);
         return (time + rnd).toString();
     },
-    /**
-     * 把图片旋转一定角度，返回base64
-     * @param url
-     * @param rotation
-     * @returns
-     */
+    // 把图片旋转一定角度，返回base64
     async rotateImage(url, rotation) {
         return new Promise((resolve, reject) => {
             const img = new Image();
@@ -261,12 +195,7 @@ var util$1 = {
             img.src = url;
         });
     },
-    /**
-     * 请求远程资源
-     * @param url
-     * @param option
-     * @returns
-     */
+    // 请求远程资源
     async request(url, option) {
         option = option || {};
         return new Promise((resolve, reject) => {
@@ -307,9 +236,7 @@ var util$1 = {
 const nwse = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAAe1BMVEUAAAD///////////////////////////////////////////////////////////////////+anqaeoqqjpq7e3+Li4uRpbXhiZ3NjaHRfZHFZX2tAR1c/RlU7QVH////9/f3////////9/f3////9/f3///8PFyr////UYjabAAAAJ3RSTlMABAUMDRAREhckKS4wMjU2N6jAwMDHyMrMzM3P2tvd5Ojo6evr7PowgHoyAAAAAWJLR0QovbC1sgAAAJVJREFUKM+90dsSgiAQgGHIDkBUoqaVGRXE7vs/YSgz5QDX/pd8HGYWQpZqLQ8+WSTrb5yyLII91jdfi8cIJPYAUKEiObgaJ3JwgcFonkL1ucPjOUrJ5o+f0QURCi39QWFRCT2J83s2/yPsRAgP0vRzmOLaDNBBCkQ400EOFDaQgxLbcTB1AsyGUb5ofBXdjW1Xi/32F3U3EU6pnu/zAAAAAElFTkSuQmCC';
 const ns = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAAmVBMVEUAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+oq7KusLevsriZm6Wdoamipa2jpq6Tl6CNkZqIjJX///98gYv///////////////8PFyr///8ipdpMAAAAMXRSTlMAAQIDBAUHCVpcXV5faGl3gIKDhIWImJydnp+mqaqxuLu/v7/AwMDAwcLDxMX7/P3+tV+LYwAAAAFiS0dEMkDSTMgAAAC/SURBVCjPfZLZEoIwDEWhClhAxQVFVDYVF1xI/v/jJBbRVvA8dJgcyL0zRdMamOsyrQV9gRiy1nmWtxgWYAaQ40oxbIk7ADKBbAZiDnBELgmOFQB0OnI09wsShW/rarxHwpPfHhMJieT1yMVXNtaIDMJudsjUGztF56qqKlHXJbj+vy5hDt91R6YkZp+MuSQm94sodL1NJWHF5Z7m50dsKSFReQA4lZGpxhsbTFPcGr+X3gsR1/2234Q5zte1PgEi+SemTJG1vwAAAABJRU5ErkJggg==';
 const fullCircleRadius = Math.PI * 2;
-/**
- * 操作杠指针配置
- */
+// 操作杠指针
 const Cursors = {
     'l': '',
     'lt': nwse,
@@ -362,22 +289,11 @@ const Cursors = {
         return cursor;
     }
 };
-/**
- * 图标配置
- */
 const ItemIcons = {
     'rotate': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAgVBMVEUAAAAiK9MjKdUfKNYjKdUiKNYiKdUeHuAjKNYjKNYiKNYyMswiKNYiKNYiKNYiKNYhKNYiKdUiKNYiKNYjKdUjKNYgJ9cjJdYiKNYiKNYiKdUhJ9cjKNYiKdUdLNMrK9MiKNYiKNYiKdUiKNYjKNYjKdUjKdUjKNYjKdUjKdUjKdaUW7eVAAAAKnRSTlMAFdMY1/v4CPXo4wXuyLh6RfKRjWpAJxykb1tSTjARC8OslYVgOivQrqey7caqAAABM0lEQVRIx+2U6W6DMBCEDdSE+2wg950e3/s/YGOBQI0hMf+qKvODHYsZe9derXjh32C2PsU+BIcyCw3kVhnRIUj3z/TvEcTp1RGizs42BJvH+kqSbPtlFkP52LFc353oshCTMM8pJzpchuuwrLEs8fdDes9zRhwH0gG9DbY1khR+OKQfd9hkuv4Nbp/hrFIKXe+ANebIiHW9gJbod2fhN7zTq+Shpb/3UusQ2fGeuMw6rtBv1vxraX9UgNNwPV1l0NONmbdMd7jUenkFqRhzyKEr3/DZENNHDSOuKpq3zZlEBfPG3EVcVDRv/RX5VkzCAv9jkiFMyO+GwHb1eOgt4Kvq104hverJIMshea/CG61X3y6yeDb7nJMHyChwVTia1LS7HAMJ+MmyNp/gO2cmXvjD+AHprhpoJKiYYAAAAABJRU5ErkJggg==',
     'skew': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAdVBMVEUAAABlY/97e/9kYv9kY/9nZ/9lY/9kYv9kY/9kYv9kY/9lY/9kYv9kY/9pYP9oYP9kYv9kYv9kY/9kYv9iYv9nY/9kYv9lYv9kYv9lYv9lY/9kYv9lYv9kY/9kYv9lZf9lY/9kYv9kYv9lYv9kYv9lY/9lY/+ktQNRAAAAJnRSTlMA/ATv3xHmW/V0TtO3khcNy8XBUh8U6ti+ppt5bksnGTqygmNEZ0ctpdUAAAEmSURBVEjH7VPbloIwDKSloAUqF6kgd123//+Ja+jSSpGqD74xbynJycxkcDZs+BIOAa2ygrgIuaQoKxocbN03FooFQnZ73u1RIlZQUG/ZvzsJC9zGaOeZkEAJa9ou9zD28q5tWIKERDZb0kvu+3MQm5vj4LyXWh7k42Rce/VW1F1d+J5g9fILddmv29eX0PGj6vReRdhmOI7uLakqgWTnWNGBRFWBo7l9IAeRqgKGFzulCzirjyZAxGRb6/tHM2GREq1VC7eWtvpCoN3M1nq0NX3gwAt9OBiACfNwZKaSRyoaVST0xJBN0UjNMzVG+NCog0zho0tP4noebwKP/2zq+Ll5AwuNAYpEyIZXv+hJU3I4d17iiKToN6Fs/WDgg34djQ0bvo4/naYvgs8xmvwAAAAASUVORK5CYII='
 };
-/**
- * 因为旋转后坐标要回原才好计算操作，
- * @param offset
- * @param oldPosition
- * @param newPosition
- * @param rotation
- * @param center
- * @returns
- */
+// 因为旋转后坐标要回原才好计算操作，
 const getRotateEventPosition = (offset, oldPosition, newPosition, rotation, center) => {
     // 先回原坐标，再主算偏移量，这样保证操作更容易理解
     if (rotation) {
@@ -387,9 +303,7 @@ const getRotateEventPosition = (offset, oldPosition, newPosition, rotation, cent
     }
     return offset;
 };
-/**
- *  发生旋转, 计算得到的旋转角度
- */
+// 发生旋转, 计算得到的旋转角度
 const rotateChange = (oldPosition, newPosition, center) => {
     // 因为center是相对于编辑器的，所以事件坐标也需要转到编辑器
     const cx1 = oldPosition.x - center.x;
@@ -414,9 +328,7 @@ const rotateChange = (oldPosition, newPosition, center) => {
     else ;
     return angle2 - angle1;
 };
-/**
- *  根据操作参数，计算位移，大小和旋转角度等
- */
+// 根据操作参数，计算位移，大小和旋转角度等
 const getChangeData = (dir, offset, oldPosition, newPosition, center, rotation = 0) => {
     // 当前移动对原对象的改变
     const args = {
@@ -4348,8 +4260,4 @@ __decorate([
     Debounce(10)
 ], JEditor.prototype, "resize", null);
 
-<<<<<<< HEAD
 export { filters as CssFilters, JBaseComponent, JData, JEditor, JElement, JElementCssStyle, JElementData, JElementStyleDeclaration, JElementStyleProperty, JEvent, JImage, JImageData, JSvgData, JText, JTextData, JEditor as default, util };
-=======
-export { JBaseComponent, JData, JEditor, JElement, JElementCssStyle, JElementData, JElementStyleDeclaration, JElementStyleProperty, JEvent, JImage, JImageData, JSvgData, JText, JTextData, JEditor as default, util };
->>>>>>> 4d56754c34fb76632b8c316f92bae52a82744f87
