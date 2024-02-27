@@ -89,7 +89,14 @@ export default class JEditor extends JBase {
         // 刷新样式
         this.style.refresh();
         this.resize(); // 触发一次大小改变
-        //this.bindElementEvent(this);
+        // 属性变化
+        this.data.watch([
+            'width', 'height'
+        ], {
+            set: (item) => {
+                this.sizeChange();
+            }
+        });
     }
     // 外层用于定位的容器
     view;
@@ -138,6 +145,10 @@ export default class JEditor extends JBase {
         this.data.top = Math.max((util.toNumber(this.view.dom.clientHeight) - util.toNumber(height)) / 2, 0);
         this.data.width = width;
         this.data.height = height;
+        this.sizeChange(width, height);
+    }
+    // 尺寸改变响应
+    sizeChange(width = this.data.width, height = this.data.height) {
         this.attr('data-size', `${width}*${height}`);
         this.emit('resize', {
             width,

@@ -117,6 +117,9 @@ export default class JControllerComponent extends JControllerItem {
         option.style = {
             cursor: 'move',
             backgroundColor: 'transparent',
+            itemStyle: {
+                border: '1px solid #ccc',
+            },
             ...option.style,
             pointerEvents: 'none',
         };
@@ -134,12 +137,19 @@ export default class JControllerComponent extends JControllerItem {
     }
     init(option) {
         const itemSize = option.itemSize || 8;
+        const pointSize = itemSize * 1.5;
+        const sideSize = {
+            width: itemSize,
+            height: itemSize * 2
+        };
         this.createItem('l', {
-            size: itemSize,
             style: {
                 ...option.style.itemStyle,
                 left: 0,
                 top: '50%',
+            },
+            data: {
+                ...sideSize
             },
             transform: {
                 translateX: '-50%',
@@ -147,8 +157,9 @@ export default class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('lt', {
-            size: itemSize,
+            size: pointSize,
             style: {
+                borderRadius: '50% 50%',
                 ...option.style.itemStyle,
                 left: 0,
                 top: 0,
@@ -159,11 +170,14 @@ export default class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('t', {
-            size: itemSize,
             style: {
                 ...option.style.itemStyle,
                 left: '50%',
                 top: 0,
+            },
+            data: {
+                width: sideSize.height,
+                height: sideSize.width
             },
             transform: {
                 translateX: '-50%',
@@ -171,8 +185,9 @@ export default class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('tr', {
-            size: itemSize,
+            size: pointSize,
             style: {
+                borderRadius: '50% 50%',
                 ...option.style.itemStyle,
                 left: '100%',
                 top: 0,
@@ -183,11 +198,13 @@ export default class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('r', {
-            size: itemSize,
             style: {
                 ...option.style.itemStyle,
                 left: '100%',
                 top: '50%',
+            },
+            data: {
+                ...sideSize
             },
             transform: {
                 translateX: '-50%',
@@ -195,8 +212,9 @@ export default class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('rb', {
-            size: itemSize,
+            size: pointSize,
             style: {
+                borderRadius: '50% 50%',
                 ...option.style.itemStyle,
                 left: '100%',
                 top: '100%',
@@ -207,11 +225,14 @@ export default class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('b', {
-            size: itemSize,
             style: {
                 ...option.style.itemStyle,
                 left: '50%',
                 top: '100%',
+            },
+            data: {
+                width: sideSize.height,
+                height: sideSize.width
             },
             transform: {
                 translateX: '-50%',
@@ -219,8 +240,9 @@ export default class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('lb', {
-            size: itemSize,
+            size: pointSize,
             style: {
+                borderRadius: '50% 50%',
                 ...option.style.itemStyle,
                 left: 0,
                 top: '100%',
@@ -486,9 +508,18 @@ export default class JControllerComponent extends JControllerItem {
         this.bindTargetPositionAndSize();
         this.data.visible = true;
         // 编辑器不让旋转和skew
-        const itemVisible = !this.isEditor && target.editable;
+        const itemVisible = target.editable;
         for (const item of this.items) {
-            item.data.visible = itemVisible;
+            switch (item.dir) {
+                case 'rotate':
+                case 'skew': {
+                    item.visible = itemVisible && !this.isEditor;
+                    break;
+                }
+                default: {
+                    item.data.visible = itemVisible;
+                }
+            }
         }
         this.bindTargetPositionAndSizeHandler = (e) => {
             if (e.target !== this.target || this.isControling)
@@ -525,8 +556,13 @@ export default class JControllerComponent extends JControllerItem {
     }
     // 显示提示信息
     setTip() {
-        if (this.positionItem && this.positionItem.visible)
-            this.positionItem.dom.innerHTML = `X: ${this.data.left} Y: ${this.data.top}`;
+        if (this.positionItem && this.positionItem.visible) {
+            const pos = {
+                x: util.toNumber(this.data.left) + (this.isEditor ? util.toNumber(this.target.data.left) : 0),
+                y: util.toNumber(this.data.top) + (this.isEditor ? util.toNumber(this.target.data.top) : 0)
+            };
+            this.positionItem.dom.innerHTML = `X: ${pos.x} Y: ${pos.y}`;
+        }
         if (this.sizeItem && this.sizeItem.visible)
             this.sizeItem.dom.innerHTML = `${this.data.width} X ${this.data.height}`;
     }

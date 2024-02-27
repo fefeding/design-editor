@@ -4,7 +4,7 @@ import JStyle from './style';
 import util from 'j-design-util';
 import JEvent, { SupportEventNames } from '../core/event';
 import JElementCssStyle from '../constant/styleMap';
-import { IJElement, ITransform, IJEditor, IElementOption } from '../constant/types';
+import { IJElement, ITransform, IJEditor, IElementOption, IElementJSON } from '../constant/types';
 import JData, { JElementData } from '../constant/data';
 /**
  * @public
@@ -258,7 +258,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     }
 
     // 转为json
-    toJSON(props=[], ig=(p: IJElement)=>true) {
+    toJSON(props=[], ig=(p: IJElement)=>true): IElementJSON {
         const fields = ['type', 'data', 'style', 'transform', 'id', 'filters',  ...props];
         const obj = {
             children: []

@@ -1,6 +1,6 @@
 {
   "name": "j-html-design-editor",
-  "version": "1.0.34",
+  "version": "1.0.35",
   "description": "design html 设计图片编辑库",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "j-css-filters": "^1.0.3",
-    "j-design-util": "^1.0.7",
+    "j-design-util": "^1.0.8",
     "j-eventemitter": "^1.0.1"
   },
   "author": "fefeding",

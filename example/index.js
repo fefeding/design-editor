@@ -233,8 +233,8 @@ import './lib/html-to-image.js';
 		const img = await window.htmlToImage.toPng(editor.target.dom);
 		preview.src = img;
 
-		//const data = editor.toString();
-		//console.log(data);
+		const data = editor.toJSON();
+		console.log(data);
 
 		setTimeout(createPreivew, 10000);
 

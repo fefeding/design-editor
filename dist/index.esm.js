@@ -234,8 +234,8 @@ var util = {
     setRange(dom, position) {
         let range;
         if (position) {
-            //document.caretPositionFromPoint();
-            range = document.caretRangeFromPoint(position.x, position.y);
+            //@ts-ignore
+            range = document.caretPositionFromPoint ? document.caretPositionFromPoint(position.x, position.y) : document.caretRangeFromPoint(position.x, position.y);
         }
         else {
             // 把光标置于最后
@@ -3035,38 +3035,37 @@ class JBaseComponent extends JElement {
             overflow: ContainerDefaultStyle.overflow
         });
         super({
-            // 外层只响应Z轴旋转
-            transformWatchProps: [
-                'rotateZ', 'scaleX', 'scaleY'
-            ],
             ...option,
+            transformWatchProps: null,
             nodeType: 'div',
             className: 'j-design-editor-container',
             isComponent: true
         });
         option.target = option.target || {};
-        // 生成当前控制的元素
-        this.target = new JElement({
-            ...option,
+        const targetOption = {
+            ...(option.target || option),
             visible: true,
             data: {},
-            // 不响应本身的变换，只响应父级的
-            transformWatchProps: [],
+            transformWatchProps: null,
             style: {
                 display: 'block',
                 cursor: 'pointer',
                 width: '100%',
                 height: '100%',
             }
-        });
+        };
+        if (!targetOption.nodeType)
+            targetOption.nodeType = option.nodeType;
+        // 生成当前控制的元素
+        this.target = new JElement(targetOption);
         this.addChild(this.target.dom);
         // 变换改为控制主元素
-        this.transform.bind({
+        /*this.transform.bind({
             target: this.target,
             watchProps: [
                 'rotateX', 'rotateY', 'translateX', 'translateY', 'skewX', 'skewY'
             ]
-        });
+        });*/
         this.filters = new CSSFilters(this.target, option.filters); // 滤镜
         this.data.on('change', (e) => {
             this.emit('dataChange', {
@@ -3190,9 +3189,14 @@ class JBaseComponent extends JElement {
     }
     toJSON(props = []) {
         // 转json忽略渲染组件
-        return super.toJSON(props, (el) => {
+        const obj = super.toJSON(props, (el) => {
             return el !== this.target;
         });
+        if (this.target) {
+            // target不转换children
+            obj.target = this.target.toJSON([], (p) => false);
+        }
+        return obj;
     }
 }
 
@@ -3544,6 +3548,9 @@ class JControllerComponent extends JControllerItem {
         option.style = {
             cursor: 'move',
             backgroundColor: 'transparent',
+            itemStyle: {
+                border: '1px solid #ccc',
+            },
             ...option.style,
             pointerEvents: 'none',
         };
@@ -3561,12 +3568,19 @@ class JControllerComponent extends JControllerItem {
     }
     init(option) {
         const itemSize = option.itemSize || 8;
+        const pointSize = itemSize * 1.5;
+        const sideSize = {
+            width: itemSize,
+            height: itemSize * 2
+        };
         this.createItem('l', {
-            size: itemSize,
             style: {
                 ...option.style.itemStyle,
                 left: 0,
                 top: '50%',
+            },
+            data: {
+                ...sideSize
             },
             transform: {
                 translateX: '-50%',
@@ -3574,8 +3588,9 @@ class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('lt', {
-            size: itemSize,
+            size: pointSize,
             style: {
+                borderRadius: '50% 50%',
                 ...option.style.itemStyle,
                 left: 0,
                 top: 0,
@@ -3586,11 +3601,14 @@ class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('t', {
-            size: itemSize,
             style: {
                 ...option.style.itemStyle,
                 left: '50%',
                 top: 0,
+            },
+            data: {
+                width: sideSize.height,
+                height: sideSize.width
             },
             transform: {
                 translateX: '-50%',
@@ -3598,8 +3616,9 @@ class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('tr', {
-            size: itemSize,
+            size: pointSize,
             style: {
+                borderRadius: '50% 50%',
                 ...option.style.itemStyle,
                 left: '100%',
                 top: 0,
@@ -3610,11 +3629,13 @@ class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('r', {
-            size: itemSize,
             style: {
                 ...option.style.itemStyle,
                 left: '100%',
                 top: '50%',
+            },
+            data: {
+                ...sideSize
             },
             transform: {
                 translateX: '-50%',
@@ -3622,8 +3643,9 @@ class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('rb', {
-            size: itemSize,
+            size: pointSize,
             style: {
+                borderRadius: '50% 50%',
                 ...option.style.itemStyle,
                 left: '100%',
                 top: '100%',
@@ -3634,11 +3656,14 @@ class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('b', {
-            size: itemSize,
             style: {
                 ...option.style.itemStyle,
                 left: '50%',
                 top: '100%',
+            },
+            data: {
+                width: sideSize.height,
+                height: sideSize.width
             },
             transform: {
                 translateX: '-50%',
@@ -3646,8 +3671,9 @@ class JControllerComponent extends JControllerItem {
             }
         });
         this.createItem('lb', {
-            size: itemSize,
+            size: pointSize,
             style: {
+                borderRadius: '50% 50%',
                 ...option.style.itemStyle,
                 left: 0,
                 top: '100%',
@@ -3913,9 +3939,18 @@ class JControllerComponent extends JControllerItem {
         this.bindTargetPositionAndSize();
         this.data.visible = true;
         // 编辑器不让旋转和skew
-        const itemVisible = !this.isEditor && target.editable;
+        const itemVisible = target.editable;
         for (const item of this.items) {
-            item.data.visible = itemVisible;
+            switch (item.dir) {
+                case 'rotate':
+                case 'skew': {
+                    item.visible = itemVisible && !this.isEditor;
+                    break;
+                }
+                default: {
+                    item.data.visible = itemVisible;
+                }
+            }
         }
         this.bindTargetPositionAndSizeHandler = (e) => {
             if (e.target !== this.target || this.isControling)
@@ -3952,8 +3987,13 @@ class JControllerComponent extends JControllerItem {
     }
     // 显示提示信息
     setTip() {
-        if (this.positionItem && this.positionItem.visible)
-            this.positionItem.dom.innerHTML = `X: ${this.data.left} Y: ${this.data.top}`;
+        if (this.positionItem && this.positionItem.visible) {
+            const pos = {
+                x: util.toNumber(this.data.left) + (this.isEditor ? util.toNumber(this.target.data.left) : 0),
+                y: util.toNumber(this.data.top) + (this.isEditor ? util.toNumber(this.target.data.top) : 0)
+            };
+            this.positionItem.dom.innerHTML = `X: ${pos.x} Y: ${pos.y}`;
+        }
         if (this.sizeItem && this.sizeItem.visible)
             this.sizeItem.dom.innerHTML = `${this.data.width} X ${this.data.height}`;
     }
@@ -4175,7 +4215,14 @@ class JEditor extends JBaseComponent {
         // 刷新样式
         this.style.refresh();
         this.resize(); // 触发一次大小改变
-        //this.bindElementEvent(this);
+        // 属性变化
+        this.data.watch([
+            'width', 'height'
+        ], {
+            set: (item) => {
+                this.sizeChange();
+            }
+        });
     }
     // 外层用于定位的容器
     view;
@@ -4224,6 +4271,10 @@ class JEditor extends JBaseComponent {
         this.data.top = Math.max((util.toNumber(this.view.dom.clientHeight) - util.toNumber(height)) / 2, 0);
         this.data.width = width;
         this.data.height = height;
+        this.sizeChange(width, height);
+    }
+    // 尺寸改变响应
+    sizeChange(width = this.data.width, height = this.data.height) {
         this.attr('data-size', `${width}*${height}`);
         this.emit('resize', {
             width,

@@ -1,7 +1,7 @@
 import EventEmiter from 'j-eventemitter';
 import JEvent from '../core/event';
 import JElementCssStyle from '../constant/styleMap';
-import { IJElement, ITransform, IJEditor, IElementOption } from '../constant/types';
+import { IJElement, ITransform, IJEditor, IElementOption, IElementJSON } from '../constant/types';
 import { JElementData } from '../constant/data';
 /**
  * @public
@@ -39,9 +39,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     addChild(child: IJElement | HTMLElement, parent?: IJElement): IJElement<HTMLElement>;
     remove(): void;
     removeChild(el: IJElement | HTMLElement): IJElement<HTMLElement>[];
-    toJSON(props?: any[], ig?: (p: IJElement) => boolean): {
-        children: any[];
-    };
+    toJSON(props?: any[], ig?: (p: IJElement) => boolean): IElementJSON;
     toString(): string;
     toHtml(): string;
     dispose(): void;

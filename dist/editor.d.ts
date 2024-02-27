@@ -19,6 +19,7 @@ export default class JEditor extends JBase implements IJEditor {
     bindEvent(dom?: HTMLElement): void;
     select(el: IJBaseComponent): void;
     resize(width?: string | number, height?: string | number): void;
+    private sizeChange;
     addChild(child: IJBaseComponent): IJElement<HTMLElement>;
     removeChild(el: IJElement | HTMLElement): IJElement<HTMLElement>[];
     bindElementEvent(el: IJElement): void;

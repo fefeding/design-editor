@@ -15,40 +15,38 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
             overflow: ContainerDefaultStyle.overflow
         });
         super({
-            // 外层只响应Z轴旋转
-            transformWatchProps: [
-                'rotateZ','scaleX','scaleY'
-            ],
             ...option,
+            transformWatchProps: null,
             nodeType: 'div',
             className: 'j-design-editor-container',
             isComponent: true
         });
         option.target = option.target || {};
-        // 生成当前控制的元素
-        this.target = new JElement<T>({
-            ...option,
+        const targetOption = {
+            ...(option.target || option),
             visible: true,
             data: {},
-            // 不响应本身的变换，只响应父级的
-            transformWatchProps: [],
+            transformWatchProps: null,
             style: {
                 display: 'block',   
                 cursor: 'pointer',  
                 width: '100%',
                 height: '100%',     
             }
-        });
+        };
+        if(!targetOption.nodeType) targetOption.nodeType = option.nodeType;
+        // 生成当前控制的元素
+        this.target = new JElement<T>(targetOption);
         
         this.addChild(this.target.dom);
         
         // 变换改为控制主元素
-        this.transform.bind({
+        /*this.transform.bind({
             target: this.target,
             watchProps: [
                 'rotateX', 'rotateY', 'translateX', 'translateY', 'skewX', 'skewY'
             ]
-        });
+        });*/
 
         this.filters = new CssFilterManager(this.target, option.filters);// 滤镜
 
@@ -172,8 +170,13 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
 
     toJSON(props = []) {
         // 转json忽略渲染组件
-        return super.toJSON(props, (el:IJElement)=>{
+        const obj = super.toJSON(props, (el:IJElement)=>{
             return el !== this.target;
         });
+        if(this.target) {
+            // target不转换children
+            obj.target = this.target.toJSON([], (p)=>false);
+        }
+        return obj;
     }
 }

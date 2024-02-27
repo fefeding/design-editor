@@ -15,7 +15,5 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
     private getMyNextLevelChildren;
     private getMyPreLevelChildren;
     setDomStyle(name: string, value: string): void;
-    toJSON(props?: any[]): {
-        children: any[];
-    };
+    toJSON(props?: any[]): import("../constant/types").IElementJSON;
 }

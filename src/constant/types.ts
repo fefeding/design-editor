@@ -283,6 +283,11 @@ export interface IJEvent {
     
 }
 
+export interface IElementJSON {
+    children: Array<IElementJSON>;
+    target?: IElementJSON
+}
+
 /**
  * Represents a generic element.
  * @typeParam T - The type of the HTML element.
@@ -317,9 +322,7 @@ export interface IJElement<T extends HTMLElement = HTMLElement> extends EventEmi
     addChild(child: IJElement | HTMLElement, parent?: IJElement): IJElement<HTMLElement>;
     remove(): void;
     removeChild(el: IJElement | HTMLElement): IJElement<HTMLElement>[];
-    toJSON(props?: any[], ig?: (p: IJElement) => boolean): {
-        children: any[];
-    };
+    toJSON(props?: any[], ig?: (p: IJElement) => boolean): IElementJSON;
     toString(): string;
     toHtml(): string;
     dispose(): void;
