@@ -24,3 +24,6 @@ src
 └── lib
     └── util.ts
 ```
+
+# API
+[API](docs/api/index.md)

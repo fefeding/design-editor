@@ -36,14 +36,14 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 			},
 			// 操作点的指针, 指定二个就可以，其它的会旋转得到，你也可以指定全部
 			itemCursors: {				
-				't': 'images/ns_cursor.png',
-				'lt': 'images/nwes_cursor.png',
-				'rotate': 'images/rotate_cursor.png',
+				't': 'https://jtcospublic.ciccten.com/public/design/ns_cursor.png',
+				'lt': 'https://jtcospublic.ciccten.com/public/design/nwes_cursor.png',
+				'rotate': 'https://jtcospublic.ciccten.com/public/design/rotate_cursor.png',
 			},
 			// 图标
 			itemIcons: {
-				rotate: 'images/rotate_icon.png',
-				skew: 'images/skew_icon.png'
+				rotate: 'https://jtcospublic.ciccten.com/public/design/rotate_icon.png',
+				skew: 'https://jtcospublic.ciccten.com/public/design/skew_icon.png'
 			}
 		}
 	});
