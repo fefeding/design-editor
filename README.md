@@ -25,5 +25,7 @@ src
     └── util.ts
 ```
 
+[example](https://jiamao.github.io/j-html-design-editor/example/index.html)
+
 # API
-[API](docs/api/index.md)
+[API](https://jiamao.github.io/j-html-design-editor/docs/api/index.md)
