@@ -28,4 +28,4 @@ src
 [example](https://jiamao.github.io/j-html-design-editor/example/index.html)
 
 # API
-[API](https://jiamao.github.io/j-html-design-editor/docs/api/index.md)
+[API](./docs/api/index.md)
