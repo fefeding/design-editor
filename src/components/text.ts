@@ -92,6 +92,13 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
     static TextControlCache = new Map<string, JText>();
 
     /**
+     * 类型名称
+     */
+    get typeName(): string {
+        return 'text';
+    }
+
+    /**
      * 当前编辑状态
      */
     get contenteditable() {

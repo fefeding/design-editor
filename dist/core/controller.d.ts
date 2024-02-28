@@ -1,4 +1,4 @@
-import { ItemType } from 'j-design-util';
+import { ItemType, ControllerCursorData } from 'j-design-util';
 import JElement from './element';
 import { IJControllerItem, IJControllerComponent, IJBaseComponent, IControllerOption, IControllerItemOption } from '../constant/types';
 export declare class JControllerItem extends JElement<HTMLDivElement> implements IJControllerItem {
@@ -15,11 +15,12 @@ export declare class JControllerItem extends JElement<HTMLDivElement> implements
     onDragMove(event: MouseEvent): void;
     onDragStart(event: MouseEvent): void;
     onDragEnd(event: MouseEvent): void;
-    resetCursor(rotation?: number): Promise<void>;
+    resetCursor(rotation?: number, data?: ControllerCursorData): Promise<void>;
 }
 export default class JControllerComponent extends JControllerItem implements IJControllerComponent {
     constructor(option: IControllerOption);
     init(option: IControllerOption): void;
+    cursorData: ControllerCursorData;
     items: JControllerItem[];
     rotateItem: JControllerItem;
     skewItem: JControllerItem;

@@ -266,6 +266,8 @@ var util = {
      * @returns
      */
     async rotateImage(url, rotation) {
+        if (!url)
+            return url;
         return new Promise((resolve, reject) => {
             const img = new Image();
             img.onload = function (e) {
@@ -330,70 +332,89 @@ var util = {
     }
 };
 
-const nwse = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAAe1BMVEUAAAD///////////////////////////////////////////////////////////////////+anqaeoqqjpq7e3+Li4uRpbXhiZ3NjaHRfZHFZX2tAR1c/RlU7QVH////9/f3////////9/f3////9/f3///8PFyr////UYjabAAAAJ3RSTlMABAUMDRAREhckKS4wMjU2N6jAwMDHyMrMzM3P2tvd5Ojo6evr7PowgHoyAAAAAWJLR0QovbC1sgAAAJVJREFUKM+90dsSgiAQgGHIDkBUoqaVGRXE7vs/YSgz5QDX/pd8HGYWQpZqLQ8+WSTrb5yyLII91jdfi8cIJPYAUKEiObgaJ3JwgcFonkL1ucPjOUrJ5o+f0QURCi39QWFRCT2J83s2/yPsRAgP0vRzmOLaDNBBCkQ400EOFDaQgxLbcTB1AsyGUb5ofBXdjW1Xi/32F3U3EU6pnu/zAAAAAElFTkSuQmCC';
-const ns = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAAmVBMVEUAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+oq7KusLevsriZm6Wdoamipa2jpq6Tl6CNkZqIjJX///98gYv///////////////8PFyr///8ipdpMAAAAMXRSTlMAAQIDBAUHCVpcXV5faGl3gIKDhIWImJydnp+mqaqxuLu/v7/AwMDAwcLDxMX7/P3+tV+LYwAAAAFiS0dEMkDSTMgAAAC/SURBVCjPfZLZEoIwDEWhClhAxQVFVDYVF1xI/v/jJBbRVvA8dJgcyL0zRdMamOsyrQV9gRiy1nmWtxgWYAaQ40oxbIk7ADKBbAZiDnBELgmOFQB0OnI09wsShW/rarxHwpPfHhMJieT1yMVXNtaIDMJudsjUGztF56qqKlHXJbj+vy5hDt91R6YkZp+MuSQm94sodL1NJWHF5Z7m50dsKSFReQA4lZGpxhsbTFPcGr+X3gsR1/2234Q5zte1PgEi+SemTJG1vwAAAABJRU5ErkJggg==';
 const fullCircleRadius = Math.PI * 2;
 /**
  * 操作杠指针配置
  */
 const Cursors = {
-    'l': '',
-    'lt': nwse,
-    't': ns,
-    'tr': '',
-    'r': '',
-    'rb': nwse,
-    'b': ns,
-    'lb': '',
-    'rotate': 'pointer',
-    'skew': 'pointer',
+    data: {
+        'l': '',
+        'lt': '',
+        't': '',
+        'tr': '',
+        'r': '',
+        'rb': '',
+        'b': '',
+        'lb': '',
+        'rotate': '',
+        'skew': 'pointer'
+    },
     // 根据角度旋转指针
-    async get(dir, rotation = 0) {
+    async get(dir, rotation = 0, data = this.data) {
         if (dir === 'rotate' || dir === 'skew')
-            return this[dir];
+            return data[dir] || 'pointer';
         if (Math.abs(rotation) > fullCircleRadius)
             rotation = rotation % fullCircleRadius;
         // 2PI 为一个圆，把角度转为一个圆内的值，以免重复生成图片
         const rotationKey = Number(rotation.toFixed(2)); // 精度只取小数2位
         const key = rotationKey === 0 ? dir : `${dir}_${rotationKey}`;
-        let cursor = this[key];
+        let cursor = data[key];
         if (!cursor) {
             if (dir === 'l' || dir === 'r' || dir === 't' || dir === 'b') {
                 // 如果没有旋转角度，则把ns转90度即可
                 if (rotation === 0) {
-                    cursor = await util.rotateImage(ns, Math.PI / 2);
-                    this['l'] = this['r'] = cursor;
+                    if (!data['t'])
+                        return 'pointer';
+                    // b t 同指针
+                    if (dir === 'b') {
+                        cursor = data[dir] = data['t'];
+                    }
+                    else {
+                        cursor = await util.rotateImage(data['t'], Math.PI / 2);
+                        if (!data['l'])
+                            data['l'] = cursor;
+                        if (!data['r'])
+                            data['r'] = cursor;
+                    }
                 }
                 // 如果有旋转角度，则获取标准的再转对应的角度
                 else {
-                    const normal = await this.get(dir, 0);
+                    const normal = await this.get(dir, 0, data);
+                    if (!normal || normal === 'pointer')
+                        return 'pointer';
                     cursor = await util.rotateImage(normal, rotation);
-                    this[key] = cursor;
+                    data[key] = cursor;
                 }
             }
             else if (dir === 'tr' || dir === 'lb' || dir === 'lt' || dir === 'rb') {
                 // 如果没有旋转角度，则把nwse转90度即可
                 if (rotation === 0) {
-                    cursor = await util.rotateImage(nwse, Math.PI / 2);
-                    return this['tr'] = this['lb'] = cursor;
+                    if (!data['lt'])
+                        return 'pointer';
+                    // rb lt同一个指针
+                    if (dir === 'rb') {
+                        cursor = data[dir] = data['lt'];
+                    }
+                    else {
+                        cursor = await util.rotateImage(data['lt'], Math.PI / 2);
+                        if (!data['tr'])
+                            data['tr'] = cursor;
+                        if (!data['lb'])
+                            data['lb'] = cursor;
+                    }
                 }
                 // 如果有旋转角度，则获取标准的再转对应的角度
                 else {
-                    const normal = await this.get(dir, 0);
+                    const normal = await this.get(dir, 0, data);
+                    if (!normal || normal === 'pointer')
+                        return 'pointer';
                     cursor = await util.rotateImage(normal, rotation);
-                    this[key] = cursor;
+                    data[key] = cursor;
                 }
             }
         }
         return cursor;
     }
-};
-/**
- * 图标配置
- */
-const ItemIcons = {
-    'rotate': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAgVBMVEUAAAAiK9MjKdUfKNYjKdUiKNYiKdUeHuAjKNYjKNYiKNYyMswiKNYiKNYiKNYiKNYhKNYiKdUiKNYiKNYjKdUjKNYgJ9cjJdYiKNYiKNYiKdUhJ9cjKNYiKdUdLNMrK9MiKNYiKNYiKdUiKNYjKNYjKdUjKdUjKNYjKdUjKdUjKdaUW7eVAAAAKnRSTlMAFdMY1/v4CPXo4wXuyLh6RfKRjWpAJxykb1tSTjARC8OslYVgOivQrqey7caqAAABM0lEQVRIx+2U6W6DMBCEDdSE+2wg950e3/s/YGOBQI0hMf+qKvODHYsZe9derXjh32C2PsU+BIcyCw3kVhnRIUj3z/TvEcTp1RGizs42BJvH+kqSbPtlFkP52LFc353oshCTMM8pJzpchuuwrLEs8fdDes9zRhwH0gG9DbY1khR+OKQfd9hkuv4Nbp/hrFIKXe+ANebIiHW9gJbod2fhN7zTq+Shpb/3UusQ2fGeuMw6rtBv1vxraX9UgNNwPV1l0NONmbdMd7jUenkFqRhzyKEr3/DZENNHDSOuKpq3zZlEBfPG3EVcVDRv/RX5VkzCAv9jkiFMyO+GwHb1eOgt4Kvq104hverJIMshea/CG61X3y6yeDb7nJMHyChwVTia1LS7HAMJ+MmyNp/gO2cmXvjD+AHprhpoJKiYYAAAAABJRU5ErkJggg==',
-    'skew': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAdVBMVEUAAABlY/97e/9kYv9kY/9nZ/9lY/9kYv9kY/9kYv9kY/9lY/9kYv9kY/9pYP9oYP9kYv9kYv9kY/9kYv9iYv9nY/9kYv9lYv9kYv9lYv9lY/9kYv9lYv9kY/9kYv9lZf9lY/9kYv9kYv9lYv9kYv9lY/9lY/+ktQNRAAAAJnRSTlMA/ATv3xHmW/V0TtO3khcNy8XBUh8U6ti+ppt5bksnGTqygmNEZ0ctpdUAAAEmSURBVEjH7VPbloIwDKSloAUqF6kgd123//+Ja+jSSpGqD74xbynJycxkcDZs+BIOAa2ygrgIuaQoKxocbN03FooFQnZ73u1RIlZQUG/ZvzsJC9zGaOeZkEAJa9ou9zD28q5tWIKERDZb0kvu+3MQm5vj4LyXWh7k42Rce/VW1F1d+J5g9fILddmv29eX0PGj6vReRdhmOI7uLakqgWTnWNGBRFWBo7l9IAeRqgKGFzulCzirjyZAxGRb6/tHM2GREq1VC7eWtvpCoN3M1nq0NX3gwAt9OBiACfNwZKaSRyoaVST0xJBN0UjNMzVG+NCog0zho0tP4noebwKP/2zq+Ll5AwuNAYpEyIZXv+hJU3I4d17iiKToN6Fs/WDgg34djQ0bvo4/naYvgs8xmvwAAAAASUVORK5CYII='
 };
 /**
  * 因为旋转后坐标要回原才好计算操作，
@@ -3041,6 +3062,7 @@ class JBaseComponent extends JElement {
             className: 'j-design-editor-container',
             isComponent: true
         });
+        this.componentType = new.target;
         option.target = option.target || {};
         const targetOption = {
             ...(option.target || option),
@@ -3078,6 +3100,16 @@ class JBaseComponent extends JElement {
     // 当前控件的核心元素
     target;
     filters;
+    /**
+     * 类型名称
+     */
+    get typeName() {
+        return 'base';
+    }
+    /**
+     * 当前组件new指向的class，可用于复制
+     */
+    componentType;
     // 选中
     _selected = false;
     get selected() {
@@ -3198,6 +3230,17 @@ class JBaseComponent extends JElement {
         }
         return obj;
     }
+    /**
+     * 复制当前组件
+     * @returns 当前组件同类型副本
+     */
+    clone() {
+        const option = this.toJSON();
+        // @ts-ignore
+        delete option.id;
+        const el = new this.componentType(option);
+        return el;
+    }
 }
 
 /**
@@ -3276,6 +3319,12 @@ class JText extends JBaseComponent {
     }
     // 所有 JText 实例的缓存
     static TextControlCache = new Map();
+    /**
+     * 类型名称
+     */
+    get typeName() {
+        return 'text';
+    }
     /**
      * 当前编辑状态
      */
@@ -3358,6 +3407,12 @@ class JImage extends JBaseComponent {
         if (src)
             this.data.src = src;
     }
+    /**
+     * 类型名称
+     */
+    get typeName() {
+        return 'image';
+    }
     toJSON(props = []) {
         return super.toJSON([
             'filters',
@@ -3417,6 +3472,12 @@ class JSvg extends JBaseComponent {
                 }
             }
         });
+    }
+    /**
+     * 类型名称
+     */
+    get typeName() {
+        return 'svg';
     }
     // 替换变量
     renderSvg(svg) {
@@ -3532,14 +3593,19 @@ class JControllerItem extends JElement {
         }
     }
     // 计算指针
-    async resetCursor(rotation = 0) {
-        if (!this.dir)
-            return;
-        let cursor = await Cursors.get(this.dir, rotation);
-        if (!cursor)
-            return;
-        // 先简单处理
-        this.style.cursor = cursor.includes('\/') ? `url(${cursor}) 12 12,pointer` : cursor;
+    async resetCursor(rotation = 0, data = {}) {
+        try {
+            if (!this.dir)
+                return;
+            let cursor = await Cursors.get(this.dir, rotation, data);
+            if (!cursor)
+                return;
+            // 先简单处理
+            this.style.cursor = cursor.includes('\/') ? `url(${cursor}) 12 12,pointer` : cursor;
+        }
+        catch (e) {
+            console.error(e);
+        }
     }
 }
 // 元素大小位置控制器
@@ -3562,6 +3628,8 @@ class JControllerComponent extends JControllerItem {
         super(option);
         if (!this.editor.editable)
             return;
+        // 鼠标指针
+        this.cursorData = option.itemCursors || {};
         this.init(option);
         this.editor.dom.appendChild(this.dom);
         this.resetCursor(this.transform.rotateZ);
@@ -3696,7 +3764,7 @@ class JControllerComponent extends JControllerItem {
                 cursor: `pointer`,
                 ...option.style.itemStyle,
                 'backgroundSize': '100%',
-                backgroundImage: ItemIcons.rotate
+                backgroundImage: option.itemIcons?.rotate || ''
             },
             transform: {
                 translateX: '-50%',
@@ -3713,7 +3781,7 @@ class JControllerComponent extends JControllerItem {
                 cursor: `pointer`,
                 ...option.style.itemStyle,
                 'backgroundSize': '100%',
-                backgroundImage: ItemIcons.skew
+                backgroundImage: option.itemIcons?.skew || ''
             },
             transform: {
                 translateX: '-50%',
@@ -3767,6 +3835,8 @@ class JControllerComponent extends JControllerItem {
             this.change(e);
         });
     }
+    // 鼠标指针
+    cursorData;
     items = [];
     rotateItem;
     skewItem;
@@ -3797,7 +3867,7 @@ class JControllerComponent extends JControllerItem {
         item.on('change', function (e) {
             self.change(e);
         });
-        item.resetCursor(this.transform.rotateZ);
+        item.resetCursor(this.transform.rotateZ, this.cursorData);
         return item;
     }
     // 发生改变响应
@@ -3926,7 +3996,7 @@ class JControllerComponent extends JControllerItem {
     async resetCursor(rotation = this.transform.rotateZ) {
         // 发生了旋转，要处理指针图标
         for (const item of this.items) {
-            item.resetCursor(rotation);
+            item.resetCursor(rotation, this.cursorData);
         }
     }
     // 绑定到操作的对象

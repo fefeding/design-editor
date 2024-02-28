@@ -1,5 +1,6 @@
+/// <reference path="../dist/index.d.ts" />
 import './lib/html-to-image.js';
-	import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
+import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 
 	const container = document.getElementById('myeditor_container');
 	container.style.height = window.innerHeight + 'px';
@@ -32,6 +33,17 @@ import './lib/html-to-image.js';
 				//markingLineStyle?: IJElementStyleDeclaration
 				// 提示信息
 				//tipStyle?: IJElementStyleDeclaration
+			},
+			// 操作点的指针, 指定二个就可以，其它的会旋转得到，你也可以指定全部
+			itemCursors: {				
+				't': 'images/ns_cursor.png',
+				'lt': 'images/nwes_cursor.png',
+				'rotate': 'images/rotate_cursor.png',
+			},
+			// 图标
+			itemIcons: {
+				rotate: 'images/rotate_icon.png',
+				skew: 'images/skew_icon.png'
 			}
 		}
 	});
@@ -124,10 +136,17 @@ import './lib/html-to-image.js';
 			// 底层
 			el.setLevel('bottom');
 		}
+		// 复制
+		else if(action === 'copy') {
+			const newEl = el.clone();
+			newEl.data.left += 50;
+			newEl.data.top += 50;
+			editor.addChild(newEl);
+		}
 		menu.style.display = 'none';
 	}
 
-    editor.fromJSON({"children":[{"children":[],"type":"image","data":{"height":128,"left":325.5,"src":"https://jtcospublic.ciccten.com/config-server/1705561487067855645/1622830_gallery_landskape_mountains_nature_photo_icon.png","top":78,"width":128,"_eventsCount":0,"zIndex":1},"style":{"bottom":"auto","display":"inline-block","height":"auto","left":325.5,"margin":"0","overflow":"visible","padding":"0","position":"absolute","right":"auto","top":78,"transform":"rotateZ(0rad) scaleX(1) scaleY(1)","width":"auto","zIndex":1},"transform":{"translateX":0,"translateY":0,"translateZ":0,"rotateX":0,"rotateY":0,"rotateZ":0,"scaleX":1,"scaleY":1,"scaleZ":1,"skewX":0,"skewY":0},"id":"1708770687717","filters":[{"name":"OldPhotoFilter","displayName":"老照片","option":{"rColor":{"r":0.28,"g":0.72,"b":0.22,"a":1},"gColor":{"r":0.25,"g":0.63,"b":0.13,"a":1},"bColor":{"r":0.17,"g":0.66,"b":0.13,"a":1},"luminance":0}}]},{"children":[],"type":"text","data":{"height":24,"left":400,"top":200,"width":80,"text":"请输入文本","_eventsCount":0,"zIndex":2},"style":{"bottom":"auto","display":"inline-block","fontFamily":"Arial","fontSize":22,"fontStyle":"normal","fontWeight":"normal","height":"auto","left":400,"margin":"0","overflow":"visible","padding":"0","position":"absolute","right":"auto","textAlign":"left","top":200,"transform":"rotateZ(0rad) scaleX(1) scaleY(1)","width":"auto","wordBreak":"keep-all","wordWrap":"break-word","zIndex":2},"transform":{"translateX":0,"translateY":0,"translateZ":0,"rotateX":0,"rotateY":0,"rotateZ":0,"scaleX":1,"scaleY":1,"scaleZ":1,"skewX":0,"skewY":0},"id":"1717072516614"}],"type":"","data":{"width":800,"height":600,"_eventsCount":0,"left":201.5,"top":352.5},"style":{"backgroundColor":"#fff","backgroundSize":"100% 100%","bottom":"auto","boxShadow":"0 0 10px 10px #ccc","display":"inline-block","height":600,"left":201.5,"margin":"0","overflow":"visible","padding":"0","position":"absolute","right":"auto","top":352.5,"transform":"rotateZ(0rad) scaleX(1) scaleY(1)","width":800,"zIndex":"0"},"transform":{"translateX":0,"translateY":0,"translateZ":0,"rotateX":0,"rotateY":0,"rotateZ":0,"scaleX":1,"scaleY":1,"scaleZ":1,"skewX":0,"skewY":0},"id":"1709262952117"})
+    editor.fromJSON({"children":[{"children":[],"type":"image","data":{"height":128,"left":113.5,"src":"https://jtcospublic.ciccten.com/config-server/1705561487067855645/1622830_gallery_landskape_mountains_nature_photo_icon.png","top":159,"width":128,"_eventsCount":0,"zIndex":1},"style":{"bottom":"auto","display":"inline-block","height":128,"left":113.5,"margin":"0","overflow":"visible","padding":"0","position":"absolute","right":"auto","top":159,"transform":"translateX(0px) translateY(0px) translateZ(0px) rotateX(0rad) rotateY(0rad) rotateZ(1.243040762768259rad) scaleX(1) scaleY(1) scaleZ(1) skewX(0rad) skewY(0rad)","width":128,"zIndex":1},"transform":{"translateX":0,"translateY":0,"translateZ":0,"rotateX":0,"rotateY":0,"rotateZ":1.243040762768259,"scaleX":1,"scaleY":1,"scaleZ":1,"skewX":0,"skewY":0},"id":"1708770687717","filters":[{"name":"sepia","displayName":"复古","option":{"value":1}}],"target":{"children":[],"type":"","data":{},"style":{"bottom":0,"cursor":"pointer","display":"block","filter":"sepia(1)","height":"100%","left":0,"right":0,"top":0,"transform":"translateX(0px) translateY(0px) translateZ(0px) rotateX(0rad) rotateY(0rad) rotateZ(0rad) scaleX(1) scaleY(1) scaleZ(1) skewX(0rad) skewY(0rad)","width":"100%"},"transform":{"translateX":0,"translateY":0,"translateZ":0,"rotateX":0,"rotateY":0,"rotateZ":0,"scaleX":1,"scaleY":1,"scaleZ":1,"skewX":0,"skewY":0},"id":"1714293496322"}},{"children":[],"type":"text","data":{"height":91,"left":400,"top":200,"width":156,"text":"请输入文本zxvxzcv","_eventsCount":0,"zIndex":2},"style":{"bottom":"auto","display":"inline-block","fontFamily":"Arial","fontSize":22,"fontStyle":"normal","fontWeight":"normal","height":91,"left":400,"margin":"0","overflow":"visible","padding":"0","position":"absolute","right":"auto","textAlign":"left","top":200,"transform":"translateX(0px) translateY(0px) translateZ(0px) rotateX(0rad) rotateY(0rad) rotateZ(0rad) scaleX(1) scaleY(1) scaleZ(1) skewX(0rad) skewY(0rad)","width":156,"wordBreak":"keep-all","wordWrap":"break-word","zIndex":2},"transform":{"translateX":0,"translateY":0,"translateZ":0,"rotateX":0,"rotateY":0,"rotateZ":0,"scaleX":1,"scaleY":1,"scaleZ":1,"skewX":0,"skewY":0},"id":"1717072516614","filters":[{"name":"drop-shadow","displayName":"阴影","option":{"value":{"x":"0","y":"0","blur":"4px","color":"#000"}}},{"name":"blur","displayName":"模糊","option":{"value":"4px"}}],"target":{"children":[],"type":"","data":{},"style":{"bottom":0,"cursor":"pointer","display":"block","filter":"drop-shadow(0 0 4px #000) blur(4px)","fontFamily":"Arial","fontSize":22,"fontStyle":"normal","fontWeight":"normal","height":"100%","left":0,"right":0,"textAlign":"left","top":0,"transform":"translateX(0px) translateY(0px) translateZ(0px) rotateX(0rad) rotateY(0rad) rotateZ(0rad) scaleX(1) scaleY(1) scaleZ(1) skewX(0rad) skewY(0rad)","width":"100%","wordBreak":"keep-all","wordWrap":"break-word"},"transform":{"translateX":0,"translateY":0,"translateZ":0,"rotateX":0,"rotateY":0,"rotateZ":0,"scaleX":1,"scaleY":1,"scaleZ":1,"skewX":0,"skewY":0},"id":"1715640403146"}}],"type":"","data":{"width":643,"height":425,"_eventsCount":0,"left":97.5,"top":351.5},"style":{"backgroundColor":"#fff","backgroundImage":"","backgroundSize":"100% 100%","bottom":"auto","boxShadow":"0 0 10px 10px #ccc","display":"inline-block","height":425,"left":97.5,"margin":"0","overflow":"visible","padding":"0","position":"absolute","right":"auto","top":351.5,"transform":"translateX(0px) translateY(0px) translateZ(0px) rotateX(0rad) rotateY(0rad) rotateZ(0rad) scaleX(1) scaleY(1) scaleZ(1) skewX(0rad) skewY(0rad)","width":643,"zIndex":"0"},"transform":{"translateX":0,"translateY":0,"translateZ":0,"rotateX":0,"rotateY":0,"rotateZ":0,"scaleX":1,"scaleY":1,"scaleZ":1,"skewX":0,"skewY":0},"id":"1710438350239","filters":[],"target":{"children":[],"type":"","data":{},"style":{"backgroundColor":"#fff","backgroundImage":"","backgroundSize":"100% 100%","bottom":0,"boxShadow":"0 0 10px 10px #ccc","cursor":"pointer","display":"block","height":"100%","left":0,"overflow":"hidden","right":0,"top":0,"transform":"translateX(0px) translateY(0px) translateZ(0px) rotateX(0rad) rotateY(0rad) rotateZ(0rad) scaleX(1) scaleY(1) scaleZ(1) skewX(0rad) skewY(0rad)","width":"100%"},"transform":{"translateX":0,"translateY":0,"translateZ":0,"rotateX":0,"rotateY":0,"rotateZ":0,"scaleX":1,"scaleY":1,"scaleZ":1,"skewX":0,"skewY":0},"id":"1718236963278"}})
 
 	/*loadTemplate(1, (tmpl) => {
 		editor.fromJSON(tmpl);
@@ -233,8 +252,8 @@ import './lib/html-to-image.js';
 		const img = await window.htmlToImage.toPng(editor.target.dom);
 		preview.src = img;
 
-		const data = editor.toJSON();
-		console.log(data);
+		//const data = editor.toString();
+		//console.log(data);
 
 		setTimeout(createPreivew, 10000);
 

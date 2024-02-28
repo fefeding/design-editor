@@ -24,6 +24,12 @@ export default class JSvg extends Base {
             }
         });
     }
+    /**
+     * 类型名称
+     */
+    get typeName() {
+        return 'svg';
+    }
     // 替换变量
     renderSvg(svg) {
         this.data.map((name, value) => {

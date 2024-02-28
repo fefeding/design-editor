@@ -21,6 +21,9 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
             className: 'j-design-editor-container',
             isComponent: true
         });
+        
+        this.componentType = new.target;
+
         option.target = option.target || {};
         const targetOption = {
             ...(option.target || option),
@@ -63,6 +66,18 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
     target: IJElement<T>;
 
     filters: IFilterManager;
+
+    /**
+     * 类型名称
+     */
+    get typeName(): string {
+        return 'base';
+    }
+
+    /**
+     * 当前组件new指向的class，可用于复制
+     */
+    protected componentType: any;
 
     // 选中
     private _selected = false;
@@ -178,5 +193,17 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
             obj.target = this.target.toJSON([], (p)=>false);
         }
         return obj;
+    }
+
+    /**
+     * 复制当前组件
+     * @returns 当前组件同类型副本
+     */
+    clone(): IJBaseComponent {
+        const option = this.toJSON();
+        // @ts-ignore
+        delete option.id;
+        const el = new this.componentType(option);
+        return el;
     }
 }

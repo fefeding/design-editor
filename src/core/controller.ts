@@ -1,5 +1,5 @@
 
-import util, { controller, ItemType } from 'j-design-util';
+import util, { controller, ItemType, ControllerCursorData } from 'j-design-util';
 import JElement from './element';
 import { IJControllerItem, IJControllerComponent, IJBaseComponent, IControllerOption, IControllerItemOption } from '../constant/types';
 import { topZIndex } from '../constant/styleMap';
@@ -121,12 +121,17 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
     }
 
     // 计算指针
-    async resetCursor(rotation: number = 0) {
-        if(!this.dir) return;
-        let cursor = await controller.Cursors.get(this.dir as ItemType, rotation);
-        if(!cursor) return;
-        // 先简单处理
-        this.style.cursor = cursor.includes('\/')? `url(${cursor}) 12 12,pointer`:cursor;
+    async resetCursor(rotation: number = 0, data: ControllerCursorData = {}) {
+        try {
+            if(!this.dir) return;
+            let cursor = await controller.Cursors.get(this.dir as ItemType, rotation, data);
+            if(!cursor) return;
+            // 先简单处理
+            this.style.cursor = cursor.includes('\/')? `url(${cursor}) 12 12,pointer`: cursor;
+        }
+        catch(e) {
+            console.error(e);
+        }
     }
 
 }
@@ -154,6 +159,9 @@ export default class JControllerComponent extends JControllerItem implements IJC
         super(option);
 
         if(!this.editor.editable) return;
+
+        // 鼠标指针
+        this.cursorData = option.itemCursors || {};
 
         this.init(option);
         this.editor.dom.appendChild(this.dom);
@@ -292,7 +300,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
                 cursor: `pointer`,
                 ...option.style.itemStyle,
                 'backgroundSize': '100%',
-                backgroundImage: controller.ItemIcons.rotate
+                backgroundImage: option.itemIcons?.rotate || ''
             },
             transform: {
                 translateX: '-50%',
@@ -309,7 +317,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
                 cursor: `pointer`,
                 ...option.style.itemStyle,
                 'backgroundSize': '100%',
-                backgroundImage: controller.ItemIcons.skew
+                backgroundImage: option.itemIcons?.skew || ''
             },
             transform: {
                 translateX: '-50%',
@@ -368,6 +376,9 @@ export default class JControllerComponent extends JControllerItem implements IJC
         });
     }
 
+    // 鼠标指针
+    cursorData: ControllerCursorData;
+
     items = [] as Array<JControllerItem>;
 
     rotateItem: JControllerItem;
@@ -407,7 +418,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
             self.change(e);
         });
 
-        item.resetCursor(this.transform.rotateZ);
+        item.resetCursor(this.transform.rotateZ, this.cursorData);
 
         return item;
     }
@@ -547,7 +558,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
     async resetCursor(rotation: number = this.transform.rotateZ): Promise<void> {
         // 发生了旋转，要处理指针图标
         for(const item of this.items) {
-            item.resetCursor(rotation);
+            item.resetCursor(rotation, this.cursorData);
         }
     }
 

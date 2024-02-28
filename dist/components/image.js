@@ -45,6 +45,12 @@ export default class JImage extends Base {
         if (src)
             this.data.src = src;
     }
+    /**
+     * 类型名称
+     */
+    get typeName() {
+        return 'image';
+    }
     toJSON(props = []) {
         return super.toJSON([
             'filters',

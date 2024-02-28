@@ -78,6 +78,12 @@ export default class JText extends Base {
     // 所有 JText 实例的缓存
     static TextControlCache = new Map();
     /**
+     * 类型名称
+     */
+    get typeName() {
+        return 'text';
+    }
+    /**
      * 当前编辑状态
      */
     get contenteditable() {

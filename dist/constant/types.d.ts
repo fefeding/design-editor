@@ -1,4 +1,4 @@
-import { Point, ItemType } from 'j-design-util';
+import { Point, ItemType, ControllerCursorData } from 'j-design-util';
 import { IFilterManager } from 'j-css-filters';
 import JElementCssStyle, { IJElementStyleDeclaration } from './styleMap';
 import { JElementData, JTextData, JImageData, IJElementData, IJTexteData, IJImageData, IJFontData, JSvgData, IJSvgData } from './data';
@@ -103,6 +103,11 @@ export interface IControllerOption extends IControllerItemOption {
     style?: IControllerStyle;
     itemSize?: number;
     tipVisible?: boolean;
+    itemCursors?: ControllerCursorData;
+    itemIcons?: {
+        rotate?: string;
+        skew?: string;
+    };
 }
 /**
  * 编辑器选项接口
@@ -278,10 +283,16 @@ export interface IJElement<T extends HTMLElement = HTMLElement> extends EventEmi
  */
 export interface IJBaseComponent<T extends HTMLElement = HTMLElement> extends IJElement<T> {
     target: IJElement<T>;
+    /**
+     * 类型名称
+     */
+    get typeName(): string;
     get selected(): boolean;
     set selected(v: boolean);
     filters: IFilterManager;
     setLevel(level: number | 'next' | 'pre' | 'top' | 'bottom'): void;
+    /** 复制组件 */
+    clone(): IJBaseComponent;
 }
 /**
  * 文字组件接口.

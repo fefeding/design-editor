@@ -19,6 +19,7 @@ export default class JBaseComponent extends JElement {
             className: 'j-design-editor-container',
             isComponent: true
         });
+        this.componentType = new.target;
         option.target = option.target || {};
         const targetOption = {
             ...(option.target || option),
@@ -56,6 +57,16 @@ export default class JBaseComponent extends JElement {
     // 当前控件的核心元素
     target;
     filters;
+    /**
+     * 类型名称
+     */
+    get typeName() {
+        return 'base';
+    }
+    /**
+     * 当前组件new指向的class，可用于复制
+     */
+    componentType;
     // 选中
     _selected = false;
     get selected() {
@@ -175,5 +186,16 @@ export default class JBaseComponent extends JElement {
             obj.target = this.target.toJSON([], (p) => false);
         }
         return obj;
+    }
+    /**
+     * 复制当前组件
+     * @returns 当前组件同类型副本
+     */
+    clone() {
+        const option = this.toJSON();
+        // @ts-ignore
+        delete option.id;
+        const el = new this.componentType(option);
+        return el;
     }
 }

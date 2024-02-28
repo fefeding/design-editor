@@ -31,6 +31,13 @@ export default class JSvg extends Base<HTMLDivElement> implements IJSvgComponent
 
     declare data: JSvgData;
 
+    /**
+     * 类型名称
+     */
+    get typeName(): string {
+        return 'svg';
+    }
+
     // 替换变量
     renderSvg(svg: string) {
         this.data.map((name, value) => {

@@ -56,6 +56,13 @@ export default class JImage extends Base<HTMLImageElement> implements IJImageCom
      */
     declare data: JImageData;
 
+    /**
+     * 类型名称
+     */
+    get typeName(): string {
+        return 'image';
+    }
+
     toJSON(props = [])  {
         return super.toJSON([
             'filters',

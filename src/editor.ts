@@ -1,4 +1,4 @@
-import { Point } from 'j-design-util';
+import util, { Point } from 'j-design-util';
 import JBase from './core/baseComponent';
 import JText from './components/text';
 import JImage from './components/image';
@@ -6,7 +6,6 @@ import JSvg from './components/svg';
 import JElement from './core/element';
 import JController from './core/controller';
 import JFonts from './core/fonts';
-import util from 'j-design-util';
 import { Debounce } from './lib/decorator';
 import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent, IJFonts, IElementOption, IEditorOption, ITextOption, IImageOption } from './constant/types';
 import { SupportEventNames } from './core/event';

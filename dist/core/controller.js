@@ -101,14 +101,19 @@ export class JControllerItem extends JElement {
         }
     }
     // 计算指针
-    async resetCursor(rotation = 0) {
-        if (!this.dir)
-            return;
-        let cursor = await controller.Cursors.get(this.dir, rotation);
-        if (!cursor)
-            return;
-        // 先简单处理
-        this.style.cursor = cursor.includes('\/') ? `url(${cursor}) 12 12,pointer` : cursor;
+    async resetCursor(rotation = 0, data = {}) {
+        try {
+            if (!this.dir)
+                return;
+            let cursor = await controller.Cursors.get(this.dir, rotation, data);
+            if (!cursor)
+                return;
+            // 先简单处理
+            this.style.cursor = cursor.includes('\/') ? `url(${cursor}) 12 12,pointer` : cursor;
+        }
+        catch (e) {
+            console.error(e);
+        }
     }
 }
 // 元素大小位置控制器
@@ -131,6 +136,8 @@ export default class JControllerComponent extends JControllerItem {
         super(option);
         if (!this.editor.editable)
             return;
+        // 鼠标指针
+        this.cursorData = option.itemCursors || {};
         this.init(option);
         this.editor.dom.appendChild(this.dom);
         this.resetCursor(this.transform.rotateZ);
@@ -265,7 +272,7 @@ export default class JControllerComponent extends JControllerItem {
                 cursor: `pointer`,
                 ...option.style.itemStyle,
                 'backgroundSize': '100%',
-                backgroundImage: controller.ItemIcons.rotate
+                backgroundImage: option.itemIcons?.rotate || ''
             },
             transform: {
                 translateX: '-50%',
@@ -282,7 +289,7 @@ export default class JControllerComponent extends JControllerItem {
                 cursor: `pointer`,
                 ...option.style.itemStyle,
                 'backgroundSize': '100%',
-                backgroundImage: controller.ItemIcons.skew
+                backgroundImage: option.itemIcons?.skew || ''
             },
             transform: {
                 translateX: '-50%',
@@ -336,6 +343,8 @@ export default class JControllerComponent extends JControllerItem {
             this.change(e);
         });
     }
+    // 鼠标指针
+    cursorData;
     items = [];
     rotateItem;
     skewItem;
@@ -366,7 +375,7 @@ export default class JControllerComponent extends JControllerItem {
         item.on('change', function (e) {
             self.change(e);
         });
-        item.resetCursor(this.transform.rotateZ);
+        item.resetCursor(this.transform.rotateZ, this.cursorData);
         return item;
     }
     // 发生改变响应
@@ -495,7 +504,7 @@ export default class JControllerComponent extends JControllerItem {
     async resetCursor(rotation = this.transform.rotateZ) {
         // 发生了旋转，要处理指针图标
         for (const item of this.items) {
-            item.resetCursor(rotation);
+            item.resetCursor(rotation, this.cursorData);
         }
     }
     // 绑定到操作的对象
