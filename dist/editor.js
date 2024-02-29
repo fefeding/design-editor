@@ -13,6 +13,7 @@ import JElement from './core/element';
 import JController from './core/controller';
 import JFonts from './core/fonts';
 import { Debounce } from './lib/decorator';
+import { editorDefaultCssContent } from './constant/styleMap';
 import { SupportEventNames } from './core/event';
 /**
  * @public
@@ -66,12 +67,7 @@ export default class JEditor extends JBase {
             editor: this,
         });
         const styleNode = document.createElement('style');
-        styleNode.innerHTML = `.j-design-editor-container {
-                                    border: 0;
-                                }
-                                .j-design-editor-container:hover {
-                                    box-shadow: 0 0 1px 1px rgba(255,255,255,0.5);
-                                }`;
+        styleNode.innerHTML = editorDefaultCssContent;
         this.dom.appendChild(styleNode);
         // 字体加载成功，同时加入到dom结构中
         this.fonts.on('load', (font) => {

@@ -58,6 +58,7 @@ export interface IElementOption<T extends IJElementData = IJElementData> {
     editor?: IJEditor;
     transformWatchProps?: string[];
     dataType?: JElementData;
+    className?: string;
     style?: IJElementStyleDeclaration;
     visible?: boolean;
     editable?: boolean;

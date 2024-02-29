@@ -77,6 +77,8 @@ export interface IElementOption<T extends IJElementData = IJElementData> {
     transformWatchProps?: string[];
     // data绑定的类型
     dataType?: JElementData;
+    // 默认样式名
+    className?: string;
     // 样式
     style?: IJElementStyleDeclaration;
     // 默认是否显示 default=true

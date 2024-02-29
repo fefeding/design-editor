@@ -44,13 +44,18 @@ var util = {
     /**
      * 带像素或其它单位的转换为数字: 2px -> 2
      * @param v
+     * @param fractionDigits 保留小数位
      * @returns
      */
-    toNumber(v) {
+    toNumber(v, fractionDigits) {
         if (this.isNumber(v))
-            return Number(v);
+            v = Number(v);
         else if (typeof v === 'string')
-            return parseFloat(v) || 0;
+            v = (parseFloat(v) || 0);
+        if (typeof fractionDigits !== 'undefined') {
+            v = Number(v.toFixed(fractionDigits));
+        }
+        return v;
     },
     /**
      * 弧度转角度: Math.PI -> 180
@@ -225,6 +230,27 @@ var util = {
         }
         else {
             return dom.getAttribute(name);
+        }
+    },
+    /**
+     * 设置class样式
+     * @param dom 节点
+     * @param name 样式名
+     * @param remove 如果true则表示删除样式
+     */
+    class(dom, name, remove = false) {
+        if (Array.isArray(name)) {
+            for (const n of name) {
+                this.class(dom, n, remove);
+            }
+            return;
+        }
+        if (remove) {
+            dom.classList.remove(name);
+        }
+        else {
+            if (!dom.classList.contains(name))
+                dom.classList.add(name);
         }
     },
     /**
@@ -2299,6 +2325,31 @@ const ContainerDefaultStyle = {
     display: 'inline-block',
     overflow: 'visible'
 };
+/**
+ * 默认编辑器样式
+ */
+const editorDefaultCssContent = `.j-design-editor-container {
+        border: 0;
+    }
+    .j-design-editor-container.selected {
+        box-shadow: none!important;
+    }
+    .j-design-editor-container:hover {
+        box-shadow: 0 0 1px 1px rgba(0,0,0,0.2);
+    }
+    .j-design-editor-controller .item-skew {
+        opacity: 0.2;
+    }
+    .j-design-editor-controller .item-skew:hover {
+        opacity: 0.7;
+    }
+    .j-design-editor-controller .item-rotate {
+        opacity: 0.5;
+    }
+    .j-design-editor-controller .item-rotate:hover {
+        opacity: 1;
+    }
+    `;
 
 class Transform extends JEventEmitter {
     constructor(option, targetOption) {
@@ -3118,6 +3169,8 @@ class JBaseComponent extends JElement {
     }
     set selected(v) {
         this._selected = v;
+        // 如果选中则加上样式
+        util.class(this.dom, 'selected', !v);
         this.emit('select', {
             type: 'select',
             target: this,
@@ -3504,6 +3557,9 @@ class JControllerItem extends JElement {
             ...option.style,
             position: 'absolute'
         };
+        if (option.dir && !option.className) {
+            option.className = 'item-' + option.dir;
+        }
         super(option);
         this.dir = option.dir || '';
         if (option.size) {
@@ -3622,6 +3678,7 @@ class JControllerComponent extends JControllerItem {
             pointerEvents: 'none',
         };
         option.dir = 'element';
+        option.className = 'j-design-editor-controller';
         option.data = {
             ...option.data,
             zIndex: topZIndex
@@ -3759,8 +3816,8 @@ class JControllerComponent extends JControllerItem {
                 left: '50%',
                 top: '-40px',
                 //backgroundColor: 'transparent',
-                border: 'none',
-                boxShadow: '0 0 2px 2px #ccc',
+                //border: 'none',
+                //boxShadow: '0 0 2px 2px #ccc',
                 borderRadius: '50%',
                 cursor: `pointer`,
                 ...option.style.itemStyle,
@@ -3772,17 +3829,17 @@ class JControllerComponent extends JControllerItem {
             }
         });
         this.skewItem = this.createItem('skew', {
-            size: 10,
+            size: 24,
             style: {
                 left: '50%',
                 top: '50%',
-                border: 'none',
-                boxShadow: '0 0 2px 2px #ccc',
                 borderRadius: '50%',
                 cursor: `pointer`,
                 ...option.style.itemStyle,
+                border: '9px solid rgba(0,0,0,0.8)',
+                backgroundColor: '#fff',
                 'backgroundSize': '100%',
-                backgroundImage: option.itemIcons?.skew || ''
+                //backgroundImage: option.itemIcons?.skew || ''
             },
             transform: {
                 translateX: '-50%',
@@ -4060,13 +4117,13 @@ class JControllerComponent extends JControllerItem {
     setTip() {
         if (this.positionItem && this.positionItem.visible) {
             const pos = {
-                x: util.toNumber(this.data.left) + (this.isEditor ? util.toNumber(this.target.data.left) : 0),
-                y: util.toNumber(this.data.top) + (this.isEditor ? util.toNumber(this.target.data.top) : 0)
+                x: util.toNumber(this.data.left, 2) + (this.isEditor ? util.toNumber(this.target.data.left, 2) : 0),
+                y: util.toNumber(this.data.top, 2) + (this.isEditor ? util.toNumber(this.target.data.top, 2) : 0)
             };
             this.positionItem.dom.innerHTML = `X: ${pos.x} Y: ${pos.y}`;
         }
         if (this.sizeItem && this.sizeItem.visible)
-            this.sizeItem.dom.innerHTML = `${this.data.width} X ${this.data.height}`;
+            this.sizeItem.dom.innerHTML = `${util.toNumber(this.data.width, 2)} X ${util.toNumber(this.data.height, 2)}`;
     }
     // 解除绑定
     unbind(target) {
@@ -4263,12 +4320,7 @@ class JEditor extends JBaseComponent {
             editor: this,
         });
         const styleNode = document.createElement('style');
-        styleNode.innerHTML = `.j-design-editor-container {
-                                    border: 0;
-                                }
-                                .j-design-editor-container:hover {
-                                    box-shadow: 0 0 1px 1px rgba(255,255,255,0.5);
-                                }`;
+        styleNode.innerHTML = editorDefaultCssContent;
         this.dom.appendChild(styleNode);
         // 字体加载成功，同时加入到dom结构中
         this.fonts.on('load', (font) => {

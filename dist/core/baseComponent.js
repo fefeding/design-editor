@@ -1,3 +1,4 @@
+import util from 'j-design-util';
 import CssFilterManager from 'j-css-filters';
 import { ContainerDefaultStyle } from '../constant/styleMap';
 import JElement from '../core/element';
@@ -74,6 +75,8 @@ export default class JBaseComponent extends JElement {
     }
     set selected(v) {
         this._selected = v;
+        // 如果选中则加上样式
+        util.class(this.dom, 'selected', !v);
         this.emit('select', {
             type: 'select',
             target: this,

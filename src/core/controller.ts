@@ -15,7 +15,9 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
             ...option.style,
             position: 'absolute'
         };
-
+        if(option.dir && !option.className) {
+            option.className = 'item-' + option.dir;
+        }
         super(option);
 
         this.dir = option.dir || '';
@@ -150,6 +152,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
             pointerEvents: 'none',
         };
         option.dir = 'element';
+        option.className ='j-design-editor-controller';
 
         option.data = {
             ...option.data,
@@ -294,8 +297,8 @@ export default class JControllerComponent extends JControllerItem implements IJC
                 left: '50%',
                 top: '-40px',
                 //backgroundColor: 'transparent',
-                border: 'none',
-                boxShadow: '0 0 2px 2px #ccc',
+                //border: 'none',
+                //boxShadow: '0 0 2px 2px #ccc',
                 borderRadius: '50%',
                 cursor: `pointer`,
                 ...option.style.itemStyle,
@@ -307,17 +310,17 @@ export default class JControllerComponent extends JControllerItem implements IJC
             }
         });
         this.skewItem = this.createItem('skew', {
-            size: 10,
+            size: 24,
             style: {
                 left: '50%',
                 top: '50%',
-                border: 'none',
-                boxShadow: '0 0 2px 2px #ccc',
                 borderRadius: '50%',
                 cursor: `pointer`,
                 ...option.style.itemStyle,
+                border: '9px solid rgba(0,0,0,0.8)',
+                backgroundColor: '#fff',
                 'backgroundSize': '100%',
-                backgroundImage: option.itemIcons?.skew || ''
+                //backgroundImage: option.itemIcons?.skew || ''
             },
             transform: {
                 translateX: '-50%',
@@ -628,12 +631,12 @@ export default class JControllerComponent extends JControllerItem implements IJC
     setTip() {
         if(this.positionItem && this.positionItem.visible) {
             const pos = {
-                x: util.toNumber(this.data.left) + (this.isEditor?util.toNumber(this.target.data.left):0),
-                y: util.toNumber(this.data.top) + (this.isEditor?util.toNumber(this.target.data.top):0)
+                x: util.toNumber(this.data.left, 2) + (this.isEditor?util.toNumber(this.target.data.left, 2):0),
+                y: util.toNumber(this.data.top, 2) + (this.isEditor?util.toNumber(this.target.data.top, 2):0)
             };     
             this.positionItem.dom.innerHTML =  `X: ${pos.x} Y: ${pos.y}`;
         }
-        if(this.sizeItem && this.sizeItem.visible) this.sizeItem.dom.innerHTML = `${this.data.width} X ${this.data.height}`;
+        if(this.sizeItem && this.sizeItem.visible) this.sizeItem.dom.innerHTML = `${util.toNumber(this.data.width, 2)} X ${util.toNumber(this.data.height, 2)}`;
     }
 
     // 解除绑定

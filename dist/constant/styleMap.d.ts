@@ -926,3 +926,7 @@ export declare const ContainerDefaultStyle: {
     display: string;
     overflow: string;
 };
+/**
+ * 默认编辑器样式
+ */
+export declare const editorDefaultCssContent = ".j-design-editor-container {\n        border: 0;\n    }\n    .j-design-editor-container.selected {\n        box-shadow: none!important;\n    }\n    .j-design-editor-container:hover {\n        box-shadow: 0 0 1px 1px rgba(0,0,0,0.2);\n    }\n    .j-design-editor-controller .item-skew {\n        opacity: 0.2;\n    }\n    .j-design-editor-controller .item-skew:hover {\n        opacity: 0.7;\n    }\n    .j-design-editor-controller .item-rotate {\n        opacity: 0.5;\n    }\n    .j-design-editor-controller .item-rotate:hover {\n        opacity: 1;\n    }\n    ";

@@ -930,3 +930,28 @@ export const ContainerDefaultStyle = {
     display: 'inline-block',
     overflow: 'visible'
 };
+/**
+ * 默认编辑器样式
+ */
+export const editorDefaultCssContent = `.j-design-editor-container {
+        border: 0;
+    }
+    .j-design-editor-container.selected {
+        box-shadow: none!important;
+    }
+    .j-design-editor-container:hover {
+        box-shadow: 0 0 1px 1px rgba(0,0,0,0.2);
+    }
+    .j-design-editor-controller .item-skew {
+        opacity: 0.2;
+    }
+    .j-design-editor-controller .item-skew:hover {
+        opacity: 0.7;
+    }
+    .j-design-editor-controller .item-rotate {
+        opacity: 0.5;
+    }
+    .j-design-editor-controller .item-rotate:hover {
+        opacity: 1;
+    }
+    `;
