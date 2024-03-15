@@ -961,10 +961,11 @@ export const ContainerDefaultStyle = {
  */
 export const editorDefaultCssContent = 
     `.j-design-editor-container {
-        border: 0;
+        border: 1px solid transparent;
     }
     .j-design-editor-container.selected {
         box-shadow: none!important;
+        border: 1px solid rgba(6,155,181,1);
     }
     .j-design-editor-container:hover {
         box-shadow: 0 0 1px 1px rgba(0,0,0,0.2);

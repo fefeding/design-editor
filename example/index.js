@@ -79,9 +79,10 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 			}
 		}
 		// 元素的右健菜单
-		else if(e.type == 'mousedown' && e.event.button == 2) {
+		else if(e.type == 'mousedown') {
 			e.event.preventDefault();
-			showElementMenu(e.target.id, e.event);
+			if(e.event.button == 2) showElementMenu(e.target.id, e.event);
+			else hideElementMenu();// 其它按健隐藏菜单
 		}
 		else if(e.type === 'contextmenu') {
 			e.event.preventDefault();
@@ -89,6 +90,11 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 		else if(e.type === 'select') {
 			
 		}
+	});
+
+	// 点击编辑器隐去菜单
+	editor.on('mousedown', ()=>{
+		hideElementMenu();// 其它按健隐藏菜单
 	});
 
 	// 操作元素菜单
@@ -102,6 +108,10 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 
 		menu.removeEventListener('click', menuClick);
 		menu.addEventListener('click', menuClick);
+	}
+	function hideElementMenu() {
+		const menu = document.getElementById('element_menu');
+		menu.style.display = 'none';
 	}
 	// 菜单点击
 	function menuClick(e) {

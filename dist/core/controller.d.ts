@@ -37,6 +37,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
     createItem(id: string, option: IControllerItemOption): JControllerItem;
     change(e: any): void;
     applyToTarget(): void;
+    move(dx: any, dy: any): void;
     reset(isEditor?: boolean): void;
     get isControling(): boolean;
     resetCursor(rotation?: number): Promise<void>;

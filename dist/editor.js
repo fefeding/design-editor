@@ -77,8 +77,7 @@ export default class JEditor extends JBase {
         });
         this.on('mousedown', function (e) {
             if (e.button === 0) {
-                this.selected = true;
-                this.elementController.onDragStart(e);
+                this.select(this, e);
             }
         });
         // 刷新样式
@@ -92,6 +91,12 @@ export default class JEditor extends JBase {
                 this.sizeChange();
             }
         });
+    }
+    /**
+     * 类型名称
+     */
+    get typeName() {
+        return 'editor';
     }
     // 外层用于定位的容器
     view;
@@ -116,17 +121,16 @@ export default class JEditor extends JBase {
     }
     // 绑定事件
     bindEvent(dom) {
-        if (this.view)
-            super.bindEvent(this.view.dom); // 编辑器事件绑到整个容器上
+        if (!this.view) {
+            return;
+        }
+        super.bindEvent(this.view.dom); // 编辑器事件绑到整个容器上
         // 监听子元素改变
-        this.on(['elementChange'], function (e) {
+        this.on(['elementChange'], (e) => {
             const isComponent = e.target instanceof JBase;
             // 左健选中
             if (e.type === 'mousedown' && isComponent) {
-                e.target.selected = true;
-                if (e.event?.button === 0)
-                    this.elementController.onDragStart(e.event);
-                e.event?.stopPropagation && e.event.stopPropagation();
+                this.select(e.target, e.event);
             }
             // 选中状态改变
             else if (e.type === 'select' && isComponent) {
@@ -144,20 +148,41 @@ export default class JEditor extends JBase {
         });
     }
     // 选中某个元素
-    select(el) {
-        if (el.selected) {
+    select(el, event = null) {
+        if (event) {
+            const isMutilSelect = event?.ctrlKey && el !== this; // 编辑器不能与其它元素多选
             // 选把所有已选择的取消
-            this.selectedElements.map(p => {
-                if (p !== el) {
-                    p.selected = false;
-                    return p;
-                }
-            });
-            if (el.editable)
-                this.elementController.bind(el);
+            // 如果按下ctrl或本来就是选中的，则不取消其它元素
+            if (!isMutilSelect && !el.selected) {
+                this.selectedElements.map(p => {
+                    if (p !== el) {
+                        p.selected = false;
+                        return p;
+                    }
+                });
+            }
+            // 编辑器要消选
+            if (el !== this && this.selected)
+                this.selected = false;
+            if (!el.selected) {
+                el.selected = true;
+            }
+            // 多选情况下，已选中的再点击取消选择
+            else if (isMutilSelect) {
+                el.selected = false;
+            }
+            if (event?.button === 0)
+                this.elementController.onDragStart(event);
+            event?.stopPropagation && event.stopPropagation();
         }
-        else
-            this.elementController.unbind(el);
+        else {
+            if (el.selected) {
+                if (el.editable)
+                    this.elementController.bind(el);
+            }
+            else
+                this.elementController.unbind(el);
+        }
     }
     resize(width = this.data.width, height = this.data.height) {
         this.data.left = Math.max((util.toNumber(this.view.dom.clientWidth) - util.toNumber(width)) / 2, 0);
@@ -181,12 +206,7 @@ export default class JEditor extends JBase {
     }
     // 把domcument坐标转为编辑器相对坐标
     toEditorPosition(pos, dom = this.target.dom) {
-        // 编辑器坐标
-        const editorPos = util.getElementBoundingRect(dom);
-        return {
-            x: pos.x - editorPos.x,
-            y: pos.y - editorPos.y
-        };
+        return util.toDomPosition(pos, dom);
     }
     clear() {
         this.css({

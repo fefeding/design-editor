@@ -147,7 +147,12 @@ export default class JElement extends EventEmiter {
     }
     // 元素框
     get bounds() {
-        const rect = this.dom.getBoundingClientRect();
+        const rect = util.getElementBoundingRect(this.dom);
+        if (this.editor) {
+            const pos = this.editor.toEditorPosition(rect);
+            rect.x = pos.x;
+            rect.y = pos.y;
+        }
         return rect;
     }
     // 是否可编辑

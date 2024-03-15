@@ -10,6 +10,10 @@ import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent, IJFonts, I
 export default class JEditor extends JBase implements IJEditor {
     constructor(option?: IEditorOption);
     init(option: IEditorOption): void;
+    /**
+     * 类型名称
+     */
+    get typeName(): string;
     view: JElement<HTMLDivElement>;
     protected shapes: Map<string, IJBaseComponent<HTMLElement>>;
     elementController: IJControllerComponent;
@@ -17,7 +21,7 @@ export default class JEditor extends JBase implements IJEditor {
     get children(): IJElement<HTMLElement>[];
     get selectedElements(): Array<JBase>;
     bindEvent(dom?: HTMLElement): void;
-    select(el: IJBaseComponent): void;
+    select(el: IJBaseComponent, event?: MouseEvent): void;
     resize(width?: string | number, height?: string | number): void;
     private sizeChange;
     addChild(child: IJBaseComponent): IJElement<HTMLElement>;

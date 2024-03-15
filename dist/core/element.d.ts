@@ -27,7 +27,12 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     set className(v: string);
     get visible(): boolean;
     set visible(v: boolean);
-    get bounds(): DOMRect;
+    get bounds(): {
+        height: number;
+        width: number;
+        x: number;
+        y: number;
+    };
     editable: boolean;
     transform: ITransform;
     get childrenMaxLevel(): number;

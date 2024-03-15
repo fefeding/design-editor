@@ -2329,10 +2329,11 @@ const ContainerDefaultStyle = {
  * 默认编辑器样式
  */
 const editorDefaultCssContent = `.j-design-editor-container {
-        border: 0;
+        border: 1px solid transparent;
     }
     .j-design-editor-container.selected {
         box-shadow: none!important;
+        border: 1px solid rgba(6,155,181,1);
     }
     .j-design-editor-container:hover {
         box-shadow: 0 0 1px 1px rgba(0,0,0,0.2);
@@ -2964,7 +2965,12 @@ class JElement extends JEventEmitter {
     }
     // 元素框
     get bounds() {
-        const rect = this.dom.getBoundingClientRect();
+        const rect = util.getElementBoundingRect(this.dom);
+        if (this.editor) {
+            const pos = this.editor.toEditorPosition(rect);
+            rect.x = pos.x;
+            rect.y = pos.y;
+        }
         return rect;
     }
     // 是否可编辑
@@ -4065,12 +4071,15 @@ class JControllerComponent extends JControllerItem {
     applyToTarget() {
         if (!this.target)
             return;
-        const pos = {
-            x: util.toNumber(this.data.left) + (this.isEditor ? util.toNumber(this.target.data.left) : 0),
-            y: util.toNumber(this.data.top) + (this.isEditor ? util.toNumber(this.target.data.top) : 0)
-        };
-        this.target.data.left = pos.x;
-        this.target.data.top = pos.y;
+        /*
+                const pos = {
+                    x: util.toNumber(this.data.left) + (this.isEditor?util.toNumber(this.target.data.left):0),
+                    y: util.toNumber(this.data.top) + (this.isEditor?util.toNumber(this.target.data.top):0)
+                };
+        
+                this.target.data.left = pos.x;
+                this.target.data.top = pos.y;
+        */
         // 编辑器相对位置一直是0
         if (this.isEditor) {
             this.data.left = 0;
@@ -4088,6 +4097,19 @@ class JControllerComponent extends JControllerItem {
         if (this.target.data.height !== height)
             this.target.data.height = height;
         this.setTip();
+    }
+    // 移动
+    move(dx, dy) {
+        // 如果有多选，则移动多个
+        const selectedElements = this.editor.selectedElements;
+        if (selectedElements.length) {
+            for (const el of selectedElements) {
+                el.move(dx, dy);
+            }
+        }
+        else if (this.target)
+            this.target.move(dx, dy);
+        return super.move(dx, dy);
     }
     // 重置
     reset(isEditor = this.isEditor) {
@@ -4391,8 +4413,7 @@ class JEditor extends JBaseComponent {
         });
         this.on('mousedown', function (e) {
             if (e.button === 0) {
-                this.selected = true;
-                this.elementController.onDragStart(e);
+                this.select(this, e);
             }
         });
         // 刷新样式
@@ -4406,6 +4427,12 @@ class JEditor extends JBaseComponent {
                 this.sizeChange();
             }
         });
+    }
+    /**
+     * 类型名称
+     */
+    get typeName() {
+        return 'editor';
     }
     // 外层用于定位的容器
     view;
@@ -4430,17 +4457,16 @@ class JEditor extends JBaseComponent {
     }
     // 绑定事件
     bindEvent(dom) {
-        if (this.view)
-            super.bindEvent(this.view.dom); // 编辑器事件绑到整个容器上
+        if (!this.view) {
+            return;
+        }
+        super.bindEvent(this.view.dom); // 编辑器事件绑到整个容器上
         // 监听子元素改变
-        this.on(['elementChange'], function (e) {
+        this.on(['elementChange'], (e) => {
             const isComponent = e.target instanceof JBaseComponent;
             // 左健选中
             if (e.type === 'mousedown' && isComponent) {
-                e.target.selected = true;
-                if (e.event?.button === 0)
-                    this.elementController.onDragStart(e.event);
-                e.event?.stopPropagation && e.event.stopPropagation();
+                this.select(e.target, e.event);
             }
             // 选中状态改变
             else if (e.type === 'select' && isComponent) {
@@ -4458,20 +4484,41 @@ class JEditor extends JBaseComponent {
         });
     }
     // 选中某个元素
-    select(el) {
-        if (el.selected) {
+    select(el, event = null) {
+        if (event) {
+            const isMutilSelect = event?.ctrlKey && el !== this; // 编辑器不能与其它元素多选
             // 选把所有已选择的取消
-            this.selectedElements.map(p => {
-                if (p !== el) {
-                    p.selected = false;
-                    return p;
-                }
-            });
-            if (el.editable)
-                this.elementController.bind(el);
+            // 如果按下ctrl或本来就是选中的，则不取消其它元素
+            if (!isMutilSelect && !el.selected) {
+                this.selectedElements.map(p => {
+                    if (p !== el) {
+                        p.selected = false;
+                        return p;
+                    }
+                });
+            }
+            // 编辑器要消选
+            if (el !== this && this.selected)
+                this.selected = false;
+            if (!el.selected) {
+                el.selected = true;
+            }
+            // 多选情况下，已选中的再点击取消选择
+            else if (isMutilSelect) {
+                el.selected = false;
+            }
+            if (event?.button === 0)
+                this.elementController.onDragStart(event);
+            event?.stopPropagation && event.stopPropagation();
         }
-        else
-            this.elementController.unbind(el);
+        else {
+            if (el.selected) {
+                if (el.editable)
+                    this.elementController.bind(el);
+            }
+            else
+                this.elementController.unbind(el);
+        }
     }
     resize(width = this.data.width, height = this.data.height) {
         this.data.left = Math.max((util.toNumber(this.view.dom.clientWidth) - util.toNumber(width)) / 2, 0);
@@ -4495,12 +4542,7 @@ class JEditor extends JBaseComponent {
     }
     // 把domcument坐标转为编辑器相对坐标
     toEditorPosition(pos, dom = this.target.dom) {
-        // 编辑器坐标
-        const editorPos = util.getElementBoundingRect(dom);
-        return {
-            x: pos.x - editorPos.x,
-            y: pos.y - editorPos.y
-        };
+        return util.toDomPosition(pos, dom);
     }
     clear() {
         this.css({

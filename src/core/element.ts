@@ -162,7 +162,12 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
 
     // 元素框
     get bounds() {
-        const rect: DOMRect = this.dom.getBoundingClientRect();
+        const rect = util.getElementBoundingRect(this.dom);
+        if(this.editor) {
+            const pos = this.editor.toEditorPosition(rect);
+            rect.x = pos.x;
+            rect.y = pos.y;
+        }
         return rect;
     }
 

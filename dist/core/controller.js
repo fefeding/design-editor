@@ -459,12 +459,15 @@ export default class JControllerComponent extends JControllerItem {
     applyToTarget() {
         if (!this.target)
             return;
-        const pos = {
-            x: util.toNumber(this.data.left) + (this.isEditor ? util.toNumber(this.target.data.left) : 0),
-            y: util.toNumber(this.data.top) + (this.isEditor ? util.toNumber(this.target.data.top) : 0)
-        };
-        this.target.data.left = pos.x;
-        this.target.data.top = pos.y;
+        /*
+                const pos = {
+                    x: util.toNumber(this.data.left) + (this.isEditor?util.toNumber(this.target.data.left):0),
+                    y: util.toNumber(this.data.top) + (this.isEditor?util.toNumber(this.target.data.top):0)
+                };
+        
+                this.target.data.left = pos.x;
+                this.target.data.top = pos.y;
+        */
         // 编辑器相对位置一直是0
         if (this.isEditor) {
             this.data.left = 0;
@@ -482,6 +485,19 @@ export default class JControllerComponent extends JControllerItem {
         if (this.target.data.height !== height)
             this.target.data.height = height;
         this.setTip();
+    }
+    // 移动
+    move(dx, dy) {
+        // 如果有多选，则移动多个
+        const selectedElements = this.editor.selectedElements;
+        if (selectedElements.length) {
+            for (const el of selectedElements) {
+                el.move(dx, dy);
+            }
+        }
+        else if (this.target)
+            this.target.move(dx, dy);
+        return super.move(dx, dy);
     }
     // 重置
     reset(isEditor = this.isEditor) {
