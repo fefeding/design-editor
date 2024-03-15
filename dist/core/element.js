@@ -145,6 +145,11 @@ export default class JElement extends EventEmiter {
     set visible(v) {
         this.data.visible = v;
     }
+    // 元素框
+    get bounds() {
+        const rect = this.dom.getBoundingClientRect();
+        return rect;
+    }
     // 是否可编辑
     editable = true;
     // 变换

@@ -159,6 +159,13 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     set visible(v: boolean) {
         this.data.visible = v;
     }
+
+    // 元素框
+    get bounds() {
+        const rect: DOMRect = this.dom.getBoundingClientRect();
+        return rect;
+    }
+
     // 是否可编辑
     editable: boolean = true;
 
