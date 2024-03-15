@@ -231,6 +231,8 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
             }
             parent.dom.appendChild(child.dom);
             parent.children.push(child);
+
+            this.emit('childAdded', child);
         }
         else if(child instanceof HTMLElement) {
             parent.dom.appendChild(child);

@@ -1,6 +1,7 @@
 import util from 'j-design-util';
 import CssFilterManager from 'j-css-filters';
 import { ContainerDefaultStyle } from '../constant/styleMap';
+import { SupportEventNames, ElementWatchEventNames } from '../core/event';
 import JElement from '../core/element';
 /**
  * @public
@@ -168,6 +169,57 @@ export default class JBaseComponent extends JElement {
             elements,
             level: preLevel
         };
+    }
+    // 添加元素到画布
+    addChild(child) {
+        if (child === this.target || child instanceof HTMLElement) {
+            return super.addChild(child);
+        }
+        this.bindElementEvent(child);
+        child.parent = this; // 把父设置成编辑器
+        child.editor = child.editor || this.editor;
+        child.editable = this.editable; // 当前是否可编辑
+        // 刷新样式
+        child.style.refresh();
+        this.target.addChild(child, this);
+    }
+    // 移除
+    removeChild(el) {
+        if (el === this.target) {
+            //console.warn('不能移除自已');
+            return;
+        }
+        if (el instanceof JElement) {
+            el.off(SupportEventNames);
+            el.off(ElementWatchEventNames);
+        }
+        return this.target.removeChild(el);
+    }
+    // 绑定元素事件
+    bindElementEvent(el) {
+        const self = this;
+        // 监听样式改变
+        el.on([
+            ...SupportEventNames,
+            ...ElementWatchEventNames
+        ], function (e) {
+            self.emit('elementChange', {
+                type: e.type,
+                data: {
+                    id: this.id,
+                    ...e.data
+                },
+                event: e.event || e,
+                target: this
+            });
+        });
+    }
+    // 通过ID获取子元素
+    getChild(id) {
+        for (const child of this.children) {
+            if (child.id === id)
+                return child;
+        }
     }
     // 设置css到dom
     setDomStyle(name, value) {

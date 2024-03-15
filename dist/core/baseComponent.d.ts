@@ -22,6 +22,10 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
     setLevel(level: number | 'next' | 'pre' | 'top' | 'bottom'): void;
     private getMyNextLevelChildren;
     private getMyPreLevelChildren;
+    addChild(child: IJBaseComponent | IJElement | HTMLElement): IJElement<HTMLElement>;
+    removeChild(el: IJElement | HTMLElement): IJElement<HTMLElement>[];
+    protected bindElementEvent(el: IJElement): void;
+    getChild(id: string): IJElement | undefined;
     setDomStyle(name: string, value: string): void;
     toJSON(props?: any[]): import("../constant/types").IElementJSON;
     /**

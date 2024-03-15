@@ -1,4 +1,5 @@
 export declare const SupportEventNames: string[];
+export declare const ElementWatchEventNames: string[];
 /**
  * @public
  */

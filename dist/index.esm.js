@@ -2352,6 +2352,88 @@ const editorDefaultCssContent = `.j-design-editor-container {
     }
     `;
 
+const SupportEventNames = [
+    'mousedown', 'mouseup', 'mouseover', 'mousemove', 'mouseout', 'mouseleave', 'mousewheel', 'click', 'dblclick', 'keydown', 'keypress', 'keyup', 'blur', 'change', 'focus', 'drag', 'dragenter', 'dragleave', 'dragover', 'dragstart', 'drop', 'contextmenu'
+];
+// 元素监听的自定议事件
+const ElementWatchEventNames = ['select', 'styleChange', 'dataChange', 'elementChange', 'childAdded'];
+/**
+ * @public
+ */
+class JEvent {
+    target;
+    constructor(target) {
+        if (target)
+            this.target = target;
+    }
+    // 规范化事件名
+    normalizeEventNames(name) {
+        if (!this.target || !name) {
+            return [];
+        }
+        let events = name;
+        if (typeof name === 'string') {
+            events = name.split(' ');
+        }
+        // 过滤掉不支持的事件
+        return events.filter(k => SupportEventNames.includes(k));
+    }
+    /**
+     * 初始化所有支持的事件，在init之前不要on，不然在init的时候会被释放掉。
+     * @param handler - 事件处理函数
+     * @param target - 元素
+     */
+    init(handler, target) {
+        if (target) {
+            // 释放掉原target的事件
+            this.dispose();
+            this.target = target;
+        }
+        this.on(SupportEventNames, handler, false);
+    }
+    _eventCache = [];
+    /**
+     * 绑定事件到html对象
+     * @param  name - 事件名称
+     * @param  fun - 事件处理函数
+     * @param opt - 配置选项
+     */
+    on(name, fun, opt = false) {
+        const events = this.normalizeEventNames(name);
+        for (const n of events) {
+            this.target.addEventListener(n, fun, opt);
+            this._eventCache.push([n, fun, opt]);
+        }
+        return this;
+    }
+    /**
+     * 从对象中移除事件
+     * 不传 的时候删除所有事件
+     * @param  name - 事件名称
+     * @param  fun - 事件处理函数
+     * @param opt - 配置选项
+     */
+    off(name, fun, opt = false) {
+        const events = this.normalizeEventNames(name);
+        this._eventCache = this._eventCache.filter(item => {
+            if (events.length && !events.includes(item[0])) {
+                return true;
+            }
+            if ((fun && fun !== item[1]) || (typeof opt !== 'undefined' && opt !== item[2])) {
+                // DOM 要完全一致才能被removeEventListener删除掉
+                return true;
+            }
+            this.target.removeEventListener(item[0], item[1], item[2]);
+            return false;
+        });
+        return this;
+    }
+    // 移除所有的事件
+    dispose() {
+        this.off();
+    }
+}
+
 class Transform extends JEventEmitter {
     constructor(option, targetOption) {
         super();
@@ -2568,86 +2650,6 @@ class JElementStyle extends JElementCssStyle {
             }
         });
         return proxy;
-    }
-}
-
-const SupportEventNames = [
-    'mousedown', 'mouseup', 'mouseover', 'mousemove', 'mouseout', 'mouseleave', 'mousewheel', 'click', 'dblclick', 'keydown', 'keypress', 'keyup', 'blur', 'change', 'focus', 'drag', 'dragenter', 'dragleave', 'dragover', 'dragstart', 'drop', 'contextmenu'
-];
-/**
- * @public
- */
-class JEvent {
-    target;
-    constructor(target) {
-        if (target)
-            this.target = target;
-    }
-    // 规范化事件名
-    normalizeEventNames(name) {
-        if (!this.target || !name) {
-            return [];
-        }
-        let events = name;
-        if (typeof name === 'string') {
-            events = name.split(' ');
-        }
-        // 过滤掉不支持的事件
-        return events.filter(k => SupportEventNames.includes(k));
-    }
-    /**
-     * 初始化所有支持的事件，在init之前不要on，不然在init的时候会被释放掉。
-     * @param handler - 事件处理函数
-     * @param target - 元素
-     */
-    init(handler, target) {
-        if (target) {
-            // 释放掉原target的事件
-            this.dispose();
-            this.target = target;
-        }
-        this.on(SupportEventNames, handler, false);
-    }
-    _eventCache = [];
-    /**
-     * 绑定事件到html对象
-     * @param  name - 事件名称
-     * @param  fun - 事件处理函数
-     * @param opt - 配置选项
-     */
-    on(name, fun, opt = false) {
-        const events = this.normalizeEventNames(name);
-        for (const n of events) {
-            this.target.addEventListener(n, fun, opt);
-            this._eventCache.push([n, fun, opt]);
-        }
-        return this;
-    }
-    /**
-     * 从对象中移除事件
-     * 不传 的时候删除所有事件
-     * @param  name - 事件名称
-     * @param  fun - 事件处理函数
-     * @param opt - 配置选项
-     */
-    off(name, fun, opt = false) {
-        const events = this.normalizeEventNames(name);
-        this._eventCache = this._eventCache.filter(item => {
-            if (events.length && !events.includes(item[0])) {
-                return true;
-            }
-            if ((fun && fun !== item[1]) || (typeof opt !== 'undefined' && opt !== item[2])) {
-                // DOM 要完全一致才能被removeEventListener删除掉
-                return true;
-            }
-            this.target.removeEventListener(item[0], item[1], item[2]);
-            return false;
-        });
-        return this;
-    }
-    // 移除所有的事件
-    dispose() {
-        this.off();
     }
 }
 
@@ -3026,6 +3028,7 @@ class JElement extends JEventEmitter {
             }
             parent.dom.appendChild(child.dom);
             parent.children.push(child);
+            this.emit('childAdded', child);
         }
         else if (child instanceof HTMLElement) {
             parent.dom.appendChild(child);
@@ -3263,6 +3266,57 @@ class JBaseComponent extends JElement {
             elements,
             level: preLevel
         };
+    }
+    // 添加元素到画布
+    addChild(child) {
+        if (child === this.target || child instanceof HTMLElement) {
+            return super.addChild(child);
+        }
+        this.bindElementEvent(child);
+        child.parent = this; // 把父设置成编辑器
+        child.editor = child.editor || this.editor;
+        child.editable = this.editable; // 当前是否可编辑
+        // 刷新样式
+        child.style.refresh();
+        this.target.addChild(child, this);
+    }
+    // 移除
+    removeChild(el) {
+        if (el === this.target) {
+            //console.warn('不能移除自已');
+            return;
+        }
+        if (el instanceof JElement) {
+            el.off(SupportEventNames);
+            el.off(ElementWatchEventNames);
+        }
+        return this.target.removeChild(el);
+    }
+    // 绑定元素事件
+    bindElementEvent(el) {
+        const self = this;
+        // 监听样式改变
+        el.on([
+            ...SupportEventNames,
+            ...ElementWatchEventNames
+        ], function (e) {
+            self.emit('elementChange', {
+                type: e.type,
+                data: {
+                    id: this.id,
+                    ...e.data
+                },
+                event: e.event || e,
+                target: this
+            });
+        });
+    }
+    // 通过ID获取子元素
+    getChild(id) {
+        for (const child of this.children) {
+            if (child.id === id)
+                return child;
+        }
     }
     // 设置css到dom
     setDomStyle(name, value) {
@@ -4373,6 +4427,30 @@ class JEditor extends JBaseComponent {
     bindEvent(dom) {
         if (this.view)
             super.bindEvent(this.view.dom); // 编辑器事件绑到整个容器上
+        // 监听子元素改变
+        this.on(['elementChange'], function (e) {
+            const isComponent = e.target instanceof JBaseComponent;
+            // 左健选中
+            if (e.type === 'mousedown' && isComponent) {
+                e.target.selected = true;
+                if (e.event?.button === 0)
+                    this.elementController.onDragStart(e.event);
+                e.event?.stopPropagation && e.event.stopPropagation();
+            }
+            // 选中状态改变
+            else if (e.type === 'select' && isComponent) {
+                this.select(e.target);
+            }
+            // 如果是字体依赖，则检查字体支持情况
+            else if (e.type === 'styleChange') {
+                // 字体发生改变，需要做check, 并加载字体生效
+                if (e.data.name === 'fontFamily' && e.data.value) {
+                    this.fonts.load(e.data.value).catch((e) => {
+                        console.error(e);
+                    }); // 异步加载字体
+                }
+            }
+        });
     }
     // 选中某个元素
     select(el) {
@@ -4407,73 +4485,8 @@ class JEditor extends JBaseComponent {
     }
     // 添加元素到画布
     addChild(child) {
-        if (child === this.target || child instanceof HTMLElement) {
-            return super.addChild(child);
-        }
-        this.bindElementEvent(child);
-        child.parent = this; // 把父设置成编辑器
         child.editor = this;
-        // 刷新样式
-        child.style.refresh();
-        child.editable = this.editable; // 当前是否可编辑
-        this.target.addChild(child, this.target);
-    }
-    // 移除
-    removeChild(el) {
-        if (el === this.target) {
-            //console.warn('不能移除自已');
-            return;
-        }
-        if (el instanceof JElement) {
-            el.off(SupportEventNames);
-            el.off(['select', 'styleChange', 'dataChange']);
-        }
-        return this.target.removeChild(el);
-    }
-    // 绑定元素事件
-    bindElementEvent(el) {
-        const self = this;
-        // 监听样式改变
-        el.on([
-            ...SupportEventNames,
-            'styleChange', 'select', 'dataChange'
-        ], function (e) {
-            // 左健选中
-            if (e.type === 'mousedown') {
-                this.selected = true;
-                if (e.button === 0)
-                    self.elementController.onDragStart(e);
-            }
-            // 选中状态改变
-            else if (e.type === 'select') {
-                self.select(this);
-            }
-            // 如果是字体依赖，则检查字体支持情况
-            else if (e.type === 'styleChange') {
-                // 字体发生改变，需要做check, 并加载字体生效
-                if (e.data.name === 'fontFamily' && e.data.value) {
-                    self.fonts.load(e.data.value).catch((e) => {
-                        console.error(e);
-                    }); // 异步加载字体
-                }
-            }
-            self.emit('elementChange', {
-                type: e.type,
-                data: {
-                    id: this.id,
-                    ...e.data
-                },
-                event: e,
-                target: this
-            });
-        });
-    }
-    // 通过ID获取子元素
-    getChild(id) {
-        for (const child of this.children) {
-            if (child.id === id)
-                return child;
-        }
+        return super.addChild(child);
     }
     // 把domcument坐标转为编辑器相对坐标
     toEditorPosition(pos, dom = this.target.dom) {

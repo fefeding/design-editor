@@ -1,6 +1,8 @@
 export const SupportEventNames = [
     'mousedown', 'mouseup', 'mouseover', 'mousemove', 'mouseout', 'mouseleave', 'mousewheel', 'click', 'dblclick', 'keydown', 'keypress', 'keyup', 'blur', 'change', 'focus', 'drag', 'dragenter', 'dragleave', 'dragover', 'dragstart', 'drop', 'contextmenu'
 ];
+// 元素监听的自定议事件
+export const ElementWatchEventNames = ['select', 'styleChange', 'dataChange', 'elementChange', 'childAdded'];
 /**
  * @public
  */

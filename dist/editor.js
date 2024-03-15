@@ -14,7 +14,6 @@ import JController from './core/controller';
 import JFonts from './core/fonts';
 import { Debounce } from './lib/decorator';
 import { editorDefaultCssContent } from './constant/styleMap';
-import { SupportEventNames } from './core/event';
 /**
  * @public
  */
@@ -119,6 +118,30 @@ export default class JEditor extends JBase {
     bindEvent(dom) {
         if (this.view)
             super.bindEvent(this.view.dom); // 编辑器事件绑到整个容器上
+        // 监听子元素改变
+        this.on(['elementChange'], function (e) {
+            const isComponent = e.target instanceof JBase;
+            // 左健选中
+            if (e.type === 'mousedown' && isComponent) {
+                e.target.selected = true;
+                if (e.event?.button === 0)
+                    this.elementController.onDragStart(e.event);
+                e.event?.stopPropagation && e.event.stopPropagation();
+            }
+            // 选中状态改变
+            else if (e.type === 'select' && isComponent) {
+                this.select(e.target);
+            }
+            // 如果是字体依赖，则检查字体支持情况
+            else if (e.type === 'styleChange') {
+                // 字体发生改变，需要做check, 并加载字体生效
+                if (e.data.name === 'fontFamily' && e.data.value) {
+                    this.fonts.load(e.data.value).catch((e) => {
+                        console.error(e);
+                    }); // 异步加载字体
+                }
+            }
+        });
     }
     // 选中某个元素
     select(el) {
@@ -153,73 +176,8 @@ export default class JEditor extends JBase {
     }
     // 添加元素到画布
     addChild(child) {
-        if (child === this.target || child instanceof HTMLElement) {
-            return super.addChild(child);
-        }
-        this.bindElementEvent(child);
-        child.parent = this; // 把父设置成编辑器
         child.editor = this;
-        // 刷新样式
-        child.style.refresh();
-        child.editable = this.editable; // 当前是否可编辑
-        this.target.addChild(child, this.target);
-    }
-    // 移除
-    removeChild(el) {
-        if (el === this.target) {
-            //console.warn('不能移除自已');
-            return;
-        }
-        if (el instanceof JElement) {
-            el.off(SupportEventNames);
-            el.off(['select', 'styleChange', 'dataChange']);
-        }
-        return this.target.removeChild(el);
-    }
-    // 绑定元素事件
-    bindElementEvent(el) {
-        const self = this;
-        // 监听样式改变
-        el.on([
-            ...SupportEventNames,
-            'styleChange', 'select', 'dataChange'
-        ], function (e) {
-            // 左健选中
-            if (e.type === 'mousedown') {
-                this.selected = true;
-                if (e.button === 0)
-                    self.elementController.onDragStart(e);
-            }
-            // 选中状态改变
-            else if (e.type === 'select') {
-                self.select(this);
-            }
-            // 如果是字体依赖，则检查字体支持情况
-            else if (e.type === 'styleChange') {
-                // 字体发生改变，需要做check, 并加载字体生效
-                if (e.data.name === 'fontFamily' && e.data.value) {
-                    self.fonts.load(e.data.value).catch((e) => {
-                        console.error(e);
-                    }); // 异步加载字体
-                }
-            }
-            self.emit('elementChange', {
-                type: e.type,
-                data: {
-                    id: this.id,
-                    ...e.data
-                },
-                event: e,
-                target: this
-            });
-        });
-    }
-    // 通过ID获取子元素
-    getChild(id) {
-        for (const child of this.children) {
-            if (child.id === id)
-                return child;
-        }
+        return super.addChild(child);
     }
     // 把domcument坐标转为编辑器相对坐标
     toEditorPosition(pos, dom = this.target.dom) {

@@ -2,6 +2,7 @@ import util from 'j-design-util';
 import CssFilterManager, { filters as cssFilters, IFilterManager } from 'j-css-filters';
 import { IJBaseComponent, IJElement } from '../constant/types';
 import { ContainerDefaultStyle } from '../constant/styleMap';
+import { SupportEventNames, ElementWatchEventNames } from '../core/event';
 import JElement from '../core/element';
 /**
  * @public
@@ -173,6 +174,62 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
             elements,
             level: preLevel
         };
+    }
+    
+    // 添加元素到画布
+    addChild(child: IJBaseComponent | IJElement | HTMLElement) {
+        if(child === this.target || child instanceof HTMLElement) {
+            return super.addChild(child);
+        }
+       
+        this.bindElementEvent(child);        
+        child.parent = this;// 把父设置成编辑器
+        child.editor = child.editor || this.editor;
+        child.editable = this.editable;// 当前是否可编辑
+        
+        // 刷新样式
+        child.style.refresh();
+        this.target.addChild(child, this);
+    }
+
+    // 移除
+    removeChild(el: IJElement|HTMLElement) {
+        if(el === this.target) {
+            //console.warn('不能移除自已');
+            return;
+        }
+        if(el instanceof JElement) {
+            el.off(SupportEventNames);
+            el.off(ElementWatchEventNames);
+        }
+        return this.target.removeChild(el);
+    }
+
+    // 绑定元素事件
+    protected bindElementEvent(el: IJElement) {
+        const self = this;
+        // 监听样式改变
+        el.on([
+            ...SupportEventNames,
+            ...ElementWatchEventNames
+        ], function(e) {
+            self.emit('elementChange', {
+                type: e.type,
+                data: {
+                    id: this.id,
+                    ...e.data
+                },
+                event: e.event || e,
+                target: this
+            });
+        });
+    }
+
+    // 通过ID获取子元素
+    getChild(id: string): IJElement|undefined {
+        for(const child of this.children) {
+            if(child.id === id) return child;
+        }
     }
 
     // 设置css到dom

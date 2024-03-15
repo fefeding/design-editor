@@ -65,7 +65,7 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 
 	// 元素发生改变事件
 	editor.on('elementChange', async (e) => {
-		if(e.type.includes('contextmenu'))console.log(e);
+		//console.log(e);
 		if(e.type === 'styleChange') {
     		// 字体发生改变，需要做check, 并加载字体生效
 			if(e.data.name === 'fontFamily') {
