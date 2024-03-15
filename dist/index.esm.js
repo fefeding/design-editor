@@ -3032,7 +3032,8 @@ class JElement extends JEventEmitter {
             return parent;
         }
         if (child instanceof JElement) {
-            child.parent = parent;
+            if (!child.parent)
+                child.parent = parent;
             // 如果没有指定层级，则新加的都在最大
             if (!child.data.zIndex || child.data.zIndex == 0) {
                 child.data.zIndex = this.childrenMaxLevel + 1;
@@ -3060,7 +3061,7 @@ class JElement extends JEventEmitter {
             el.selected = false;
         for (let i = this.children.length - 1; i > -1; i--) {
             if (this.children[i] === el)
-                return this.children.splice(i, 1);
+                this.children.splice(i, 1);
         }
         // @ts-ignore
         delete el.parent;
@@ -3289,7 +3290,7 @@ class JBaseComponent extends JElement {
         child.editable = this.editable; // 当前是否可编辑
         // 刷新样式
         child.style.refresh();
-        this.target.addChild(child, this);
+        this.target.addChild(child);
     }
     // 移除
     removeChild(el) {
@@ -3297,11 +3298,11 @@ class JBaseComponent extends JElement {
             //console.warn('不能移除自已');
             return;
         }
+        this.target.removeChild(el);
         if (el instanceof JElement) {
             el.off(SupportEventNames);
             el.off(ElementWatchEventNames);
         }
-        return this.target.removeChild(el);
     }
     // 绑定元素事件
     bindElementEvent(el) {

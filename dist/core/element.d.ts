@@ -44,7 +44,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     resize(w: any, h: any): void;
     addChild(child: IJElement | HTMLElement, parent?: IJElement): IJElement<HTMLElement>;
     remove(): void;
-    removeChild(el: IJElement | HTMLElement): IJElement<HTMLElement>[];
+    removeChild(el: IJElement | HTMLElement): void;
     toJSON(props?: any[], ig?: (p: IJElement) => boolean): IElementJSON;
     toString(): string;
     toHtml(): string;

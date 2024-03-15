@@ -189,7 +189,7 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
         
         // 刷新样式
         child.style.refresh();
-        this.target.addChild(child, this);
+        this.target.addChild(child);
     }
 
     // 移除
@@ -198,11 +198,13 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
             //console.warn('不能移除自已');
             return;
         }
+
+        this.target.removeChild(el);
+
         if(el instanceof JElement) {
             el.off(SupportEventNames);
             el.off(ElementWatchEventNames);
         }
-        return this.target.removeChild(el);
     }
 
     // 绑定元素事件

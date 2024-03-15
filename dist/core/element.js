@@ -214,7 +214,8 @@ export default class JElement extends EventEmiter {
             return parent;
         }
         if (child instanceof JElement) {
-            child.parent = parent;
+            if (!child.parent)
+                child.parent = parent;
             // 如果没有指定层级，则新加的都在最大
             if (!child.data.zIndex || child.data.zIndex == 0) {
                 child.data.zIndex = this.childrenMaxLevel + 1;
@@ -242,7 +243,7 @@ export default class JElement extends EventEmiter {
             el.selected = false;
         for (let i = this.children.length - 1; i > -1; i--) {
             if (this.children[i] === el)
-                return this.children.splice(i, 1);
+                this.children.splice(i, 1);
         }
         // @ts-ignore
         delete el.parent;

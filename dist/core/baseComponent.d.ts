@@ -23,7 +23,7 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
     private getMyNextLevelChildren;
     private getMyPreLevelChildren;
     addChild(child: IJBaseComponent | IJElement | HTMLElement): IJElement<HTMLElement>;
-    removeChild(el: IJElement | HTMLElement): IJElement<HTMLElement>[];
+    removeChild(el: IJElement | HTMLElement): void;
     protected bindElementEvent(el: IJElement): void;
     getChild(id: string): IJElement | undefined;
     setDomStyle(name: string, value: string): void;

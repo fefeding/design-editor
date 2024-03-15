@@ -181,7 +181,7 @@ export default class JBaseComponent extends JElement {
         child.editable = this.editable; // 当前是否可编辑
         // 刷新样式
         child.style.refresh();
-        this.target.addChild(child, this);
+        this.target.addChild(child);
     }
     // 移除
     removeChild(el) {
@@ -189,11 +189,11 @@ export default class JBaseComponent extends JElement {
             //console.warn('不能移除自已');
             return;
         }
+        this.target.removeChild(el);
         if (el instanceof JElement) {
             el.off(SupportEventNames);
             el.off(ElementWatchEventNames);
         }
-        return this.target.removeChild(el);
     }
     // 绑定元素事件
     bindElementEvent(el) {
