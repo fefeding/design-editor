@@ -45,6 +45,12 @@ export interface IJFonts extends EventEmitter {
     fonts: Map<string, IJFontFace>;
 
     /**
+     * 注入字体配置
+     * @param font 字体
+     */
+    registry(font: IJFontData | Array<IJFontData>);
+
+    /**
      * 检查指定的字体是否已加载
      * @param name - 字体名称
      * @returns - 如果字体已经加载，返回true，否则返回false

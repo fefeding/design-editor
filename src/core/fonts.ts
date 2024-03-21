@@ -39,19 +39,17 @@ export default class JFonts extends EventEmiter implements IJFonts {
         super();
         // 初始化默认支持的字体
         if(Array.isArray(fonts)) {
-            for(const f of fonts) {
-                this.fontConfigs.set(f.family.toLocaleLowerCase(), f);
-            }
+            this.registry(fonts);
         }
         else if(fonts) {
             for(const name in fonts) {
-                if(fonts[name] && typeof fonts[name] === 'object') this.fontConfigs.set(fonts[name].family.toLocaleLowerCase(), fonts[name]);
+                if(fonts[name] && typeof fonts[name] === 'object') this.registry(fonts[name]);
             }
         }
         this.init();
     }
 
-    fontConfigs = new Map<string, IJFontData>();
+    protected fontConfigs = new Map<string, IJFontData>();
 
     fonts = new Map<string, IJFontFace>();
 
@@ -72,6 +70,21 @@ export default class JFonts extends EventEmiter implements IJFonts {
         this.fonts.set('arial', new JFontData('Arial', '', new FontFace('Arial', '')));
     }
 
+    /**
+     * 注入字体配置
+     * @param font 字体
+     */
+    registry(font: IJFontData | Array<IJFontData>) {
+        // 初始化默认支持的字体
+        if(Array.isArray(font)) {
+            for(const f of font) {
+                this.registry(f);
+            }
+        }
+        else if(font) {
+            this.fontConfigs.set(font.family.toLocaleLowerCase(), font);
+        }
+    }
 
     // 加载字体
     async load(name: string, url?: string): Promise<IJFontFace> {
