@@ -1,6 +1,6 @@
 import util from 'j-design-util';
 import CssFilterManager, { filters as cssFilters, IFilterManager } from 'j-css-filters';
-import { IJBaseComponent, IJElement } from '../constant/types';
+import { IElementOption, IJBaseComponent, IJElement } from '../constant/types';
 import { ContainerDefaultStyle } from '../constant/styleMap';
 import { SupportEventNames, ElementWatchEventNames } from '../core/event';
 import JElement from '../core/element';
@@ -8,7 +8,7 @@ import JElement from '../core/element';
  * @public
  */
 export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends JElement<T> implements IJBaseComponent {
-    constructor(option = {} as any) {
+    constructor(option = {} as IElementOption) {
         option.style = option.style || {};
         // position和overflow预设的值优先级最高
         option.style = Object.assign({...ContainerDefaultStyle}, option.style, {
@@ -20,7 +20,6 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
             transformWatchProps: null,
             nodeType: 'div',
             className: 'j-design-editor-container',
-            isComponent: true
         });
         
         this.componentType = new.target;
@@ -38,6 +37,9 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
                 height: '100%',     
             }
         };
+        // 是否可以移动
+        if(typeof option.moveable === 'boolean') this.moveable = option.moveable;
+
         if(!targetOption.nodeType) targetOption.nodeType = option.nodeType;
         // 生成当前控制的元素
         this.target = new JElement<T>(targetOption);
@@ -74,6 +76,11 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
     get typeName(): string {
         return 'base';
     }
+
+    /**
+     * 是否支持移动
+     */
+    moveable: boolean = true;
 
     /**
      * 当前组件new指向的class，可用于复制
@@ -231,6 +238,11 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
     getChild(id: string): IJElement|undefined {
         for(const child of this.children) {
             if(child.id === id) return child;
+            // 如果子元素也是一个element，则也轮循它的子元素。
+            if(child instanceof JBaseComponent) {
+                const el = child.getChild(id);
+                if(el) return el;
+            }
         }
     }
 

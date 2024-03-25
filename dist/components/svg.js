@@ -5,7 +5,7 @@ export default class JSvg extends Base {
     constructor(option = {}) {
         super({
             ...option,
-            dataType: JSvgData
+            dataType: option.dataType || JSvgData
         });
         // 属性变化映射到style
         this.data.watch([

@@ -40,7 +40,7 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
         super({
             ...option,
             nodeType: 'div',
-            dataType: JTextData
+            dataType: option.dataType || JTextData
         });
 
         // 'text' 属性变化映射到 innerText

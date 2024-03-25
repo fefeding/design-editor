@@ -34,7 +34,7 @@ export default class JText extends Base {
         super({
             ...option,
             nodeType: 'div',
-            dataType: JTextData
+            dataType: option.dataType || JTextData
         });
         // 'text' 属性变化映射到 innerText
         this.data.watch([

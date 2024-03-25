@@ -1,5 +1,5 @@
 import { Point, ItemType, ControllerCursorData } from 'j-design-util';
-import { IFilterManager } from 'j-css-filters';
+import { IFilter, IFilterManager } from 'j-css-filters';
 import JElementCssStyle, { IJElementStyleDeclaration } from './styleMap';
 import { JElementData, JTextData, JImageData, IJElementData, IJTexteData, IJImageData, IJFontData, JSvgData, IJSvgData } from './data';
 import type EventEmitter from 'j-eventemitter';
@@ -82,7 +82,7 @@ export interface IElementOption<T extends IJElementData = IJElementData> {
     // transform监听的属性，表示只采用指定的属性，如果全需要请不要设置
     transformWatchProps?: string[];
     // data绑定的类型
-    dataType?: JElementData;
+    dataType?: any;
     // 默认样式名
     className?: string;
     // 样式
@@ -91,10 +91,21 @@ export interface IElementOption<T extends IJElementData = IJElementData> {
     visible?: boolean;
     // 是否可以编辑
     editable?: boolean;
+    /**
+     * 是否支持移动
+     */
+    moveable?: boolean;
+
     // 初始属性值
     data?: T;
     // 变换属性
     transform?: IStyleTransform;
+
+    // 目标元素配置项
+    target?: IElementOption;
+
+    // 滤镜
+    filters?: IFilter[];
 }
 /**
  * 文本选项接口
@@ -353,6 +364,11 @@ export interface IJBaseComponent<T extends HTMLElement = HTMLElement> extends IJ
      * 类型名称
      */
     get typeName(): string;
+
+    /**
+     * 是否支持移动
+     */
+    moveable: boolean;
 
     get selected(): boolean;
     set selected(v: boolean);

@@ -16,7 +16,7 @@ export default class JImage extends Base<HTMLImageElement> implements IJImageCom
         super({
             ...option,
             nodeType: 'img',
-            dataType: JImageData
+            dataType: option.dataType || JImageData
         });
 
         // 图像加载完成时触发 'load' 事件

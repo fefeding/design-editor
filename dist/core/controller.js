@@ -428,15 +428,29 @@ export default class JControllerComponent extends JControllerItem {
         }
         // 位移 
         if (args.x || args.y) {
-            this.move(args.x, args.y);
+            // 只有没锁定才可以移动
+            if (this.target.moveable)
+                this.move(args.x, args.y);
         }
         if (args.width) {
-            const width = util.toNumber(this.data.width) + args.width;
+            const oldWidth = util.toNumber(this.data.width);
+            const width = oldWidth + args.width;
             this.data.width = Math.max(Number(width.toFixed(2)), 1);
+            // 如果是编辑器，且不支持移动， 则需要保持居中，移动一半大小改变一半
+            if (!this.target.moveable && this.isEditor) {
+                const offx = this.data.width - oldWidth;
+                this.move(-offx / 2, 0);
+            }
         }
         if (args.height) {
-            const height = util.toNumber(this.data.height) + args.height;
+            const oldHeight = util.toNumber(this.data.height);
+            const height = oldHeight + args.height;
             this.data.height = Math.max(Number(height.toFixed(2)), 1);
+            // 如果是编辑器，且不支持移动， 则需要保持居中，移动一半大小改变一半
+            if (!this.target.moveable && this.isEditor) {
+                const offy = this.data.height - oldHeight;
+                this.move(0, -offy / 2);
+            }
         }
         // x,y旋转
         if (args.skew.x || args.skew.y) {
@@ -488,11 +502,13 @@ export default class JControllerComponent extends JControllerItem {
     }
     // 移动
     move(dx, dy) {
-        // 如果有多选，则移动多个
-        const selectedElements = this.editor.selectedElements;
-        if (selectedElements.length) {
-            for (const el of selectedElements) {
-                el.move(dx, dy);
+        if (!this.isEditor) {
+            // 如果有多选，则移动多个
+            const selectedElements = this.editor.selectedElements;
+            if (selectedElements.length) {
+                for (const el of selectedElements) {
+                    el.move(dx, dy);
+                }
             }
         }
         else if (this.target)

@@ -19,7 +19,6 @@ export default class JBaseComponent extends JElement {
             transformWatchProps: null,
             nodeType: 'div',
             className: 'j-design-editor-container',
-            isComponent: true
         });
         this.componentType = new.target;
         option.target = option.target || {};
@@ -35,6 +34,9 @@ export default class JBaseComponent extends JElement {
                 height: '100%',
             }
         };
+        // 是否可以移动
+        if (typeof option.moveable === 'boolean')
+            this.moveable = option.moveable;
         if (!targetOption.nodeType)
             targetOption.nodeType = option.nodeType;
         // 生成当前控制的元素
@@ -65,6 +67,10 @@ export default class JBaseComponent extends JElement {
     get typeName() {
         return 'base';
     }
+    /**
+     * 是否支持移动
+     */
+    moveable = true;
     /**
      * 当前组件new指向的class，可用于复制
      */
@@ -219,6 +225,12 @@ export default class JBaseComponent extends JElement {
         for (const child of this.children) {
             if (child.id === id)
                 return child;
+            // 如果子元素也是一个element，则也轮循它的子元素。
+            if (child instanceof JBaseComponent) {
+                const el = child.getChild(id);
+                if (el)
+                    return el;
+            }
         }
     }
     // 设置css到dom

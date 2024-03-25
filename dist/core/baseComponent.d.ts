@@ -1,17 +1,21 @@
 import { IFilterManager } from 'j-css-filters';
-import { IJBaseComponent, IJElement } from '../constant/types';
+import { IElementOption, IJBaseComponent, IJElement } from '../constant/types';
 import JElement from '../core/element';
 /**
  * @public
  */
 export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends JElement<T> implements IJBaseComponent {
-    constructor(option?: any);
+    constructor(option?: IElementOption<import("..").IJElementData>);
     target: IJElement<T>;
     filters: IFilterManager;
     /**
      * 类型名称
      */
     get typeName(): string;
+    /**
+     * 是否支持移动
+     */
+    moveable: boolean;
     /**
      * 当前组件new指向的class，可用于复制
      */

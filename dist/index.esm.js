@@ -3128,7 +3128,6 @@ class JBaseComponent extends JElement {
             transformWatchProps: null,
             nodeType: 'div',
             className: 'j-design-editor-container',
-            isComponent: true
         });
         this.componentType = new.target;
         option.target = option.target || {};
@@ -3144,6 +3143,9 @@ class JBaseComponent extends JElement {
                 height: '100%',
             }
         };
+        // 是否可以移动
+        if (typeof option.moveable === 'boolean')
+            this.moveable = option.moveable;
         if (!targetOption.nodeType)
             targetOption.nodeType = option.nodeType;
         // 生成当前控制的元素
@@ -3174,6 +3176,10 @@ class JBaseComponent extends JElement {
     get typeName() {
         return 'base';
     }
+    /**
+     * 是否支持移动
+     */
+    moveable = true;
     /**
      * 当前组件new指向的class，可用于复制
      */
@@ -3328,6 +3334,12 @@ class JBaseComponent extends JElement {
         for (const child of this.children) {
             if (child.id === id)
                 return child;
+            // 如果子元素也是一个element，则也轮循它的子元素。
+            if (child instanceof JBaseComponent) {
+                const el = child.getChild(id);
+                if (el)
+                    return el;
+            }
         }
     }
     // 设置css到dom
@@ -3397,7 +3409,7 @@ class JText extends JBaseComponent {
         super({
             ...option,
             nodeType: 'div',
-            dataType: JTextData
+            dataType: option.dataType || JTextData
         });
         // 'text' 属性变化映射到 innerText
         this.data.watch([
@@ -3496,7 +3508,7 @@ class JImage extends JBaseComponent {
         super({
             ...option,
             nodeType: 'img',
-            dataType: JImageData
+            dataType: option.dataType || JImageData
         });
         // 图像加载完成时触发 'load' 事件
         this.target.dom.onload = (e) => {
@@ -3575,7 +3587,7 @@ class JSvg extends JBaseComponent {
     constructor(option = {}) {
         super({
             ...option,
-            dataType: JSvgData
+            dataType: option.dataType || JSvgData
         });
         // 属性变化映射到style
         this.data.watch([
@@ -4041,15 +4053,29 @@ class JControllerComponent extends JControllerItem {
         }
         // 位移 
         if (args.x || args.y) {
-            this.move(args.x, args.y);
+            // 只有没锁定才可以移动
+            if (this.target.moveable)
+                this.move(args.x, args.y);
         }
         if (args.width) {
-            const width = util.toNumber(this.data.width) + args.width;
+            const oldWidth = util.toNumber(this.data.width);
+            const width = oldWidth + args.width;
             this.data.width = Math.max(Number(width.toFixed(2)), 1);
+            // 如果是编辑器，且不支持移动， 则需要保持居中，移动一半大小改变一半
+            if (!this.target.moveable && this.isEditor) {
+                const offx = this.data.width - oldWidth;
+                this.move(-offx / 2, 0);
+            }
         }
         if (args.height) {
-            const height = util.toNumber(this.data.height) + args.height;
+            const oldHeight = util.toNumber(this.data.height);
+            const height = oldHeight + args.height;
             this.data.height = Math.max(Number(height.toFixed(2)), 1);
+            // 如果是编辑器，且不支持移动， 则需要保持居中，移动一半大小改变一半
+            if (!this.target.moveable && this.isEditor) {
+                const offy = this.data.height - oldHeight;
+                this.move(0, -offy / 2);
+            }
         }
         // x,y旋转
         if (args.skew.x || args.skew.y) {
@@ -4101,11 +4127,13 @@ class JControllerComponent extends JControllerItem {
     }
     // 移动
     move(dx, dy) {
-        // 如果有多选，则移动多个
-        const selectedElements = this.editor.selectedElements;
-        if (selectedElements.length) {
-            for (const el of selectedElements) {
-                el.move(dx, dy);
+        if (!this.isEditor) {
+            // 如果有多选，则移动多个
+            const selectedElements = this.editor.selectedElements;
+            if (selectedElements.length) {
+                for (const el of selectedElements) {
+                    el.move(dx, dy);
+                }
             }
         }
         else if (this.target)

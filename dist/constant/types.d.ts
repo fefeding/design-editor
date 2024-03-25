@@ -1,5 +1,5 @@
 import { Point, ItemType, ControllerCursorData } from 'j-design-util';
-import { IFilterManager } from 'j-css-filters';
+import { IFilter, IFilterManager } from 'j-css-filters';
 import JElementCssStyle, { IJElementStyleDeclaration } from './styleMap';
 import { JElementData, JTextData, JImageData, IJElementData, IJTexteData, IJImageData, IJFontData, JSvgData, IJSvgData } from './data';
 import type EventEmitter from 'j-eventemitter';
@@ -62,13 +62,19 @@ export interface IElementOption<T extends IJElementData = IJElementData> {
     type?: string;
     editor?: IJEditor;
     transformWatchProps?: string[];
-    dataType?: JElementData;
+    dataType?: any;
     className?: string;
     style?: IJElementStyleDeclaration;
     visible?: boolean;
     editable?: boolean;
+    /**
+     * 是否支持移动
+     */
+    moveable?: boolean;
     data?: T;
     transform?: IStyleTransform;
+    target?: IElementOption;
+    filters?: IFilter[];
 }
 /**
  * 文本选项接口
@@ -293,6 +299,10 @@ export interface IJBaseComponent<T extends HTMLElement = HTMLElement> extends IJ
      * 类型名称
      */
     get typeName(): string;
+    /**
+     * 是否支持移动
+     */
+    moveable: boolean;
     get selected(): boolean;
     set selected(v: boolean);
     filters: IFilterManager;

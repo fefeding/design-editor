@@ -21,6 +21,7 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 			height: 600,
 		},
 		// editable: false,
+		moveable: false, // 锁定编辑器不支持移动
 		style: {
 			backgroundColor: '#fff',
 			containerBackgroundColor: '#eee'
