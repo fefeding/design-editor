@@ -25,9 +25,9 @@ export default class JEditor extends JBase implements IJEditor {
             'backgroundSize': '100% 100%',            
         });
         // @ts-ignore 外层只响应Z轴旋转
-        option.transformWatchProps = [
+        /*option.transformWatchProps = [
             'rotateZ', 'scaleX', 'scaleY'
-        ];
+        ];*/
         super(option);
         if(typeof option.container === 'string') option.container = document.getElementById( option.container);
         this.view = new JElement<HTMLDivElement>({
@@ -99,6 +99,12 @@ export default class JEditor extends JBase implements IJEditor {
                 this.sizeChange();
             }
         });
+
+        // 编辑器只支持保留 部分样式
+        this.style.styleSaveMap = [
+            'backgroundColor',
+            'backgroundImage'
+        ]
     }
 
     /**
@@ -202,8 +208,7 @@ export default class JEditor extends JBase implements IJEditor {
 
     @Debounce(10)
     resize(width=this.data.width, height=this.data.height) {
-        this.data.left = Math.max((util.toNumber(this.view.dom.clientWidth) - util.toNumber(width)) / 2, 0);
-        this.data.top = Math.max((util.toNumber(this.view.dom.clientHeight) - util.toNumber(height)) / 2, 0);
+
         this.data.width = width;
         this.data.height = height; 
         this.sizeChange(width, height);
@@ -280,7 +285,7 @@ export default class JEditor extends JBase implements IJEditor {
 
     fromJSON(data) {
         this.clear();
-        if(typeof data === 'string') data = JSON.parse(data);
+        //if(typeof data === 'string') data = JSON.parse(data);
         if(data.style) {
             this.style.apply(data.style);// 应用样式
         }

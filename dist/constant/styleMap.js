@@ -914,6 +914,8 @@ export default class JElementCssStyle extends JElementStyleDeclaration {
         }
         return JElementCssStyle.styleNamesMap;
     }
+    // 可以保存的样式白名单
+    styleSaveMap;
 }
 // 最外层容器默认样式
 export const ContainerDefaultStyle = {
@@ -925,7 +927,15 @@ export const ContainerDefaultStyle = {
     right: 'auto',
     bottom: 'auto',
     padding: '0',
+    "paddingTop": '0',
+    "paddingLeft": '0',
+    "paddingRight": '0',
+    "paddingBottom": '0',
     margin: '0',
+    "marginTop": '0',
+    "marginLeft": '0',
+    "marginRight": '0',
+    "marginBottom": '0',
     zIndex: '0',
     display: 'inline-block',
     overflow: 'visible'

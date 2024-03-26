@@ -2,16 +2,23 @@ import JElementCssStyle from '../constant/styleMap';
 import util from 'j-design-util';
 const NumberStyleMap = ['left', 'top', 'right', 'bottom', 'width', 'height'];
 export default class JElementStyle extends JElementCssStyle {
-    constructor(option) {
+    constructor(option, maps = []) {
         super();
         if (option) {
-            this.apply(option);
+            this.apply(option, this, maps);
         }
+        this.styleSaveMap = maps;
     }
+    // 保存的白名单列表, 如果指定了，则不在白名单内的就不会tojson
+    styleSaveMap = [];
     // 把样式应用到元素或当前对象
-    apply(data, target = this) {
+    apply(data, target = this, maps = this.styleSaveMap) {
+        target = target || this;
         for (const name of this.names) {
             if (typeof name !== 'string')
+                continue;
+            // 如果指定了白名单，不包含则不采用
+            if (maps && maps.length && !maps.includes(name))
                 continue;
             if (typeof data[name] === 'string' || typeof data[name] === 'number') {
                 if (target instanceof JElementStyle) {
@@ -41,9 +48,12 @@ export default class JElementStyle extends JElementCssStyle {
         this.apply(this);
     }
     // 转为json
-    toJSON() {
+    toJSON(maps = this.styleSaveMap) {
         const obj = {};
         for (const name of this.names) {
+            // 如果不在白名单内则不处理
+            if (maps && maps.length && !maps.includes(name))
+                continue;
             if (typeof this[name] === 'undefined')
                 continue;
             obj[name] = this[name];
@@ -51,8 +61,8 @@ export default class JElementStyle extends JElementCssStyle {
         return obj;
     }
     // 生成样式代理
-    static createProxy(style = {}) {
-        const jstyle = new JElementStyle(style);
+    static createProxy(style = {}, maps = []) {
+        const jstyle = new JElementStyle(style, maps);
         // 样式代理处理
         const proxy = new Proxy(jstyle, {
             get(target, p, receiver) {

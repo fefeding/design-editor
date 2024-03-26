@@ -923,8 +923,11 @@ export default abstract class JElementCssStyle extends JElementStyleDeclaration 
         return JElementCssStyle.styleNamesMap;
     }
 
+    // 可以保存的样式白名单
+    styleSaveMap: Array<string>;
+
     // 把样式应用到元素或当前对象
-    abstract apply(data: JElementStyleDeclaration, target?: CSSStyleDeclaration | JElementStyleDeclaration);
+    abstract apply(data: JElementStyleDeclaration, target?: CSSStyleDeclaration | JElementStyleDeclaration, maps?: Array<string>);
 
     // 样式对应的元素
     abstract applyTo(element: HTMLElement);
@@ -949,7 +952,15 @@ export const ContainerDefaultStyle = {
     right: 'auto',
     bottom: 'auto',
     padding: '0',
+    "paddingTop": '0',
+    "paddingLeft": '0',
+    "paddingRight": '0',
+    "paddingBottom": '0',
     margin: '0',
+    "marginTop": '0',
+    "marginLeft": '0',
+    "marginRight": '0',
+    "marginBottom": '0',
     zIndex: '0',
     display: 'inline-block',
     overflow: 'visible'

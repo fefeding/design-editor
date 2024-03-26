@@ -4,18 +4,25 @@ import util from 'j-design-util';
 const NumberStyleMap = ['left', 'top', 'right', 'bottom', 'width', 'height'];
 
 export default class JElementStyle extends JElementCssStyle {
-    constructor(option?: IJElementStyleDeclaration) {
+    constructor(option?: IJElementStyleDeclaration, maps: Array<string> = []) {
         super();
         if(option) {            
-            this.apply(option);
+            this.apply(option, this, maps);
         }
+        this.styleSaveMap = maps;
     }
 
+    // 保存的白名单列表, 如果指定了，则不在白名单内的就不会tojson
+    public styleSaveMap = [];
+
     // 把样式应用到元素或当前对象
-    apply(data: IJElementStyleDeclaration, target: CSSStyleDeclaration | JElementStyleDeclaration = this) {
-        
+    apply(data: IJElementStyleDeclaration, target: CSSStyleDeclaration | JElementStyleDeclaration = this, maps: Array<string> = this.styleSaveMap) {
+        target = target || this;
         for(const name of this.names) {
             if(typeof name !== 'string') continue;
+            // 如果指定了白名单，不包含则不采用
+            if(maps && maps.length && !maps.includes(name)) continue;
+
             if(typeof data[name] === 'string' || typeof data[name] === 'number') {
                 if(target instanceof JElementStyle) {
                     target.setStyle(name, data[name]);
@@ -48,9 +55,11 @@ export default class JElementStyle extends JElementCssStyle {
     }
 
     // 转为json
-    toJSON() {
+    toJSON(maps: Array<string> = this.styleSaveMap) {
         const obj = {} as JElementStyleProperty;
         for(const name of this.names) {
+            // 如果不在白名单内则不处理
+            if(maps && maps.length && !maps.includes(name)) continue;
             if(typeof this[name] === 'undefined') continue;
             obj[name] = this[name];
         }
@@ -58,8 +67,8 @@ export default class JElementStyle extends JElementCssStyle {
     }
 
     // 生成样式代理
-    static createProxy(style: any = {}) {
-        const jstyle = new JElementStyle(style);
+    static createProxy(style: any = {}, maps = []) {
+        const jstyle = new JElementStyle(style, maps);
         // 样式代理处理
         const proxy = new Proxy<JElementStyle>(jstyle, {
             get(target, p, receiver) {

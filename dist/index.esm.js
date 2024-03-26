@@ -2309,6 +2309,8 @@ class JElementCssStyle extends JElementStyleDeclaration {
         }
         return JElementCssStyle.styleNamesMap;
     }
+    // 可以保存的样式白名单
+    styleSaveMap;
 }
 // 最外层容器默认样式
 const ContainerDefaultStyle = {
@@ -2320,7 +2322,15 @@ const ContainerDefaultStyle = {
     right: 'auto',
     bottom: 'auto',
     padding: '0',
+    "paddingTop": '0',
+    "paddingLeft": '0',
+    "paddingRight": '0',
+    "paddingBottom": '0',
     margin: '0',
+    "marginTop": '0',
+    "marginLeft": '0',
+    "marginRight": '0',
+    "marginBottom": '0',
     zIndex: '0',
     display: 'inline-block',
     overflow: 'visible'
@@ -2572,16 +2582,23 @@ class Transform extends JEventEmitter {
 
 const NumberStyleMap = ['left', 'top', 'right', 'bottom', 'width', 'height'];
 class JElementStyle extends JElementCssStyle {
-    constructor(option) {
+    constructor(option, maps = []) {
         super();
         if (option) {
-            this.apply(option);
+            this.apply(option, this, maps);
         }
+        this.styleSaveMap = maps;
     }
+    // 保存的白名单列表, 如果指定了，则不在白名单内的就不会tojson
+    styleSaveMap = [];
     // 把样式应用到元素或当前对象
-    apply(data, target = this) {
+    apply(data, target = this, maps = this.styleSaveMap) {
+        target = target || this;
         for (const name of this.names) {
             if (typeof name !== 'string')
+                continue;
+            // 如果指定了白名单，不包含则不采用
+            if (maps && maps.length && !maps.includes(name))
                 continue;
             if (typeof data[name] === 'string' || typeof data[name] === 'number') {
                 if (target instanceof JElementStyle) {
@@ -2611,9 +2628,12 @@ class JElementStyle extends JElementCssStyle {
         this.apply(this);
     }
     // 转为json
-    toJSON() {
+    toJSON(maps = this.styleSaveMap) {
         const obj = {};
         for (const name of this.names) {
+            // 如果不在白名单内则不处理
+            if (maps && maps.length && !maps.includes(name))
+                continue;
             if (typeof this[name] === 'undefined')
                 continue;
             obj[name] = this[name];
@@ -2621,8 +2641,8 @@ class JElementStyle extends JElementCssStyle {
         return obj;
     }
     // 生成样式代理
-    static createProxy(style = {}) {
-        const jstyle = new JElementStyle(style);
+    static createProxy(style = {}, maps = []) {
+        const jstyle = new JElementStyle(style, maps);
         // 样式代理处理
         const proxy = new Proxy(jstyle, {
             get(target, p, receiver) {
@@ -4062,20 +4082,20 @@ class JControllerComponent extends JControllerItem {
             const width = oldWidth + args.width;
             this.data.width = Math.max(Number(width.toFixed(2)), 1);
             // 如果是编辑器，且不支持移动， 则需要保持居中，移动一半大小改变一半
-            if (!this.target.moveable && this.isEditor) {
+            /*if(!this.target.moveable && this.isEditor) {
                 const offx = this.data.width - oldWidth;
-                this.move(-offx / 2, 0);
-            }
+                this.move(-offx/2, 0);
+            }*/
         }
         if (args.height) {
             const oldHeight = util.toNumber(this.data.height);
             const height = oldHeight + args.height;
             this.data.height = Math.max(Number(height.toFixed(2)), 1);
             // 如果是编辑器，且不支持移动， 则需要保持居中，移动一半大小改变一半
-            if (!this.target.moveable && this.isEditor) {
+            /*if(!this.target.moveable && this.isEditor) {
                 const offy = this.data.height - oldHeight;
-                this.move(0, -offy / 2);
-            }
+                this.move(0, -offy/2);
+            }*/
         }
         // x,y旋转
         if (args.skew.x || args.skew.y) {
@@ -4404,9 +4424,9 @@ class JEditor extends JBaseComponent {
             'backgroundSize': '100% 100%',
         });
         // @ts-ignore 外层只响应Z轴旋转
-        option.transformWatchProps = [
+        /*option.transformWatchProps = [
             'rotateZ', 'scaleX', 'scaleY'
-        ];
+        ];*/
         super(option);
         if (typeof option.container === 'string')
             option.container = document.getElementById(option.container);
@@ -4469,6 +4489,11 @@ class JEditor extends JBaseComponent {
                 this.sizeChange();
             }
         });
+        // 编辑器只支持保留 部分样式
+        this.style.styleSaveMap = [
+            'backgroundColor',
+            'backgroundImage'
+        ];
     }
     /**
      * 类型名称
@@ -4563,8 +4588,6 @@ class JEditor extends JBaseComponent {
         }
     }
     resize(width = this.data.width, height = this.data.height) {
-        this.data.left = Math.max((util.toNumber(this.view.dom.clientWidth) - util.toNumber(width)) / 2, 0);
-        this.data.top = Math.max((util.toNumber(this.view.dom.clientHeight) - util.toNumber(height)) / 2, 0);
         this.data.width = width;
         this.data.height = height;
         this.sizeChange(width, height);
@@ -4633,8 +4656,7 @@ class JEditor extends JBaseComponent {
     }
     fromJSON(data) {
         this.clear();
-        if (typeof data === 'string')
-            data = JSON.parse(data);
+        //if(typeof data === 'string') data = JSON.parse(data);
         if (data.style) {
             this.style.apply(data.style); // 应用样式
         }

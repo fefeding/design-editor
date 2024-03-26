@@ -437,20 +437,20 @@ export default class JControllerComponent extends JControllerItem {
             const width = oldWidth + args.width;
             this.data.width = Math.max(Number(width.toFixed(2)), 1);
             // 如果是编辑器，且不支持移动， 则需要保持居中，移动一半大小改变一半
-            if (!this.target.moveable && this.isEditor) {
+            /*if(!this.target.moveable && this.isEditor) {
                 const offx = this.data.width - oldWidth;
-                this.move(-offx / 2, 0);
-            }
+                this.move(-offx/2, 0);
+            }*/
         }
         if (args.height) {
             const oldHeight = util.toNumber(this.data.height);
             const height = oldHeight + args.height;
             this.data.height = Math.max(Number(height.toFixed(2)), 1);
             // 如果是编辑器，且不支持移动， 则需要保持居中，移动一半大小改变一半
-            if (!this.target.moveable && this.isEditor) {
+            /*if(!this.target.moveable && this.isEditor) {
                 const offy = this.data.height - oldHeight;
-                this.move(0, -offy / 2);
-            }
+                this.move(0, -offy/2);
+            }*/
         }
         // x,y旋转
         if (args.skew.x || args.skew.y) {

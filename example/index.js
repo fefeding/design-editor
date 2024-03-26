@@ -24,7 +24,13 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 		moveable: false, // 锁定编辑器不支持移动
 		style: {
 			backgroundColor: '#fff',
-			containerBackgroundColor: '#eee'
+			containerBackgroundColor: '#eee',
+			//marginTop: '50%',
+			//marginLeft: '50%'
+		},
+		transform: {
+			//translateX: '-50%',
+			//translateY: '-50%'
 		},
 		controllerOption: {
 			tipVisible: true, // 是否展示坐标和大小数据
@@ -51,12 +57,22 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 
 	container.appendChild(editor.view.dom);
 
+	editor.on('select', (e)=>{
+		console.log('editor selected',e.selected);
+	})
+
 	// 大小改变后居中, 并且显示全部
 	editor.on('resize', function (size) {
-		const scale = Math.min(this.view.dom.clientWidth / (this.width * 1.4), this.view.dom.clientHeight / (this.height * 1.4));
+		const domWidth = util.toNumber(this.view.dom.clientWidth);
+		const domHeight = util.toNumber(this.view.dom.clientHeight);
+
+		const scale = Math.min(domWidth / (this.width * 1.4), domHeight / (this.height * 1.4));
 		if (scale < 1 && scale < this.transform.scaleX) {
 			this.scale(scale);
 		}
+		// 居中
+		this.data.left = Math.max((domWidth - util.toNumber(size.width)) / 2, 0);
+        this.data.top = Math.max((domHeight - util.toNumber(size.height)) / 2, 0);
 	});
 
 	// 禁止编辑器默认菜单

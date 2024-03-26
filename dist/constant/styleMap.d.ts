@@ -906,7 +906,8 @@ export declare class JElementStyleProperty {
 export default abstract class JElementCssStyle extends JElementStyleDeclaration {
     static styleNamesMap: string[];
     get names(): string[];
-    abstract apply(data: JElementStyleDeclaration, target?: CSSStyleDeclaration | JElementStyleDeclaration): any;
+    styleSaveMap: Array<string>;
+    abstract apply(data: JElementStyleDeclaration, target?: CSSStyleDeclaration | JElementStyleDeclaration, maps?: Array<string>): any;
     abstract applyTo(element: HTMLElement): any;
     abstract setStyle(name: any, value: any): any;
     abstract refresh(): any;
@@ -921,7 +922,15 @@ export declare const ContainerDefaultStyle: {
     right: string;
     bottom: string;
     padding: string;
+    paddingTop: string;
+    paddingLeft: string;
+    paddingRight: string;
+    paddingBottom: string;
     margin: string;
+    marginTop: string;
+    marginLeft: string;
+    marginRight: string;
+    marginBottom: string;
     zIndex: string;
     display: string;
     overflow: string;
