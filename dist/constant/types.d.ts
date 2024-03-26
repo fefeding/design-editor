@@ -108,6 +108,7 @@ export interface IControllerItemOption extends IElementOption {
 }
 export interface IControllerStyle extends IJElementStyleDeclaration {
     itemStyle?: IJElementStyleDeclaration;
+    rotateStyle?: IJElementStyleDeclaration;
     markingLineStyle?: IJElementStyleDeclaration;
     tipStyle?: IJElementStyleDeclaration;
 }

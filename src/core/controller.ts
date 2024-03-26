@@ -302,6 +302,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
                 borderRadius: '50%',
                 cursor: `pointer`,
                 ...option.style.itemStyle,
+                ...option.style.rotateStyle,
                 'backgroundSize': '100%',
                 backgroundImage: option.itemIcons?.rotate || ''
             },

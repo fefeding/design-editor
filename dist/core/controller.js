@@ -275,6 +275,7 @@ export default class JControllerComponent extends JControllerItem {
                 borderRadius: '50%',
                 cursor: `pointer`,
                 ...option.style.itemStyle,
+                ...option.style.rotateStyle,
                 'backgroundSize': '100%',
                 backgroundImage: option.itemIcons?.rotate || ''
             },

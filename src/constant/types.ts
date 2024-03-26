@@ -143,6 +143,8 @@ export interface IControllerItemOption extends IElementOption {
 
 export interface IControllerStyle extends IJElementStyleDeclaration {
     itemStyle?: IJElementStyleDeclaration;
+    // 旋转块样式
+    rotateStyle?: IJElementStyleDeclaration;
     // 标线
     markingLineStyle?: IJElementStyleDeclaration;
     // 提示信息

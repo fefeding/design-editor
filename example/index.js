@@ -39,7 +39,11 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 				// 标线
 				//markingLineStyle?: IJElementStyleDeclaration
 				// 提示信息
-				//tipStyle?: IJElementStyleDeclaration
+				//tipStyle?: IJElementStyleDeclaration,
+				rotateStyle: {
+					//backgroundColor: 'red',
+					opacity: 0.8
+				}
 			},
 			// 操作点的指针, 指定二个就可以，其它的会旋转得到，你也可以指定全部
 			itemCursors: {				
