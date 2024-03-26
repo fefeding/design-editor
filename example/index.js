@@ -66,8 +66,9 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 		const domWidth = util.toNumber(this.view.dom.clientWidth);
 		const domHeight = util.toNumber(this.view.dom.clientHeight);
 
-		const scale = Math.min(domWidth / (this.width * 1.4), domHeight / (this.height * 1.4));
+		const scale = Math.min(domWidth / (size.width * 1.4), domHeight / (size.height * 1.4));
 		if (scale < 1 && scale < this.transform.scaleX) {
+			console.log('scale', scale);
 			this.scale(scale);
 		}
 		// 居中
