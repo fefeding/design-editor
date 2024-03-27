@@ -326,6 +326,7 @@ export default class JEditor extends JBase implements IJEditor {
         }
 
         const dom = editor.dom;
+        dom.style.position = 'relative';
 
         return new Promise(resolve => {
             setTimeout(()=>{
