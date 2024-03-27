@@ -60,7 +60,8 @@ export default class JEditor extends JBase {
             editor: this,
         });
         const styleNode = document.createElement('style');
-        styleNode.innerHTML = editorDefaultCssContent;
+        if (this.editable)
+            styleNode.innerHTML = editorDefaultCssContent;
         this.dom.appendChild(styleNode);
         // 字体加载成功，同时加入到dom结构中
         this.fonts.on('load', (font) => {
@@ -148,6 +149,9 @@ export default class JEditor extends JBase {
     }
     // 选中某个元素
     select(el, event = null) {
+        // 不可编辑的情况下不响应选择事件
+        if (!el.editable)
+            return false;
         if (event) {
             // shift 或 ctrl 时，表示多先
             const isMutilSelect = (event?.ctrlKey || event?.shiftKey) && el !== this; // 编辑器不能与其它元素多选
@@ -172,16 +176,16 @@ export default class JEditor extends JBase {
                 el.selected = false;
             }
             if (event?.button === 0)
-                this.elementController.onDragStart(event);
+                this.elementController && this.elementController.onDragStart(event);
             event?.stopPropagation && event.stopPropagation();
         }
         else {
             if (el.selected) {
                 if (el.editable)
-                    this.elementController.bind(el);
+                    this.elementController && this.elementController.bind(el);
             }
             else
-                this.elementController.unbind(el);
+                this.elementController && this.elementController.unbind(el);
         }
     }
     resize(width = this.data.width, height = this.data.height) {
@@ -215,7 +219,7 @@ export default class JEditor extends JBase {
             const el = this.children[i];
             this.removeChild(el);
         }
-        this.elementController.data.visible = false;
+        this.elementController && (this.elementController.data.visible = false);
     }
     // 缩放
     scale(x, y = x) {
