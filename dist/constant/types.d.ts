@@ -126,7 +126,7 @@ export interface IControllerOption extends IControllerItemOption {
  * 编辑器选项接口
  * @public
  */
-export interface IEditorOption {
+export interface IEditorOption extends IElementOption {
     /**
      * 容器Div。可为一个html元素或一个选择器字符串。
      */

@@ -40,6 +40,7 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
         super({
             ...option,
             nodeType: 'div',
+            type: option.type || 'text',
             dataType: option.dataType || JTextData
         });
 

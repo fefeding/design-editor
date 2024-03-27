@@ -236,7 +236,7 @@ export default class JBaseComponent extends JElement {
     // 设置css到dom
     setDomStyle(name, value) {
         // 如果外层容器的样式，则加到container上
-        if (name in ContainerDefaultStyle || name === 'transform') {
+        if (name in ContainerDefaultStyle) {
             super.setDomStyle(name, value);
         }
         else {

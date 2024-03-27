@@ -922,6 +922,8 @@ export declare const ContainerDefaultStyle: {
     right: string;
     bottom: string;
     padding: string;
+    transformOrigin: string;
+    transform: string;
     paddingTop: string;
     paddingLeft: string;
     paddingRight: string;

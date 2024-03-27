@@ -5,6 +5,7 @@ export default class JSvg extends Base {
     constructor(option = {}) {
         super({
             ...option,
+            type: option.type || 'svg',
             dataType: option.dataType || JSvgData
         });
         // 属性变化映射到style

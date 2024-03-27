@@ -927,6 +927,8 @@ export const ContainerDefaultStyle = {
     right: 'auto',
     bottom: 'auto',
     padding: '0',
+    transformOrigin: 'center center',
+    transform: 'none',
     "paddingTop": '0',
     "paddingLeft": '0',
     "paddingRight": '0',

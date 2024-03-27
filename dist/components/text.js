@@ -34,6 +34,7 @@ export default class JText extends Base {
         super({
             ...option,
             nodeType: 'div',
+            type: option.type || 'text',
             dataType: option.dataType || JTextData
         });
         // 'text' 属性变化映射到 innerText

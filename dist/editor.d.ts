@@ -36,5 +36,11 @@ export default class JEditor extends JBase implements IJEditor {
     }, shape: IJBaseComponent): IJBaseComponent<HTMLElement>;
     createShape(type: string | JElement, option?: IElementOption | ITextOption | IImageOption): any;
     fromJSON(data: any): void;
+    /**
+     * 渲染成html结构
+     * @param container 容器
+     * @param data
+     */
+    static renderDom(data: any, option?: IEditorOption): Promise<unknown>;
 }
 export { JEditor, JImage, JText, };

@@ -1,9 +1,3 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
 import util from 'j-design-util';
 import JBase from './core/baseComponent';
 import JText from './components/text';
@@ -12,7 +6,6 @@ import JSvg from './components/svg';
 import JElement from './core/element';
 import JController from './core/controller';
 import JFonts from './core/fonts';
-import { Debounce } from './lib/decorator';
 import { editorDefaultCssContent } from './constant/styleMap';
 /**
  * @public
@@ -29,6 +22,7 @@ export default class JEditor extends JBase {
         /*option.transformWatchProps = [
             'rotateZ', 'scaleX', 'scaleY'
         ];*/
+        option.type = option.type || 'editor';
         super(option);
         if (typeof option.container === 'string')
             option.container = document.getElementById(option.container);
@@ -155,7 +149,8 @@ export default class JEditor extends JBase {
     // 选中某个元素
     select(el, event = null) {
         if (event) {
-            const isMutilSelect = event?.ctrlKey && el !== this; // 编辑器不能与其它元素多选
+            // shift 或 ctrl 时，表示多先
+            const isMutilSelect = (event?.ctrlKey || event?.shiftKey) && el !== this; // 编辑器不能与其它元素多选
             // 选把所有已选择的取消
             // 如果按下ctrl或本来就是选中的，则不取消其它元素
             if (!isMutilSelect && !el.selected) {
@@ -270,8 +265,35 @@ export default class JEditor extends JBase {
             this.addChild(item);
         }
     }
+    /**
+     * 渲染成html结构
+     * @param container 容器
+     * @param data
+     */
+    static async renderDom(data, option) {
+        const editor = new JEditor({
+            ...option,
+            editable: false,
+            style: {
+                transformOrigin: 'left top',
+            }
+        });
+        editor.fromJSON(data);
+        // 如果指定了宽度，则把dom缩放到指定的大小
+        if (option.data?.width) {
+            const scale = util.toNumber(option.data.width) / util.toNumber(editor.data.width);
+            editor.scale(scale);
+        }
+        else if (option.data?.width) {
+            const scale = util.toNumber(option.data.height) / util.toNumber(editor.data.height);
+            editor.scale(scale);
+        }
+        const dom = editor.dom;
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve(dom);
+            }, 200);
+        });
+    }
 }
-__decorate([
-    Debounce(10)
-], JEditor.prototype, "resize", null);
 export { JEditor, JImage, JText, };

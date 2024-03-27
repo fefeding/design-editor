@@ -7,6 +7,7 @@ export default class JSvg extends Base<HTMLDivElement> implements IJSvgComponent
     constructor(option={} as ISvgOption) {
         super({
             ...option,
+            type: option.type || 'svg',
             dataType: option.dataType || JSvgData
         });
 

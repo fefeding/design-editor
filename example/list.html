@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+	<script src="lib/bootstrap/js/bootstrap.min.js" crossorigin="anonymous"></script>
+	<style>
+		html,
+		body {
+			margin: 0;
+			padding: 0;
+		}
+
+		#container>div {
+			position: relative;
+            overflow: hidden;
+            float: left;
+            margin: 10px;
+            width: 200px;
+            height: 300px;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="container" class="container text-left" style="max-width: 100%; max-height: 100%; overflow: hidden;">
+			<div data-id="1"></div>
+			<div data-id="2"></div>
+			<div data-id="3"></div>
+			<div data-id="4"></div>
+    </div>
+</body>
+<script type="module">
+    
+    import './lib/html-to-image.js';
+    import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
+    // 默认支持的字体
+    const fonts = {
+            'Zcool Kuaile Regular': {
+                label: 'Zcool Kuaile Regular',
+                family: 'Zcool Kuaile Regular',
+                url: 'fonts/zcool-kuaile-regular.woff2'
+        }
+    };
+
+    rednerList();
+
+    function rednerList() {
+        const container = document.getElementById('container');
+        for(const child of container.children) {
+            
+            renderItem(child);
+        }
+    }
+
+    async function renderItem(child) {
+        const id = child.getAttribute('data-id');
+        const tmpl = await loadTemplate(id);
+        const dom = await JEditor.renderDom(tmpl, {
+            fonts,
+            data: {
+                width: child.clientWidth
+            }
+        });
+        child.appendChild(dom);
+    }
+
+    // 加载模板
+	async function loadTemplate(id) {
+        return new Promise((resolve, reject)=>{
+            const url = `templates/${id}.json`;
+            const request = new XMLHttpRequest();//新建XMLHttpRequest对象
+            request.onreadystatechange = function (e) { //状态发生变化时，函数被回调
+                if (this.readyState === 4) { //成功完成
+                    //判断相应结果：
+                    if (this.status ===200) {
+                        const tmpl = JSON.parse(this.responseText);
+                        resolve(tmpl);
+                    } else {
+                        console.log(e);
+                        alert('加载模板失败');
+                        reject();
+                    }
+                }
+            }
+            //发送请求：
+            request.open('GET', url);
+            request.send();
+        });		
+	}
+
+</script>
+
+</html>

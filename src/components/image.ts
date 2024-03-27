@@ -16,6 +16,7 @@ export default class JImage extends Base<HTMLImageElement> implements IJImageCom
         super({
             ...option,
             nodeType: 'img',
+            type: option.type || 'image',
             dataType: option.dataType || JImageData
         });
 

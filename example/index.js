@@ -41,8 +41,8 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 				// 提示信息
 				//tipStyle?: IJElementStyleDeclaration,
 				rotateStyle: {
-					//backgroundColor: 'red',
-					opacity: 0.8
+					//backgroundColor: 'transparent',
+					//border:'none'
 				}
 			},
 			// 操作点的指针, 指定二个就可以，其它的会旋转得到，你也可以指定全部
@@ -69,12 +69,6 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 	editor.on('resize', function (size) {
 		const domWidth = util.toNumber(this.view.dom.clientWidth);
 		const domHeight = util.toNumber(this.view.dom.clientHeight);
-
-		const scale = Math.min(domWidth / (size.width * 1.4), domHeight / (size.height * 1.4));
-		if (scale < 1 && scale < this.transform.scaleX) {
-			console.log('scale', scale);
-			this.scale(scale);
-		}
 		// 居中
 		this.data.left = Math.max((domWidth - util.toNumber(size.width)) / 2, 0);
         this.data.top = Math.max((domHeight - util.toNumber(size.height)) / 2, 0);
@@ -118,6 +112,18 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 	editor.on('mousedown', ()=>{
 		hideElementMenu();// 其它按健隐藏菜单
 	});
+
+	// 让编辑器在可视范转内
+	function resetScale() {
+		const domWidth = util.toNumber(editor.view.dom.clientWidth);
+		const domHeight = util.toNumber(editor.view.dom.clientHeight);
+
+		const scale = Math.min(domWidth / (editor.data.width * 1.4), domHeight / (editor.data.height * 1.4));
+		if (scale < 1 && scale < editor.transform.scaleX) {
+			console.log('scale', scale);
+			editor.scale(scale);
+		}
+	}
 
 	// 操作元素菜单
 	function showElementMenu(id, pos) {
@@ -215,6 +221,8 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
                 if (this.status ===200) {
                     const tmpl = JSON.parse(this.responseText);
                     cb(tmpl);
+					
+					resetScale();// 重置可视范围
                 } else {
                     console.log(e);
                     alert('加载模板失败');

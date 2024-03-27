@@ -2322,6 +2322,8 @@ const ContainerDefaultStyle = {
     right: 'auto',
     bottom: 'auto',
     padding: '0',
+    transformOrigin: 'center center',
+    transform: 'none',
     "paddingTop": '0',
     "paddingLeft": '0',
     "paddingRight": '0',
@@ -3365,7 +3367,7 @@ class JBaseComponent extends JElement {
     // 设置css到dom
     setDomStyle(name, value) {
         // 如果外层容器的样式，则加到container上
-        if (name in ContainerDefaultStyle || name === 'transform') {
+        if (name in ContainerDefaultStyle) {
             super.setDomStyle(name, value);
         }
         else {
@@ -3429,6 +3431,7 @@ class JText extends JBaseComponent {
         super({
             ...option,
             nodeType: 'div',
+            type: option.type || 'text',
             dataType: option.dataType || JTextData
         });
         // 'text' 属性变化映射到 innerText
@@ -3528,6 +3531,7 @@ class JImage extends JBaseComponent {
         super({
             ...option,
             nodeType: 'img',
+            type: option.type || 'image',
             dataType: option.dataType || JImageData
         });
         // 图像加载完成时触发 'load' 事件
@@ -3574,39 +3578,11 @@ class JImage extends JBaseComponent {
     }
 }
 
-/******************************************************************************
-Copyright (c) Microsoft Corporation.
-
-Permission to use, copy, modify, and/or distribute this software for any
-purpose with or without fee is hereby granted.
-
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-PERFORMANCE OF THIS SOFTWARE.
-***************************************************************************** */
-/* global Reflect, Promise, SuppressedError, Symbol */
-
-
-function __decorate(decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-}
-
-typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
-    var e = new Error(message);
-    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
-};
-
 class JSvg extends JBaseComponent {
     constructor(option = {}) {
         super({
             ...option,
+            type: option.type || 'svg',
             dataType: option.dataType || JSvgData
         });
         // 属性变化映射到style
@@ -4386,34 +4362,6 @@ class JFonts extends JEventEmitter {
 }
 
 /**
- * 防抖装饰器
- * @example
- ```ts
- class Test {
-        @Debounce(1000)
-        log() {
-            console.log("Debounced output!");
-        }
-    }
- ```
- * @param milliseconds - 毫秒数
- * @returns
- */
-function Debounce(milliseconds = 0) {
-    return function (target, propertyKey, descriptor) {
-        let originalMethod = descriptor.value;
-        let timerId = null;
-        descriptor.value = function (...args) {
-            clearTimeout(timerId);
-            timerId = setTimeout(() => {
-                originalMethod.apply(this, args);
-            }, milliseconds);
-        };
-        return descriptor;
-    };
-}
-
-/**
  * @public
  */
 class JEditor extends JBaseComponent {
@@ -4428,6 +4376,7 @@ class JEditor extends JBaseComponent {
         /*option.transformWatchProps = [
             'rotateZ', 'scaleX', 'scaleY'
         ];*/
+        option.type = option.type || 'editor';
         super(option);
         if (typeof option.container === 'string')
             option.container = document.getElementById(option.container);
@@ -4554,7 +4503,8 @@ class JEditor extends JBaseComponent {
     // 选中某个元素
     select(el, event = null) {
         if (event) {
-            const isMutilSelect = event?.ctrlKey && el !== this; // 编辑器不能与其它元素多选
+            // shift 或 ctrl 时，表示多先
+            const isMutilSelect = (event?.ctrlKey || event?.shiftKey) && el !== this; // 编辑器不能与其它元素多选
             // 选把所有已选择的取消
             // 如果按下ctrl或本来就是选中的，则不取消其它元素
             if (!isMutilSelect && !el.selected) {
@@ -4669,9 +4619,36 @@ class JEditor extends JBaseComponent {
             this.addChild(item);
         }
     }
+    /**
+     * 渲染成html结构
+     * @param container 容器
+     * @param data
+     */
+    static async renderDom(data, option) {
+        const editor = new JEditor({
+            ...option,
+            editable: false,
+            style: {
+                transformOrigin: 'left top',
+            }
+        });
+        editor.fromJSON(data);
+        // 如果指定了宽度，则把dom缩放到指定的大小
+        if (option.data?.width) {
+            const scale = util.toNumber(option.data.width) / util.toNumber(editor.data.width);
+            editor.scale(scale);
+        }
+        else if (option.data?.width) {
+            const scale = util.toNumber(option.data.height) / util.toNumber(editor.data.height);
+            editor.scale(scale);
+        }
+        const dom = editor.dom;
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve(dom);
+            }, 200);
+        });
+    }
 }
-__decorate([
-    Debounce(10)
-], JEditor.prototype, "resize", null);
 
 export { filters as CssFilters, JBaseComponent, JData, JEditor, JElement, JElementCssStyle, JElementData, JElementStyleDeclaration, JElementStyleProperty, JEvent, JImage, JImageData, JSvgData, JText, JTextData, JEditor as default, util };
