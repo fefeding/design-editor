@@ -557,8 +557,11 @@ export default class JControllerComponent extends JControllerItem {
         const itemVisible = target.editable;
         for (const item of this.items) {
             switch (item.dir) {
-                case 'rotate':
                 case 'skew': {
+                    item.visible = itemVisible && !this.isEditor && this.target.typeName === 'image';
+                    break;
+                }
+                case 'rotate': {
                     item.visible = itemVisible && !this.isEditor;
                     break;
                 }
