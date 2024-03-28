@@ -12,6 +12,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     bindEvent(dom?: HTMLElement): void;
     protected _id: string;
     get id(): string;
+    name: string;
     protected _type: string;
     get type(): string;
     private _children;

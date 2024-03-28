@@ -58,6 +58,7 @@ export interface IJFonts extends EventEmitter {
  */
 export interface IElementOption<T extends IJElementData = IJElementData> {
     id?: string;
+    name?: string;
     nodeType?: keyof HTMLElementTagNameMap;
     type?: string;
     editor?: IJEditor;
@@ -262,6 +263,7 @@ export interface IElementJSON {
 export interface IJElement<T extends HTMLElement = HTMLElement> extends EventEmitter {
     get id(): string;
     get type(): string;
+    name: string;
     get children(): IJElement<HTMLElement>[];
     get dom(): T;
     parent: IJElement | undefined;

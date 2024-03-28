@@ -73,6 +73,8 @@ export interface IJFonts extends EventEmitter {
 export interface IElementOption<T extends IJElementData = IJElementData> {
     // 非必要，只是唯一标识
     id?: string;
+    // 名称
+    name?: string;
     // 元素类型
     nodeType?: keyof HTMLElementTagNameMap;
     // 无需指定，一般是组件设定
@@ -323,6 +325,9 @@ export interface IJElement<T extends HTMLElement = HTMLElement> extends EventEmi
     
     get id(): string;
     get type(): string;
+    // 名称
+    name: string;
+
     get children(): IJElement<HTMLElement>[];
     get dom(): T;
     parent: IJElement | undefined;
