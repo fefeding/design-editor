@@ -45,6 +45,8 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         const dataType = option.dataType || JElementData;
         // @ts-ignore
         this.data = JElementData.createProxy(new dataType());
+        // 名称
+        this.name = option.name || '';
 
         // 如果是组件，不在这里进行数据初始化调用
         this.initData(option);
@@ -117,6 +119,10 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     get id() {
         return this._id;
     }
+
+    // 名称
+    public name: string = '';
+
     // 类型名称
     protected _type = '';
     get type() {

@@ -2876,6 +2876,8 @@ class JElement extends JEventEmitter {
         const dataType = option.dataType || JElementData;
         // @ts-ignore
         this.data = JElementData.createProxy(new dataType());
+        // 名称
+        this.name = option.name || '';
         // 如果是组件，不在这里进行数据初始化调用
         this.initData(option);
         // @ts-ignore
@@ -2949,6 +2951,8 @@ class JElement extends JEventEmitter {
     get id() {
         return this._id;
     }
+    // 名称
+    name = '';
     // 类型名称
     _type = '';
     get type() {
