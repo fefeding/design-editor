@@ -2952,7 +2952,12 @@ class JElement extends JEventEmitter {
         return this._id;
     }
     // 名称
-    name = '';
+    get name() {
+        return this.attr('title');
+    }
+    set name(v) {
+        this.attr('title', v);
+    }
     // 类型名称
     _type = '';
     get type() {
