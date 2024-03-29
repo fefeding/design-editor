@@ -121,7 +121,12 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     }
 
     // 名称
-    public name: string = '';
+    get name() {
+        return this.attr('title');
+    }
+    set name(v: string) {
+        this.attr('title', v);
+    }
 
     // 类型名称
     protected _type = '';
