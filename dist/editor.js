@@ -45,7 +45,7 @@ export default class JEditor extends JBase {
             option.container.appendChild(this.view.dom);
         this.view.addChild(this.dom);
         // @ts-ignore
-        this.regShape({ 'image': JImage, 'text': JText, 'svg': JSvg });
+        this.regShape({ 'image': JImage, 'img': JImage, 'text': JText, 'svg': JSvg });
         this.init(option);
         this.bindEvent(this.view.dom);
     }
@@ -237,7 +237,7 @@ export default class JEditor extends JBase {
             return;
         }
         if (this.shapes.has(name))
-            throw Error(`元素类型${name}已经存在`);
+            console.warn(`元素类型${name}已经存在`);
         this.shapes.set(name, shape);
         return shape;
     }
@@ -245,7 +245,8 @@ export default class JEditor extends JBase {
     createShape(type, option = {}) {
         const shape = typeof type === 'string' ? this.shapes.get(type) : type;
         if (!shape) {
-            throw Error(`${type}不存在的元素类型`);
+            console.warn(`${type}不存在的元素类型`);
+            return;
         }
         // @ts-ignore
         const el = new shape({
@@ -266,7 +267,7 @@ export default class JEditor extends JBase {
             if (!c.type)
                 continue;
             const item = this.createShape(c.type, c);
-            this.addChild(item);
+            item && this.addChild(item);
         }
     }
     /**
