@@ -37,9 +37,9 @@ var util = {
      * @returns
      */
     toPX(v) {
-        if (this.isNumber(v))
+        if (this.isNumber(v) || !this.isPXNumber(v))
             return v + 'px';
-        return v;
+        return v + '';
     },
     /**
      * 带像素或其它单位的转换为数字: 2px -> 2
@@ -83,7 +83,7 @@ var util = {
             return v + 'deg';
         if (typeof v === 'string' && this.isRadNumber(v))
             return this.toDeg(this.radToDeg(parseFloat(v)));
-        return v;
+        return v + '';
     },
     /**
      * 转为弧度格式, 1 -> 1rad,  180deg -> 3.14rad
@@ -95,7 +95,29 @@ var util = {
             return v + 'rad';
         if (typeof v === 'string' && this.isDegNumber(v))
             return this.toRad(this.degToRad(parseFloat(v)));
-        return v;
+        return v + '';
+    },
+    /**
+     * 把数值按比例转为目标数值，比如rgba的 0.5-》0.5*255
+     * @param v
+     * @param multiple 比例值，默认255
+     */
+    toMultipleInt(v, multiple = 1) {
+        return Math.ceil(v * multiple);
+    },
+    /**
+     * 把rgba颜色转为rgba()串型式
+     * multiple倍数，如果是小数，则需要*255转到标准值
+     */
+    colorToString(color, multiple = 1) {
+        let str = `${this.toMultipleInt(color.r, multiple)},${this.toMultipleInt(color.g, multiple)},${this.toMultipleInt(color.b, multiple)}`;
+        if (typeof color.a !== 'undefined') {
+            str = `rgba(${str},${color.a})`;
+        }
+        else {
+            str = `rgb(${str})`;
+        }
+        return str;
     },
     /**
      * 获取元素的绝对定位
@@ -286,6 +308,33 @@ var util = {
         return (time + rnd).toString();
     },
     /**
+     * 获取二点在标准坐标系中的的弧度, 返回值为 0 ~ Math.PI*2
+     * @param start
+     * @param end
+     */
+    getPointCoordRotation(start, end) {
+        const dy = end.y - start.y;
+        const dx = end.x - start.x;
+        if (dx === 0) {
+            if (dy > 0)
+                return Math.PI + Math.PI / 2;
+            else if (dy < 0)
+                return Math.PI / 2;
+            else
+                return 0;
+        }
+        else if (dy === 0) {
+            if (dx > 0)
+                return 0;
+            else if (dx < 0)
+                return Math.PI;
+            else
+                return 0;
+        }
+        const r = Math.atan2(dy, dx);
+        return r <= 0 ? Math.abs(r) : (Math.PI * 2 - r);
+    },
+    /**
      * 把图片旋转一定角度，返回base64
      * @param url
      * @param rotation
@@ -326,11 +375,6 @@ var util = {
         option = option || {};
         return new Promise((resolve, reject) => {
             const request = new XMLHttpRequest(); //新建XMLHttpRequest对象
-            if (option.headers) {
-                for (const name in option.headers) {
-                    request.setRequestHeader(name, option.headers[name]);
-                }
-            }
             const params = [];
             if (option.data) {
                 for (const name in option.data) {
@@ -354,6 +398,11 @@ var util = {
             };
             //发送请求：
             request.open(method, url);
+            if (option.headers) {
+                for (const name in option.headers) {
+                    request.setRequestHeader(name, option.headers[name]);
+                }
+            }
             request.send(method === 'POST' ? params.join('&') : null);
         });
     }
@@ -935,14 +984,14 @@ class CSSFilters {
         if (filter.name) {
             const existsFilter = this.get(filter.name);
             if (existsFilter) {
-                console.error(`${filter.name}已经存在滤镜集合中，不能重复`);
-                return;
+                console.error(`${filter.displayName || filter.name}已经存在滤镜集合中，不能重复`);
+                return existsFilter;
             }
         }
         if (filter instanceof Filter) {
             this.filters.push(filter);
             this.apply();
-            return;
+            return filter;
         }
         else if (filter.name) {
             return this.add(filter.name, filter.option);
@@ -4399,7 +4448,7 @@ class JEditor extends JBaseComponent {
             option.container.appendChild(this.view.dom);
         this.view.addChild(this.dom);
         // @ts-ignore
-        this.regShape({ 'image': JImage, 'text': JText, 'svg': JSvg });
+        this.regShape({ 'image': JImage, 'img': JImage, 'text': JText, 'svg': JSvg });
         this.init(option);
         this.bindEvent(this.view.dom);
     }
@@ -4587,7 +4636,7 @@ class JEditor extends JBaseComponent {
             return;
         }
         if (this.shapes.has(name))
-            throw Error(`元素类型${name}已经存在`);
+            console.warn(`元素类型${name}已经存在`);
         this.shapes.set(name, shape);
         return shape;
     }
@@ -4595,7 +4644,8 @@ class JEditor extends JBaseComponent {
     createShape(type, option = {}) {
         const shape = typeof type === 'string' ? this.shapes.get(type) : type;
         if (!shape) {
-            throw Error(`${type}不存在的元素类型`);
+            console.warn(`${type}不存在的元素类型`);
+            return;
         }
         // @ts-ignore
         const el = new shape({
@@ -4616,7 +4666,7 @@ class JEditor extends JBaseComponent {
             if (!c.type)
                 continue;
             const item = this.createShape(c.type, c);
-            this.addChild(item);
+            item && this.addChild(item);
         }
     }
     /**

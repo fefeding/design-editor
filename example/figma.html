@@ -1,0 +1,204 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<style>
+		html,
+		body {
+			margin: 0;
+			padding: 0;
+			background-color: rgb(44, 44, 44);
+		}
+
+		#container {
+			height:100%; 
+            overflow:auto;
+            background-color: #eee;
+			position: relative;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="container">
+		<h1 style="color: #fff">加载中...</h1>
+	</div>
+</body>
+<script type="module">
+	import { convert, nodeToDom, loadFigmaFile, getFigmaImage, getFigmaFileImages } from "../node_modules/j-figma2html/dist/index.esm.js";
+    import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
+	
+	const urlParams = getUrlParams();
+
+	async function loadFigmaTemplate(id) {
+		let data;
+		if(urlParams.token && id) {
+			data = await loadFigmaFile(id, urlParams.token);
+		}
+		else {
+			data = await util.request('figma_data.json');
+		}
+		if(typeof data === 'string') data = JSON.parse(data);
+		console.log(data);
+		return data;
+	}
+
+	async function renderTemplate() {
+		const data = await loadFigmaTemplate(urlParams.fileid);
+		let images = {};
+		if(urlParams.fileid && urlParams.token) {
+		 images = await getFigmaFileImages(urlParams.fileid, urlParams.token);
+		}
+		else {
+			images = {
+				'ce7a72a3375cd9f1f1196e499f27fce499f64f6b': 'images/375cd9f1f1196e499f27fce499f64f6b.jfif',
+				'066f1dbe3fa79150eb85af7aa8d84c4fb93c2656': 'images/3fa79150eb85af7aa8d84c4fb93c2656.png',
+				'681639260d4c7ba2a1141e00afd1cf328a237b78': 'images/0d4c7ba2a1141e00afd1cf328a237b78.png',
+				'42409ea32d2206061a526ac212c277a709e5668f': 'images/2d2206061a526ac212c277a709e5668f.png',
+				'a4d67f22efe7629835636620194e61aac5cc7098': 'images/efe7629835636620194e61aac5cc7098.png',
+			};
+		}
+
+		// 转换模板，并动态获取图片地址
+		const tpl = await convert(data, null, {
+			images,
+			async getImage(key) {
+				console.log('get image', key);
+				if(images[key]) return images[key];
+				return '';// 待实现动态获取图片地址
+			}
+		});
+		
+		console.log(tpl);
+
+		const editor = initEditor();
+        editor.fromJSON(tpl);
+        resetScale(editor);
+	}
+
+	renderTemplate();
+
+
+    function initEditor() {
+        const container = document.getElementById('container');
+        container.innerHTML = '';
+        container.style.height = window.innerHeight + 'px';
+
+        // 默认支持的字体
+        const fonts = {
+            'Zcool Kuaile Regular': {
+                label: 'Zcool Kuaile Regular',
+                family: 'Zcool Kuaile Regular',
+                url: 'fonts/zcool-kuaile-regular.woff2'
+            }
+        };
+
+        const editor = new JEditor({
+            fonts,
+            data: {
+                width: 800,
+                height: 600,
+            },
+            // editable: false,
+            moveable: false, // 锁定编辑器不支持移动
+            style: {
+                backgroundColor: '#fff',
+                containerBackgroundColor: '#eee',
+                //marginTop: '50%',
+                //marginLeft: '50%'
+            },
+            transform: {
+                //translateX: '-50%',
+                //translateY: '-50%'
+            },
+            controllerOption: {
+                tipVisible: true, // 是否展示坐标和大小数据
+                style: {
+                    //itemStyle?: IJElementStyleDeclaration
+                    // 标线
+                    //markingLineStyle?: IJElementStyleDeclaration
+                    // 提示信息
+                    //tipStyle?: IJElementStyleDeclaration,
+                    rotateStyle: {
+                        //backgroundColor: 'transparent',
+                        //border:'none'
+                    }
+                },
+                // 操作点的指针, 指定二个就可以，其它的会旋转得到，你也可以指定全部
+                itemCursors: {				
+                    't': 'images/ns_cursor.png',
+                    'lt': 'images/nwes_cursor.png',
+                    'rotate': 'images/rotate_cursor.png',
+                },
+                // 图标
+                itemIcons: {
+                    rotate: 'images/rotate_icon.png',
+                    skew: 'images/skew_icon.png'
+                }
+            }
+        });
+
+        container.appendChild(editor.view.dom);
+
+        editor.on('select', (e)=>{
+            console.log('editor selected',e.selected);
+        })
+
+        // 大小改变后居中, 并且显示全部
+        editor.on('resize', function (size) {
+            const domWidth = util.toNumber(this.view.dom.clientWidth);
+            const domHeight = util.toNumber(this.view.dom.clientHeight);
+            // 居中
+            this.data.left = Math.max((domWidth - util.toNumber(size.width)) / 2, 0);
+            this.data.top = Math.max((domHeight - util.toNumber(size.height)) / 2, 0);
+        });
+
+        // 禁止编辑器默认菜单
+        editor.on('contextmenu', (e) => {
+            e.preventDefault();
+        });
+
+        // 元素发生改变事件
+        editor.on('elementChange', async (e) => {
+            //console.log(e);
+            if(e.type === 'styleChange') {
+                // 字体发生改变，需要做check, 并加载字体生效
+                if(e.data.name === 'fontFamily') {
+                    // 如果没有在默认支持的字体内，这里会返回false
+                    if(editor.fonts.check(e.data.value)) return;// 已经加载，则跳过
+                    const con = fonts[e.data.value];
+                    if(con) {
+                        const f = await editor.fonts.load(con.family, con.url);// 加载
+                        console.log('load font', e.data.value, f.status);
+                    }
+                }
+            }
+        });
+        return editor;
+    }
+
+    // 让编辑器在可视范转内
+	function resetScale(editor) {
+		const domWidth = util.toNumber(editor.view.dom.clientWidth);
+		const domHeight = util.toNumber(editor.view.dom.clientHeight);
+
+		const scale = Math.min(domWidth / (editor.data.width * 1.4), domHeight / (editor.data.height * 1.4));
+		if (scale < 1 && scale < editor.transform.scaleX) {
+			console.log('scale', scale);
+			editor.scale(scale);
+		}
+	}
+
+	function getUrlParams(url=location.href) {
+		const urlParams = new URLSearchParams(url.split('?')[1]);
+		const params = {};
+		for (let param of urlParams.entries()) {
+			params[param[0]] = param[1];
+		}
+		return params;
+	}
+</script>
+
+</html>
