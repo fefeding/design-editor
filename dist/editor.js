@@ -293,6 +293,7 @@ export default class JEditor extends JBase {
             editor.scale(scale);
         }
         const dom = editor.dom;
+        dom.style.position = 'relative';
         return new Promise(resolve => {
             setTimeout(() => {
                 resolve(dom);

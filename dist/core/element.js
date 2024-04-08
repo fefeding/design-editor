@@ -36,6 +36,8 @@ export default class JElement extends EventEmiter {
         const dataType = option.dataType || JElementData;
         // @ts-ignore
         this.data = JElementData.createProxy(new dataType());
+        // 名称
+        this.name = option.name || '';
         // 如果是组件，不在这里进行数据初始化调用
         this.initData(option);
         // @ts-ignore
@@ -108,6 +110,13 @@ export default class JElement extends EventEmiter {
     _id = '';
     get id() {
         return this._id;
+    }
+    // 名称
+    get name() {
+        return this.attr('title');
+    }
+    set name(v) {
+        this.attr('title', v);
     }
     // 类型名称
     _type = '';
