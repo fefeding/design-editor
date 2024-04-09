@@ -113,7 +113,8 @@ export default class JEditor extends JBase implements IJEditor {
         this.style.styleSaveMap = [
             'backgroundColor',
             'backgroundImage',
-            'backgroundSize'
+            'backgroundSize',
+            'backgroundRepeat'
         ];
     }
 

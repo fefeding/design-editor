@@ -4568,7 +4568,8 @@ class JEditor extends JBaseComponent {
         this.style.styleSaveMap = [
             'backgroundColor',
             'backgroundImage',
-            'backgroundSize'
+            'backgroundSize',
+            'backgroundRepeat'
         ];
     }
     /**

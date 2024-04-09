@@ -99,7 +99,8 @@ export default class JEditor extends JBase {
         this.style.styleSaveMap = [
             'backgroundColor',
             'backgroundImage',
-            'backgroundSize'
+            'backgroundSize',
+            'backgroundRepeat'
         ];
     }
     /**
