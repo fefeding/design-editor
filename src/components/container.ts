@@ -17,4 +17,9 @@ export default class JContainer extends Base<HTMLDivElement> implements IJBaseCo
     get typeName(): string {
         return 'container';
     }
+
+    // 重写子集为target
+    get children() {
+        return this.target.children;
+    }
 }

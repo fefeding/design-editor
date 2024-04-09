@@ -3729,6 +3729,10 @@ class JContainer extends JBaseComponent {
     get typeName() {
         return 'container';
     }
+    // 重写子集为target
+    get children() {
+        return this.target.children;
+    }
 }
 
 // 控制元素移动和矩阵变换

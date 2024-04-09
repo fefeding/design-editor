@@ -14,4 +14,8 @@ export default class JContainer extends Base {
     get typeName() {
         return 'container';
     }
+    // 重写子集为target
+    get children() {
+        return this.target.children;
+    }
 }
