@@ -13,17 +13,26 @@ export default class Transform extends EventEmiter {
     // x偏移量
     translateX = 0;
     get translateXString() {
-        return `translateX(${util.toPX(this.translateX)})`;
+        let x = this.translateX;
+        if (util.isNumber(x))
+            x = util.toPX(x);
+        return `translateX(${x})`;
     }
     // y偏移量
     translateY = 0;
     get translateYString() {
-        return `translateY(${util.toPX(this.translateY)})`;
+        let y = this.translateY;
+        if (util.isNumber(y))
+            y = util.toPX(y);
+        return `translateY(${y})`;
     }
     // z偏移量
     translateZ = 0;
     get translateZString() {
-        return `translateZ(${util.toPX(this.translateZ)})`;
+        let x = this.translateZ;
+        if (util.isNumber(x))
+            x = util.toPX(x);
+        return `translateZ(${x})`;
     }
     rotateX = 0;
     get rotateXString() {

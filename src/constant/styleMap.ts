@@ -965,7 +965,8 @@ export const ContainerDefaultStyle = {
     "marginBottom": '0',
     zIndex: '0',
     display: 'inline-block',
-    overflow: 'visible'
+    overflow: 'visible',
+    'filter': 'none',
 }
 
 

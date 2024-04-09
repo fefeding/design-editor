@@ -15,8 +15,11 @@ export default class JElement extends EventEmiter {
         const nodeType = option.nodeType || 'div';
         // @ts-ignore
         this._dom = document.createElement(nodeType);
+        this.attr('data-id', this.id);
+        this.attr('data-type', this.type);
         if (option.editor)
             this.editor = option.editor;
+        this._option = option;
         // 样式代理处理
         this.style = JStyle.createProxy();
         this.style.on('change', (s) => {
@@ -26,12 +29,6 @@ export default class JElement extends EventEmiter {
                 data: s,
                 target: this
             });
-        });
-        // 变换控制的是核心元素
-        this.transform = JTransform.createProxy(option.transform, {
-            target: this,
-            // 如果指定了只响应某几个属性
-            watchProps: option.transformWatchProps
         });
         const dataType = option.dataType || JElementData;
         // @ts-ignore
@@ -43,6 +40,12 @@ export default class JElement extends EventEmiter {
         // @ts-ignore
         if (option.className)
             this.className = option.className;
+        // 变换控制的是核心元素 . 这里要放在initData后，不然会被覆盖
+        this.transform = JTransform.createProxy(option.transform, {
+            target: this,
+            // 如果指定了只响应某几个属性
+            watchProps: option.transformWatchProps
+        });
         this.bindEvent(); // 事件绑定
     }
     // 初始化一些基础属性
@@ -117,6 +120,10 @@ export default class JElement extends EventEmiter {
     }
     set name(v) {
         this.attr('title', v);
+    }
+    _option;
+    get option() {
+        return this._option;
     }
     // 类型名称
     _type = '';

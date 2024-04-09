@@ -14,6 +14,8 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     get id(): string;
     get name(): string;
     set name(v: string);
+    private _option;
+    get option(): any;
     protected _type: string;
     get type(): string;
     private _children;

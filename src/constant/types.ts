@@ -106,6 +106,11 @@ export interface IElementOption<T extends IJElementData = IJElementData> {
     // 目标元素配置项
     target?: IElementOption;
 
+    /**
+     * 子元素
+     */
+    children?: Array<IElementOption>;
+
     // 滤镜
     filters?: IFilter[];
 }
@@ -327,6 +332,8 @@ export interface IJElement<T extends HTMLElement = HTMLElement> extends EventEmi
     get type(): string;
     // 名称
     name: string;
+    // 选项
+    option: IElementOption;
 
     get children(): IJElement<HTMLElement>[];
     get dom(): T;

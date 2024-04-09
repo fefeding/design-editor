@@ -984,14 +984,14 @@ class CSSFilters {
         if (filter.name) {
             const existsFilter = this.get(filter.name);
             if (existsFilter) {
-                console.error(`${filter.displayName || filter.name}已经存在滤镜集合中，不能重复`);
-                return existsFilter;
+                console.error(`${filter.name}已经存在滤镜集合中，不能重复`);
+                return;
             }
         }
         if (filter instanceof Filter) {
             this.filters.push(filter);
             this.apply();
-            return filter;
+            return;
         }
         else if (filter.name) {
             return this.add(filter.name, filter.option);
@@ -2384,7 +2384,8 @@ const ContainerDefaultStyle = {
     "marginBottom": '0',
     zIndex: '0',
     display: 'inline-block',
-    overflow: 'visible'
+    overflow: 'visible',
+    'filter': 'none',
 };
 /**
  * 默认编辑器样式
@@ -2509,17 +2510,26 @@ class Transform extends JEventEmitter {
     // x偏移量
     translateX = 0;
     get translateXString() {
-        return `translateX(${util.toPX(this.translateX)})`;
+        let x = this.translateX;
+        if (util.isNumber(x))
+            x = util.toPX(x);
+        return `translateX(${x})`;
     }
     // y偏移量
     translateY = 0;
     get translateYString() {
-        return `translateY(${util.toPX(this.translateY)})`;
+        let y = this.translateY;
+        if (util.isNumber(y))
+            y = util.toPX(y);
+        return `translateY(${y})`;
     }
     // z偏移量
     translateZ = 0;
     get translateZString() {
-        return `translateZ(${util.toPX(this.translateZ)})`;
+        let x = this.translateZ;
+        if (util.isNumber(x))
+            x = util.toPX(x);
+        return `translateZ(${x})`;
     }
     rotateX = 0;
     get rotateXString() {
@@ -2904,8 +2914,11 @@ class JElement extends JEventEmitter {
         const nodeType = option.nodeType || 'div';
         // @ts-ignore
         this._dom = document.createElement(nodeType);
+        this.attr('data-id', this.id);
+        this.attr('data-type', this.type);
         if (option.editor)
             this.editor = option.editor;
+        this._option = option;
         // 样式代理处理
         this.style = JElementStyle.createProxy();
         this.style.on('change', (s) => {
@@ -2915,12 +2928,6 @@ class JElement extends JEventEmitter {
                 data: s,
                 target: this
             });
-        });
-        // 变换控制的是核心元素
-        this.transform = Transform.createProxy(option.transform, {
-            target: this,
-            // 如果指定了只响应某几个属性
-            watchProps: option.transformWatchProps
         });
         const dataType = option.dataType || JElementData;
         // @ts-ignore
@@ -2932,6 +2939,12 @@ class JElement extends JEventEmitter {
         // @ts-ignore
         if (option.className)
             this.className = option.className;
+        // 变换控制的是核心元素 . 这里要放在initData后，不然会被覆盖
+        this.transform = Transform.createProxy(option.transform, {
+            target: this,
+            // 如果指定了只响应某几个属性
+            watchProps: option.transformWatchProps
+        });
         this.bindEvent(); // 事件绑定
     }
     // 初始化一些基础属性
@@ -3006,6 +3019,10 @@ class JElement extends JEventEmitter {
     }
     set name(v) {
         this.attr('title', v);
+    }
+    _option;
+    get option() {
+        return this._option;
     }
     // 类型名称
     _type = '';
@@ -3201,11 +3218,11 @@ class JBaseComponent extends JElement {
         // position和overflow预设的值优先级最高
         option.style = Object.assign({ ...ContainerDefaultStyle }, option.style, {
             position: ContainerDefaultStyle.position,
-            overflow: ContainerDefaultStyle.overflow
+            //overflow: ContainerDefaultStyle.overflow
         });
         super({
             ...option,
-            transformWatchProps: null,
+            //transformWatchProps: null,
             nodeType: 'div',
             className: 'j-design-editor-container',
         });
@@ -3238,7 +3255,7 @@ class JBaseComponent extends JElement {
                 'rotateX', 'rotateY', 'translateX', 'translateY', 'skewX', 'skewY'
             ]
         });*/
-        this.filters = new CSSFilters(this.target, option.filters); // 滤镜
+        this.filters = new CSSFilters(this, option.filters); // 滤镜
         this.data.on('change', (e) => {
             this.emit('dataChange', {
                 type: 'dataChange',
@@ -3377,6 +3394,12 @@ class JBaseComponent extends JElement {
         // 刷新样式
         child.style.refresh();
         this.target.addChild(child);
+        if (child.option?.children?.length) {
+            for (const opt of child.option.children) {
+                const c = child.editor.createShape(opt.type, opt);
+                c && child.addChild(c);
+            }
+        }
     }
     // 移除
     removeChild(el) {
@@ -3586,6 +3609,10 @@ class JImage extends JBaseComponent {
      * @param option - 图像选项，包括 url, src 等。
      */
     constructor(option = {}) {
+        if (!option.style)
+            option.style = {};
+        if (!option.style.overflow)
+            option.style.overflow = 'hidden';
         super({
             ...option,
             nodeType: 'img',
@@ -3627,6 +3654,14 @@ class JImage extends JBaseComponent {
      */
     get typeName() {
         return 'image';
+    }
+    // 设置css到dom
+    setDomStyle(name, value) {
+        // transform应用于图片元素上面
+        if (name === 'transform') {
+            return this.target && this.target.setDomStyle(name, value);
+        }
+        return super.setDomStyle(name, value);
     }
     toJSON(props = []) {
         return super.toJSON([
@@ -3677,6 +3712,22 @@ class JSvg extends JBaseComponent {
     async load(url = this.data.url) {
         const svg = await util.request(url);
         this.data.svg = svg;
+    }
+}
+
+class JContainer extends JBaseComponent {
+    constructor(option = {}) {
+        super({
+            ...option,
+            type: option.type || 'svg',
+            dataType: option.dataType || JElementData
+        });
+    }
+    /**
+     * 类型名称
+     */
+    get typeName() {
+        return 'container';
     }
 }
 
@@ -4460,7 +4511,15 @@ class JEditor extends JBaseComponent {
             option.container.appendChild(this.view.dom);
         this.view.addChild(this.dom);
         // @ts-ignore
-        this.regShape({ 'image': JImage, 'img': JImage, 'text': JText, 'svg': JSvg });
+        this.regShape({
+            'image': JImage,
+            'img': JImage,
+            'text': JText,
+            'span': JText,
+            'svg': JSvg,
+            'container': JContainer,
+            'div': JContainer,
+        });
         this.init(option);
         this.bindEvent(this.view.dom);
     }

@@ -75,6 +75,10 @@ export interface IElementOption<T extends IJElementData = IJElementData> {
     data?: T;
     transform?: IStyleTransform;
     target?: IElementOption;
+    /**
+     * 子元素
+     */
+    children?: Array<IElementOption>;
     filters?: IFilter[];
 }
 /**
@@ -264,6 +268,7 @@ export interface IJElement<T extends HTMLElement = HTMLElement> extends EventEmi
     get id(): string;
     get type(): string;
     name: string;
+    option: IElementOption;
     get children(): IJElement<HTMLElement>[];
     get dom(): T;
     parent: IJElement | undefined;

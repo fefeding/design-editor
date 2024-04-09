@@ -3,6 +3,7 @@ import JBase from './core/baseComponent';
 import JText from './components/text';
 import JImage from './components/image';
 import JSvg from './components/svg';
+import JContainer from './components/container';
 import JElement from './core/element';
 import JController from './core/controller';
 import JFonts from './core/fonts';
@@ -50,7 +51,15 @@ export default class JEditor extends JBase implements IJEditor {
         this.view.addChild(this.dom);
         
         // @ts-ignore
-        this.regShape({'image': JImage, 'img': JImage, 'text': JText, 'svg': JSvg});
+        this.regShape({
+            'image': JImage, 
+            'img': JImage, 
+            'text': JText, 
+            'span': JText, 
+            'svg': JSvg,
+            'container': JContainer,
+            'div': JContainer,
+        });
 
         this.init(option);  
 
