@@ -112,8 +112,9 @@ export default class JEditor extends JBase implements IJEditor {
         // 编辑器只支持保留 部分样式
         this.style.styleSaveMap = [
             'backgroundColor',
-            'backgroundImage'
-        ]
+            'backgroundImage',
+            'backgroundSize'
+        ];
     }
 
     /**

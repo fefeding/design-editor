@@ -4292,7 +4292,7 @@ class JControllerComponent extends JControllerItem {
         for (const item of this.items) {
             switch (item.dir) {
                 case 'skew': {
-                    item.visible = itemVisible && !this.isEditor && this.target.typeName === 'image';
+                    item.visible = false; //itemVisible && !this.isEditor && this.target.typeName === 'image';
                     break;
                 }
                 case 'rotate': {
@@ -4567,7 +4567,8 @@ class JEditor extends JBaseComponent {
         // 编辑器只支持保留 部分样式
         this.style.styleSaveMap = [
             'backgroundColor',
-            'backgroundImage'
+            'backgroundImage',
+            'backgroundSize'
         ];
     }
     /**
