@@ -25,6 +25,17 @@
         #container>div:hover {
             border: 1px solid #ccc;
         }
+        #template_json {
+            background-color: #000;
+            color: #fff;
+            position: fixed;
+            width: 800px;
+            height: 600px;
+            left: 100px;
+            top: 100px;
+            overflow: scroll;
+            display: none;
+        }
 	</style>
 </head>
 
@@ -32,6 +43,10 @@
 	<div id="container">
 		<h1 style="color: #fff">加载中...</h1>
 	</div>
+    <div id="template_json">
+        <button id="template_json_close">关闭</button>
+        <div id="template_json_inner"></div>
+    </div>
 </body>
 <script type="module">
 	import { convert, nodeToDom, loadFigmaFile, getFigmaImage, getFigmaFileImages } from "../node_modules/j-figma2html/dist/index.esm.js";
@@ -118,19 +133,28 @@
                 url: 'fonts/zcool-kuaile-regular.woff2'
             }
         };
-        const dom = await JEditor.renderDom(item, {
+        const opt = {
             fonts,
             data: {
                 // 指定把dom缩放到大小，如果同时指定width和height，优先用width缩放
                 width: 400
             }
-        });
-        
-        dom.style.position = 'relative';
+        };
+        const editor = await JEditor.renderDom(item, opt);// 渲染dom
+        editor.dom.style.position = 'relative';
 
         const parent = document.createElement('div');
-        parent.appendChild(dom);
+        parent.appendChild(editor.dom);
         container.appendChild(parent);
+
+        const json = editor.toJSON();
+        parent.setAttribute('data-json', JSON.stringify(json));
+        parent.ondblclick = function(e) {
+            const json = this.getAttribute('data-json');
+            const jsonContainer = document.getElementById('template_json');
+            document.getElementById('template_json_inner').innerText = json;
+            jsonContainer.style.display = 'inline';
+        };
     }
 
 	function getUrlParams(url=location.href) {
@@ -141,6 +165,10 @@
 		}
 		return params;
 	}
+
+    document.getElementById('template_json_close').onclick = function(){
+        document.getElementById('template_json').style.display = 'none';
+    };
 </script>
 
 </html>

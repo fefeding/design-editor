@@ -280,25 +280,41 @@ export default class JEditor extends JBase {
         }
     }
     /**
+     * 生成编辑器对象
+     * @param data
+     * @param option
+     */
+    static create(option, data) {
+        const editor = new JEditor(option);
+        data && editor.fromJSON(data);
+        return editor;
+    }
+    /**
      * 渲染成html结构
      * @param container 容器
      * @param data
      */
     static async renderDom(data, option) {
-        const editor = new JEditor({
-            ...option,
-            editable: false,
-            style: {
-                transformOrigin: 'left top',
-            }
-        });
-        editor.fromJSON(data);
+        let editor;
+        if (data instanceof JEditor) {
+            editor = data;
+        }
+        else {
+            option = {
+                ...option,
+                editable: false,
+                style: {
+                    transformOrigin: 'left top',
+                }
+            };
+            editor = await this.create(option, data);
+        }
         // 如果指定了宽度，则把dom缩放到指定的大小
-        if (option.data?.width) {
+        if (option?.data?.width) {
             const scale = util.toNumber(option.data.width) / util.toNumber(editor.data.width);
             editor.scale(scale);
         }
-        else if (option.data?.width) {
+        else if (option?.data?.width) {
             const scale = util.toNumber(option.data.height) / util.toNumber(editor.data.height);
             editor.scale(scale);
         }
@@ -306,7 +322,7 @@ export default class JEditor extends JBase {
         dom.style.position = 'relative';
         return new Promise(resolve => {
             setTimeout(() => {
-                resolve(dom);
+                resolve(editor);
             }, 200);
         });
     }
