@@ -936,6 +936,7 @@ export declare const ContainerDefaultStyle: {
     zIndex: string;
     display: string;
     overflow: string;
+    filter: string;
 };
 /**
  * 默认编辑器样式

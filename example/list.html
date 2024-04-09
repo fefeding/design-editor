@@ -63,7 +63,7 @@
     async function renderItem(child) {
         const id = child.getAttribute('data-id');
         const tmpl = await loadTemplate(id);
-        const dom = await JEditor.renderDom(tmpl, {
+        const editor = await JEditor.renderDom(tmpl, {
             fonts,
             data: {
                 // 指定把dom缩放到大小，如果同时指定width和height，优先用width缩放
@@ -71,8 +71,8 @@
             }
         });
         
-        dom.style.position = 'relative';
-        child.appendChild(dom);
+        editor.dom.style.position = 'relative';
+        child.appendChild(editor.dom);
     }
 
     // 加载模板

@@ -12,11 +12,11 @@ export default class JBaseComponent extends JElement {
         // position和overflow预设的值优先级最高
         option.style = Object.assign({ ...ContainerDefaultStyle }, option.style, {
             position: ContainerDefaultStyle.position,
-            overflow: ContainerDefaultStyle.overflow
+            //overflow: ContainerDefaultStyle.overflow
         });
         super({
             ...option,
-            transformWatchProps: null,
+            //transformWatchProps: null,
             nodeType: 'div',
             className: 'j-design-editor-container',
         });
@@ -49,7 +49,7 @@ export default class JBaseComponent extends JElement {
                 'rotateX', 'rotateY', 'translateX', 'translateY', 'skewX', 'skewY'
             ]
         });*/
-        this.filters = new CssFilterManager(this.target, option.filters); // 滤镜
+        this.filters = new CssFilterManager(this, option.filters); // 滤镜
         this.data.on('change', (e) => {
             this.emit('dataChange', {
                 type: 'dataChange',
@@ -188,6 +188,12 @@ export default class JBaseComponent extends JElement {
         // 刷新样式
         child.style.refresh();
         this.target.addChild(child);
+        if (child.option?.children?.length) {
+            for (const opt of child.option.children) {
+                const c = child.editor.createShape(opt.type, opt);
+                c && child.addChild(c);
+            }
+        }
     }
     // 移除
     removeChild(el) {

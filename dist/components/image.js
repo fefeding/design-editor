@@ -10,6 +10,10 @@ export default class JImage extends Base {
      * @param option - 图像选项，包括 url, src 等。
      */
     constructor(option = {}) {
+        if (!option.style)
+            option.style = {};
+        if (!option.style.overflow)
+            option.style.overflow = 'hidden';
         super({
             ...option,
             nodeType: 'img',
@@ -51,6 +55,14 @@ export default class JImage extends Base {
      */
     get typeName() {
         return 'image';
+    }
+    // 设置css到dom
+    setDomStyle(name, value) {
+        // transform应用于图片元素上面
+        if (name === 'transform') {
+            return this.target && this.target.setDomStyle(name, value);
+        }
+        return super.setDomStyle(name, value);
     }
     toJSON(props = []) {
         return super.toJSON([

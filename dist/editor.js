@@ -3,6 +3,7 @@ import JBase from './core/baseComponent';
 import JText from './components/text';
 import JImage from './components/image';
 import JSvg from './components/svg';
+import JContainer from './components/container';
 import JElement from './core/element';
 import JController from './core/controller';
 import JFonts from './core/fonts';
@@ -45,7 +46,15 @@ export default class JEditor extends JBase {
             option.container.appendChild(this.view.dom);
         this.view.addChild(this.dom);
         // @ts-ignore
-        this.regShape({ 'image': JImage, 'img': JImage, 'text': JText, 'svg': JSvg });
+        this.regShape({
+            'image': JImage,
+            'img': JImage,
+            'text': JText,
+            'span': JText,
+            'svg': JSvg,
+            'container': JContainer,
+            'div': JContainer,
+        });
         this.init(option);
         this.bindEvent(this.view.dom);
     }
@@ -89,7 +98,9 @@ export default class JEditor extends JBase {
         // 编辑器只支持保留 部分样式
         this.style.styleSaveMap = [
             'backgroundColor',
-            'backgroundImage'
+            'backgroundImage',
+            'backgroundSize',
+            'backgroundRepeat'
         ];
     }
     /**
@@ -271,25 +282,41 @@ export default class JEditor extends JBase {
         }
     }
     /**
+     * 生成编辑器对象
+     * @param data
+     * @param option
+     */
+    static create(option, data) {
+        const editor = new JEditor(option);
+        data && editor.fromJSON(data);
+        return editor;
+    }
+    /**
      * 渲染成html结构
      * @param container 容器
      * @param data
      */
     static async renderDom(data, option) {
-        const editor = new JEditor({
-            ...option,
-            editable: false,
-            style: {
-                transformOrigin: 'left top',
-            }
-        });
-        editor.fromJSON(data);
+        let editor;
+        if (data instanceof JEditor) {
+            editor = data;
+        }
+        else {
+            option = {
+                ...option,
+                editable: false,
+                style: {
+                    transformOrigin: 'left top',
+                }
+            };
+            editor = await this.create(option, data);
+        }
         // 如果指定了宽度，则把dom缩放到指定的大小
-        if (option.data?.width) {
+        if (option?.data?.width) {
             const scale = util.toNumber(option.data.width) / util.toNumber(editor.data.width);
             editor.scale(scale);
         }
-        else if (option.data?.width) {
+        else if (option?.data?.width) {
             const scale = util.toNumber(option.data.height) / util.toNumber(editor.data.height);
             editor.scale(scale);
         }
@@ -297,7 +324,7 @@ export default class JEditor extends JBase {
         dom.style.position = 'relative';
         return new Promise(resolve => {
             setTimeout(() => {
-                resolve(dom);
+                resolve(editor);
             }, 200);
         });
     }

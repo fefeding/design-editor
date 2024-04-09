@@ -12,12 +12,30 @@
 			background-color: rgb(44, 44, 44);
 		}
 
-		#container {
-			height:100%; 
-            overflow:auto;
-            background-color: #eee;
+		#container>div {
 			position: relative;
+            overflow: hidden;
+            float: left;
+            margin: 10px;
+            width: 400px;
+            height: 600px;
+            box-shadow: #ccc 0 0 5px;
+            border: 1px solid #fff;
 		}
+        #container>div:hover {
+            border: 1px solid #ccc;
+        }
+        #template_json {
+            background-color: #000;
+            color: #fff;
+            position: fixed;
+            width: 800px;
+            height: 600px;
+            left: 100px;
+            top: 100px;
+            overflow: scroll;
+            display: none;
+        }
 	</style>
 </head>
 
@@ -25,9 +43,13 @@
 	<div id="container">
 		<h1 style="color: #fff">加载中...</h1>
 	</div>
+    <div id="template_json">
+        <button id="template_json_close">关闭</button>
+        <div id="template_json_inner"></div>
+    </div>
 </body>
 <script type="module">
-	import { convert, nodeToDom, loadFigmaFile, getFigmaImage, getFigmaFileImages } from "../node_modules/j-figma2html/dist/index.esm.js";
+	import { convert, nodeToDom, loadFigmaFile, getFigmaImage, getFigmaFileImages } from "./lib/j-figma2html/index.esm.js";
     import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 	
 	const urlParams = getUrlParams();
@@ -49,7 +71,7 @@
 		const data = await loadFigmaTemplate(urlParams.fileid);
 		let images = {};
 		if(urlParams.fileid && urlParams.token) {
-		 images = await getFigmaFileImages(urlParams.fileid, urlParams.token);
+		    images = await getFigmaFileImages(urlParams.fileid, urlParams.token);
 		}
 		else {
 			images = {
@@ -72,19 +94,36 @@
 		});
 		
 		console.log(tpl);
+        const container = document.getElementById('container');
+        container.innerHTML = '';
 
-		const editor = initEditor();
-        editor.fromJSON(tpl);
-        resetScale(editor);
+		renderItem(tpl, container);
 	}
 
 	renderTemplate();
 
+    // 渲染单页
+    async function renderItem(item, container) {
+        if(item.role === 'editor') item = item.document;
+        if(item.figmaData && item.figmaData.type === 'DOCUMENT') {
+            for(const page of item.children) {
+                for(const tpl of page.children) {
+                    renderItem(tpl, container);
+                }
+            }
+            return;
+        }
 
-    function initEditor() {
-        const container = document.getElementById('container');
-        container.innerHTML = '';
-        container.style.height = window.innerHeight + 'px';
+        // 如果不是页面，只是一个组件，则完善数据结构
+        if(item.type == 'img' || item.type === 'span') {
+            const child = item;
+            item = {
+                children: [
+                    child
+                ],
+                data: child.data
+            };
+        }
 
         // 默认支持的字体
         const fonts = {
@@ -94,102 +133,29 @@
                 url: 'fonts/zcool-kuaile-regular.woff2'
             }
         };
-
-        const editor = new JEditor({
+        const opt = {
             fonts,
             data: {
-                width: 800,
-                height: 600,
-            },
-            // editable: false,
-            moveable: false, // 锁定编辑器不支持移动
-            style: {
-                backgroundColor: '#fff',
-                containerBackgroundColor: '#eee',
-                //marginTop: '50%',
-                //marginLeft: '50%'
-            },
-            transform: {
-                //translateX: '-50%',
-                //translateY: '-50%'
-            },
-            controllerOption: {
-                tipVisible: true, // 是否展示坐标和大小数据
-                style: {
-                    //itemStyle?: IJElementStyleDeclaration
-                    // 标线
-                    //markingLineStyle?: IJElementStyleDeclaration
-                    // 提示信息
-                    //tipStyle?: IJElementStyleDeclaration,
-                    rotateStyle: {
-                        //backgroundColor: 'transparent',
-                        //border:'none'
-                    }
-                },
-                // 操作点的指针, 指定二个就可以，其它的会旋转得到，你也可以指定全部
-                itemCursors: {				
-                    't': 'images/ns_cursor.png',
-                    'lt': 'images/nwes_cursor.png',
-                    'rotate': 'images/rotate_cursor.png',
-                },
-                // 图标
-                itemIcons: {
-                    rotate: 'images/rotate_icon.png',
-                    skew: 'images/skew_icon.png'
-                }
+                // 指定把dom缩放到大小，如果同时指定width和height，优先用width缩放
+                width: 400
             }
-        });
+        };
+        const editor = await JEditor.renderDom(item, opt);// 渲染dom
+        editor.dom.style.position = 'relative';
 
-        container.appendChild(editor.view.dom);
+        const parent = document.createElement('div');
+        parent.appendChild(editor.dom);
+        container.appendChild(parent);
 
-        editor.on('select', (e)=>{
-            console.log('editor selected',e.selected);
-        })
-
-        // 大小改变后居中, 并且显示全部
-        editor.on('resize', function (size) {
-            const domWidth = util.toNumber(this.view.dom.clientWidth);
-            const domHeight = util.toNumber(this.view.dom.clientHeight);
-            // 居中
-            this.data.left = Math.max((domWidth - util.toNumber(size.width)) / 2, 0);
-            this.data.top = Math.max((domHeight - util.toNumber(size.height)) / 2, 0);
-        });
-
-        // 禁止编辑器默认菜单
-        editor.on('contextmenu', (e) => {
-            e.preventDefault();
-        });
-
-        // 元素发生改变事件
-        editor.on('elementChange', async (e) => {
-            //console.log(e);
-            if(e.type === 'styleChange') {
-                // 字体发生改变，需要做check, 并加载字体生效
-                if(e.data.name === 'fontFamily') {
-                    // 如果没有在默认支持的字体内，这里会返回false
-                    if(editor.fonts.check(e.data.value)) return;// 已经加载，则跳过
-                    const con = fonts[e.data.value];
-                    if(con) {
-                        const f = await editor.fonts.load(con.family, con.url);// 加载
-                        console.log('load font', e.data.value, f.status);
-                    }
-                }
-            }
-        });
-        return editor;
+        const json = editor.toJSON();
+        parent.setAttribute('data-json', JSON.stringify(json));
+        parent.ondblclick = function(e) {
+            const json = this.getAttribute('data-json');
+            const jsonContainer = document.getElementById('template_json');
+            document.getElementById('template_json_inner').innerText = json;
+            jsonContainer.style.display = 'inline';
+        };
     }
-
-    // 让编辑器在可视范转内
-	function resetScale(editor) {
-		const domWidth = util.toNumber(editor.view.dom.clientWidth);
-		const domHeight = util.toNumber(editor.view.dom.clientHeight);
-
-		const scale = Math.min(domWidth / (editor.data.width * 1.4), domHeight / (editor.data.height * 1.4));
-		if (scale < 1 && scale < editor.transform.scaleX) {
-			console.log('scale', scale);
-			editor.scale(scale);
-		}
-	}
 
 	function getUrlParams(url=location.href) {
 		const urlParams = new URLSearchParams(url.split('?')[1]);
@@ -199,6 +165,10 @@
 		}
 		return params;
 	}
+
+    document.getElementById('template_json_close').onclick = function(){
+        document.getElementById('template_json').style.display = 'none';
+    };
 </script>
 
 </html>
