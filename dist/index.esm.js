@@ -984,14 +984,14 @@ class CSSFilters {
         if (filter.name) {
             const existsFilter = this.get(filter.name);
             if (existsFilter) {
-                console.error(`${filter.name}已经存在滤镜集合中，不能重复`);
-                return;
+                console.error(`${filter.displayName || filter.name}已经存在滤镜集合中，不能重复`);
+                return existsFilter;
             }
         }
         if (filter instanceof Filter) {
             this.filters.push(filter);
             this.apply();
-            return;
+            return filter;
         }
         else if (filter.name) {
             return this.add(filter.name, filter.option);

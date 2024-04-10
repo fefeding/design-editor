@@ -12,7 +12,7 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
         option.style = option.style || {};
         // position和overflow预设的值优先级最高
         option.style = Object.assign({...ContainerDefaultStyle}, option.style, {
-            position: ContainerDefaultStyle.position,
+            //position: ContainerDefaultStyle.position,
             //overflow: ContainerDefaultStyle.overflow
         });
         super({

@@ -660,10 +660,8 @@ class BaseConverter {
             height: 0,
         };
         if (node.absoluteBoundingBox) {
-            dom.data.width = dom.bounds.width = node.absoluteBoundingBox.width;
-            dom.data.height = dom.bounds.height = node.absoluteBoundingBox.height;
-            dom.style.width = util.toPX(dom.bounds.width).toString();
-            dom.style.height = util.toPX(dom.bounds.height).toString();
+            dom.bounds.width = node.absoluteBoundingBox.width;
+            dom.bounds.height = node.absoluteBoundingBox.height;
             // 相对于父位置
             if (parentNode && parentNode.absoluteBoundingBox) {
                 dom.data.left = dom.bounds.x = node.absoluteBoundingBox.x - parentNode.absoluteBoundingBox.x;
@@ -684,6 +682,16 @@ class BaseConverter {
         if (node.cornerRadius) {
             dom.style.borderRadius = util.toPX(node.cornerRadius);
         }
+        if (node.opacity)
+            dom.style.opacity = node.opacity.toString();
+        if (node.constraints) {
+            if (node.constraints.vertical) {
+                dom.style.verticalAlign = { 'CENTER': 'middle', 'TOP_BOTTOM': 'super', 'SCALE': 'center' }[node.constraints.vertical];
+            }
+            if (node.constraints.horizontal) {
+                dom.style.textAlign = { 'SCALE': 'center', 'LEFT_RIGHT': 'justify-all' }[node.constraints.vertical];
+            }
+        }
         // 旋转
         if (node.rotation) {
             dom.data.rotation = node.rotation;
@@ -693,13 +701,23 @@ class BaseConverter {
             dom.style.overflow = 'hidden';
         // padding
         for (const padding of ['paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom']) {
-            if (node[padding])
-                dom.style[padding] = util.toPX(node[padding]);
+            const v = node[padding];
+            if (v) {
+                dom.style[padding] = util.toPX(v);
+                if (['paddingLeft', 'paddingRight'].includes(padding))
+                    dom.bounds.width -= v;
+                else
+                    dom.bounds.height -= v;
+            }
         }
         await this.convertStyle(node, dom, option);
         await this.convertFills(node, dom, option); // 解析fills
         await this.convertStrokes(node, dom, option); // 边框
         await this.convertEffects(node, dom, option); // 滤镜
+        dom.data.width = dom.bounds.width;
+        dom.data.height = dom.bounds.height;
+        dom.style.width = util.toPX(dom.bounds.width).toString();
+        dom.style.height = util.toPX(dom.bounds.height).toString();
         return dom;
     }
     // 生成节点对象
@@ -715,24 +733,27 @@ class BaseConverter {
     }
     // 转换style
     async convertStyle(node, dom, option) {
-        if (!node.style)
+        // @ts-ignore
+        const style = node.style || node;
+        if (!style)
             return dom;
-        if (node.style.fontFamily)
-            dom.style.fontFamily = node.style.fontFamily;
-        if (node.style.fontSize)
-            dom.style.fontSize = util.toPX(node.style.fontSize);
-        if (node.style.fontWeight)
-            dom.style.fontWeight = node.style.fontWeight.toString();
-        if (node.style.italic)
+        if (style.fontFamily)
+            dom.style.fontFamily = style.fontFamily;
+        if (style.fontSize)
+            dom.style.fontSize = util.toPX(style.fontSize);
+        if (style.fontWeight)
+            dom.style.fontWeight = style.fontWeight.toString();
+        if (style.italic)
             dom.style.fontStyle = 'italic';
-        if (node.style.letterSpacing)
-            dom.style.letterSpacing = util.toPX(node.style.letterSpacing);
-        if (node.style.lineHeightPx)
-            dom.style.lineHeight = util.toPX(node.style.lineHeightPx);
-        if (node.style.textAlignHorizontal)
-            dom.style.textAlign = node.style.textAlignHorizontal;
-        if (node.style.textAlignVertical)
-            dom.style.verticalAlign = node.style.textAlignVertical;
+        if (style.letterSpacing) {
+            dom.style.letterSpacing = util.toPX(style.letterSpacing);
+        }
+        if (style.lineHeightPx)
+            dom.style.lineHeight = util.toPX(style.lineHeightPx);
+        if (style.textAlignHorizontal)
+            dom.style.textAlign = style.textAlignHorizontal;
+        if (style.textAlignVertical)
+            dom.style.verticalAlign = style.textAlignVertical;
         return dom;
     }
     // 转换滤镜
@@ -1122,7 +1143,7 @@ class PageConverter extends BaseConverter {
 let FRAMEConverter$1 = class FRAMEConverter extends BaseConverter {
     async convert(node, dom, parentNode, option) {
         if (parentNode && parentNode.type === 'CANVAS') {
-            //dom.style.overflow = 'hidden';
+            dom.style.overflow = 'hidden';
             if (parentNode && !parentNode.absoluteBoundingBox) {
                 // 如果是一级节点，则下面的节点都相对于它
                 parentNode.absoluteBoundingBox = {
@@ -1152,11 +1173,49 @@ class TEXTConverter extends BaseConverter {
         if (node.characters)
             dom.text = dom.data.text = node.characters;
         const res = await super.convert(node, dom, parentNode, option);
-        res.style.width = 'auto'; // text没必要指定宽度
+        /*dom.style.letterSpacing = dom.style.letterSpacing || '2px';
+        if(dom.style.letterSpacing) {
+            const v = util.toNumber(dom.style.letterSpacing);
+            dom.bounds.width += v * dom.text.length;
+        }*/
+        dom.data.width = 'auto'; //dom.bounds.width;
+        dom.style.minWidth = util.toPX(dom.data.width);
+        dom.style.width = 'auto'; //// text没必要指定宽度
+        await this.convertCharacterStyleOverrides(node, res, option); // 处理分字样式
         return res;
+    }
+    // 解析字体多样式
+    async convertCharacterStyleOverrides(node, dom, option) {
+        if (node.characterStyleOverrides && node.characterStyleOverrides.length && node.styleOverrideTable) {
+            const text = dom.text || '';
+            let index = 0;
+            for (; index < node.characterStyleOverrides.length; index++) {
+                const s = node.characterStyleOverrides[index];
+                const f = text[index];
+                if (!s || !f)
+                    continue;
+                const fDom = this.createDomNode('span');
+                fDom.text = f;
+                const style = node.styleOverrideTable[s];
+                if (style) {
+                    await this.convertFills(style, fDom, option);
+                    await this.convertStyle(style, fDom, option);
+                }
+                dom.children.push(fDom);
+            }
+            // 还有未处理完的，则加到后面
+            if (text.length > index) {
+                const fDom = this.createDomNode('span');
+                fDom.text = text.substring(index);
+                dom.children.push(fDom);
+            }
+            dom.text = '';
+            dom.type = 'div';
+        }
     }
     // 处理填充, 文本的fill就是字体的颜色
     async convertFills(node, dom, option) {
+        // @ts-ignore
         if (!node.isMaskOutline && node.fills && node.fills.length) {
             const fill = node.fills[0];
             switch (fill.type) {
