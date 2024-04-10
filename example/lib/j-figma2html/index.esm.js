@@ -699,6 +699,7 @@ class BaseConverter {
         }
         if (node.clipsContent === true)
             dom.style.overflow = 'hidden';
+        dom.preserveRatio = node.preserveRatio;
         // padding
         for (const padding of ['paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom']) {
             const v = node[padding];
@@ -837,20 +838,20 @@ class BaseConverter {
                         break;
                     }
                 }
-                if (dom && fill.imageTransform) {
-                    if (!dom.transform)
-                        dom.transform = {};
-                    const [[a, c, e], [b, d, f]] = fill.imageTransform;
-                    // 计算旋转角度和正弦值
-                    const rotation = Math.atan2(b, a);
-                    const scaleX = Math.sqrt(a * a + b * b);
-                    const scaleY = Math.sqrt(c * c + d * d);
-                    dom.transform.translateX = e * 100 + '%';
-                    dom.transform.translateY = f * 100 + '%';
-                    dom.transform.rotateZ = rotation;
-                    dom.transform.scaleX = scaleX;
-                    dom.transform.scaleY = scaleY;
-                }
+                /*
+                                if(dom && fill.imageTransform) {
+                                    if(!dom.transform) dom.transform = {};
+                                    const [[a, c, e], [b, d, f]] = fill.imageTransform;
+                                    // 计算旋转角度和正弦值
+                                    const rotation = Math.atan2(b, a);
+                                    const scaleX = Math.sqrt(a * a + b * b);
+                                    const scaleY = Math.sqrt(c * c + d * d);
+                                    dom.transform.translateX = e*100 + '%';
+                                    dom.transform.translateY = f*100 + '%';
+                                    dom.transform.rotateZ = rotation;
+                                    dom.transform.scaleX = scaleX;
+                                    dom.transform.scaleY = scaleY;
+                                }*/
             }
         }
         return dom;
@@ -1173,14 +1174,33 @@ class TEXTConverter extends BaseConverter {
         if (node.characters)
             dom.text = dom.data.text = node.characters;
         const res = await super.convert(node, dom, parentNode, option);
-        /*dom.style.letterSpacing = dom.style.letterSpacing || '2px';
-        if(dom.style.letterSpacing) {
+        //dom.style.letterSpacing = dom.style.letterSpacing || '1px';
+        /*if(dom.style.letterSpacing) {
             const v = util.toNumber(dom.style.letterSpacing);
-            dom.bounds.width += v * dom.text.length;
+            dom.bounds.width += v * (dom.bounds.width/node.style.fontSize);
         }*/
-        dom.data.width = 'auto'; //dom.bounds.width;
-        dom.style.minWidth = util.toPX(dom.data.width);
-        dom.style.width = 'auto'; //// text没必要指定宽度
+        // 如果行高好高度一致,则表示单行文本，可以不指定宽度
+        if (dom.bounds?.height < node.style?.fontSize * 2) {
+            const span = document.createElement('span');
+            Object.assign(span.style, dom.style);
+            span.style.width = 'auto';
+            span.style.position = 'absolute';
+            span.innerText = dom.text;
+            span.style.visibility = 'hidden';
+            document.body.appendChild(span);
+            let w = span.offsetWidth || span.clientWidth;
+            if (dom.style.letterSpacing) {
+                const v = util.toNumber(dom.style.letterSpacing);
+                w += v;
+            }
+            document.body.removeChild(span);
+            dom.data.width = Math.max(w, util.toNumber(dom.data.width));
+        }
+        else {
+            //dom.style.minWidth = util.toPX(dom.data.width);
+            dom.data.width = dom.bounds.width;
+        }
+        dom.style.width = util.toPX(dom.bounds.width);
         await this.convertCharacterStyleOverrides(node, res, option); // 处理分字样式
         return res;
     }
@@ -1196,6 +1216,7 @@ class TEXTConverter extends BaseConverter {
                     continue;
                 const fDom = this.createDomNode('span');
                 fDom.text = f;
+                fDom.style.position = 'relative'; // 连续字符不能用绝对定位
                 const style = node.styleOverrideTable[s];
                 if (style) {
                     await this.convertFills(style, fDom, option);
@@ -1388,6 +1409,8 @@ async function renderElement(node, option, dom) {
     dom = dom || document.createElement(node.type);
     if (node.style) {
         Object.assign(dom.style, node.style);
+        if (node.preserveRatio && node.type === 'img')
+            dom.style.height = 'auto';
     }
     if (node.text) {
         dom.textContent = node.text;

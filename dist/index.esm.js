@@ -984,14 +984,14 @@ class CSSFilters {
         if (filter.name) {
             const existsFilter = this.get(filter.name);
             if (existsFilter) {
-                console.error(`${filter.displayName || filter.name}已经存在滤镜集合中，不能重复`);
-                return existsFilter;
+                console.error(`${filter.name}已经存在滤镜集合中，不能重复`);
+                return;
             }
         }
         if (filter instanceof Filter) {
             this.filters.push(filter);
             this.apply();
-            return filter;
+            return;
         }
         else if (filter.name) {
             return this.add(filter.name, filter.option);
@@ -2370,18 +2370,18 @@ const ContainerDefaultStyle = {
     height: 'auto',
     right: 'auto',
     bottom: 'auto',
-    padding: '0',
+    //padding: '0',
     transformOrigin: 'center center',
     transform: 'none',
-    "paddingTop": '0',
-    "paddingLeft": '0',
-    "paddingRight": '0',
-    "paddingBottom": '0',
-    margin: '0',
-    "marginTop": '0',
-    "marginLeft": '0',
-    "marginRight": '0',
-    "marginBottom": '0',
+    //"paddingTop": '0',
+    //"paddingLeft": '0',
+    //"paddingRight": '0',
+    //"paddingBottom": '0',
+    //margin: '0',
+    //"marginTop": '0',
+    //"marginLeft": '0',
+    //"marginRight": '0',
+    //"marginBottom": '0',
     zIndex: '0',
     display: 'inline-block',
     overflow: 'visible',
@@ -4455,7 +4455,8 @@ class JFonts extends JEventEmitter {
             const config = this.fontConfigs.get(name.toLocaleLowerCase());
             // 没有配置支持的字体，则报错
             if (!config) {
-                throw Error(`没有支持的 ${name} 字体配置`);
+                console.warn(`没有支持的 ${name} 字体配置`);
+                return null;
             }
             url = config.url;
         }

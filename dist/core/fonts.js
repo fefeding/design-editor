@@ -87,7 +87,8 @@ export default class JFonts extends EventEmiter {
             const config = this.fontConfigs.get(name.toLocaleLowerCase());
             // 没有配置支持的字体，则报错
             if (!config) {
-                throw Error(`没有支持的 ${name} 字体配置`);
+                console.warn(`没有支持的 ${name} 字体配置`);
+                return null;
             }
             url = config.url;
         }

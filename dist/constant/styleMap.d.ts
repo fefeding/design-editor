@@ -921,18 +921,8 @@ export declare const ContainerDefaultStyle: {
     height: string;
     right: string;
     bottom: string;
-    padding: string;
     transformOrigin: string;
     transform: string;
-    paddingTop: string;
-    paddingLeft: string;
-    paddingRight: string;
-    paddingBottom: string;
-    margin: string;
-    marginTop: string;
-    marginLeft: string;
-    marginRight: string;
-    marginBottom: string;
     zIndex: string;
     display: string;
     overflow: string;
