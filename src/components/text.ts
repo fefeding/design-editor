@@ -32,8 +32,8 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
             fontSize: 22,
             fontWeight: 'normal',
             fontStyle: 'normal',
-            wordBreak: "keep-all",
-            wordWrap: "break-word",
+            //wordBreak: "keep-all",
+            //wordWrap: "break-word",
             ...option.style
         };
 

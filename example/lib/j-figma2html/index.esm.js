@@ -1173,14 +1173,15 @@ class TEXTConverter extends BaseConverter {
         if (node.characters)
             dom.text = dom.data.text = node.characters;
         const res = await super.convert(node, dom, parentNode, option);
-        /*dom.style.letterSpacing = dom.style.letterSpacing || '2px';
+        dom.style.letterSpacing = dom.style.letterSpacing || '2px';
         if(dom.style.letterSpacing) {
             const v = util.toNumber(dom.style.letterSpacing);
-            dom.bounds.width += v * dom.text.length;
-        }*/
-        dom.data.width = 'auto'; //dom.bounds.width;
-        dom.style.minWidth = util.toPX(dom.data.width);
-        dom.style.width = 'auto'; //// text没必要指定宽度
+            dom.bounds.width += v * (dom.bounds.width/node.style.fontSize);
+        }
+        //dom.style.minWidth = util.toPX(dom.data.width);
+        dom.data.width = dom.bounds.width;
+        dom.style.width = util.toPX(dom.bounds.width);
+        
         await this.convertCharacterStyleOverrides(node, res, option); // 处理分字样式
         return res;
     }
@@ -1196,6 +1197,7 @@ class TEXTConverter extends BaseConverter {
                     continue;
                 const fDom = this.createDomNode('span');
                 fDom.text = f;
+                fDom.style.position = 'relative'; // 连续字符不能用绝对定位
                 const style = node.styleOverrideTable[s];
                 if (style) {
                     await this.convertFills(style, fDom, option);
