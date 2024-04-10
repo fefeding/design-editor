@@ -11,8 +11,8 @@ export default class JBaseComponent extends JElement {
         option.style = option.style || {};
         // position和overflow预设的值优先级最高
         option.style = Object.assign({ ...ContainerDefaultStyle }, option.style, {
-            position: ContainerDefaultStyle.position,
-            //overflow: ContainerDefaultStyle.overflow
+        //position: ContainerDefaultStyle.position,
+        //overflow: ContainerDefaultStyle.overflow
         });
         super({
             ...option,
