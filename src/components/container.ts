@@ -6,7 +6,7 @@ export default class JContainer extends Base<HTMLDivElement> implements IJBaseCo
     constructor(option={} as IElementOption) {
         super({
             ...option,
-            type: option.type || 'svg',
+            type: option.type || 'div',
             dataType: option.dataType || JElementData
         });
     }

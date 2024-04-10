@@ -984,14 +984,14 @@ class CSSFilters {
         if (filter.name) {
             const existsFilter = this.get(filter.name);
             if (existsFilter) {
-                console.error(`${filter.displayName || filter.name}已经存在滤镜集合中，不能重复`);
-                return existsFilter;
+                console.error(`${filter.name}已经存在滤镜集合中，不能重复`);
+                return;
             }
         }
         if (filter instanceof Filter) {
             this.filters.push(filter);
             this.apply();
-            return filter;
+            return;
         }
         else if (filter.name) {
             return this.add(filter.name, filter.option);
@@ -3505,8 +3505,8 @@ class JText extends JBaseComponent {
             fontSize: 22,
             fontWeight: 'normal',
             fontStyle: 'normal',
-            wordBreak: "keep-all",
-            wordWrap: "break-word",
+            //wordBreak: "keep-all",
+            //wordWrap: "break-word",
             ...option.style
         };
         super({
@@ -3723,7 +3723,7 @@ class JContainer extends JBaseComponent {
     constructor(option = {}) {
         super({
             ...option,
-            type: option.type || 'svg',
+            type: option.type || 'div',
             dataType: option.dataType || JElementData
         });
     }
