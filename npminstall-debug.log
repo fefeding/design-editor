@@ -1,10 +1,10 @@
 {
-  root: '/Users/jiamao/project/github/j-html-design-editor',
+  root: 'F:\\code\\github\\j-html-design-editor',
   registry: 'https://registry.npmmirror.com',
   pkgs: [
     {
       name: 'j-figma2html',
-      version: '1.0.5',
+      version: '1.0.13',
       type: 'version',
       alias: undefined,
       arg: [Result]
@@ -12,16 +12,16 @@
   ],
   production: false,
   cacheStrict: false,
-  cacheDir: '/Users/jiamao/.npminstall_tarball',
+  cacheDir: 'C:\\Users\\jintengtech\\.npminstall_tarball',
   env: {
     npm_config_registry: 'https://registry.npmmirror.com',
-    npm_config_argv: '{"remain":[],"cooked":["--fix-bug-versions","--china","--userconfig=/Users/jiamao/.cnpmrc","--disturl=https://cdn.npmmirror.com/binaries/node","--registry=https://registry.npmmirror.com","j-figma2html@1.0.5","--save-dev"],"original":["--fix-bug-versions","--china","--userconfig=/Users/jiamao/.cnpmrc","--disturl=https://cdn.npmmirror.com/binaries/node","--registry=https://registry.npmmirror.com","j-figma2html@1.0.5","--save-dev"]}',
-    npm_config_user_agent: 'npminstall/7.12.0 npm/? node/v16.15.1 darwin x64',
-    npm_config_cache: '/Users/jiamao/.npminstall_tarball',
-    NODE: '/usr/local/bin/node',
-    npm_node_execpath: '/usr/local/bin/node',
-    npm_execpath: '/usr/local/lib/node_modules/cnpm/node_modules/npminstall/bin/install.js',
-    npm_config_userconfig: '/Users/jiamao/.cnpmrc',
+    npm_config_argv: '{"remain":[],"cooked":["--fix-bug-versions","--china","--userconfig=C:\\\\Users\\\\jintengtech\\\\.cnpmrc","--disturl=https://cdn.npmmirror.com/binaries/node","--registry=https://registry.npmmirror.com","j-figma2html@1.0.13","--save-dev"],"original":["--fix-bug-versions","--china","--userconfig=C:\\\\Users\\\\jintengtech\\\\.cnpmrc","--disturl=https://cdn.npmmirror.com/binaries/node","--registry=https://registry.npmmirror.com","j-figma2html@1.0.13","--save-dev"]}',
+    npm_config_user_agent: 'npminstall/7.12.0 npm/? node/v16.20.2 win32 x64',
+    npm_config_cache: 'C:\\Users\\jintengtech\\.npminstall_tarball',
+    NODE: 'C:\\Program Files\\nodejs\\node.exe',
+    npm_node_execpath: 'C:\\Program Files\\nodejs\\node.exe',
+    npm_execpath: 'D:\\nvm\\v16.20.2\\node_modules\\cnpm\\node_modules\\npminstall\\bin\\install.js',
+    npm_config_userconfig: 'C:\\Users\\jintengtech\\.cnpmrc',
     npm_config_disturl: 'https://cdn.npmmirror.com/binaries/node',
     npm_config_r: 'https://registry.npmmirror.com',
     COREPACK_NPM_REGISTRY: 'https://registry.npmmirror.com',
@@ -49,8 +49,8 @@
     npm_config_sharp_binary_host: 'https://cdn.npmmirror.com/binaries/sharp',
     npm_config_sharp_libvips_binary_host: 'https://cdn.npmmirror.com/binaries/sharp-libvips',
     npm_config_robotjs_binary_host: 'https://cdn.npmmirror.com/binaries/robotjs',
-    npm_rootpath: '/Users/jiamao/project/github/j-html-design-editor',
-    INIT_CWD: '/Users/jiamao/project/github/j-html-design-editor'
+    npm_rootpath: 'F:\\code\\github\\j-html-design-editor',
+    INIT_CWD: 'F:\\code\\github\\j-html-design-editor'
   },
   binaryMirrors: {
     ENVS: {
@@ -185,7 +185,7 @@
   disableFallbackStore: false,
   workspacesMap: Map(0) {},
   enableWorkspace: false,
-  workspaceRoot: '/Users/jiamao/project/github/j-html-design-editor',
+  workspaceRoot: 'F:\\code\\github\\j-html-design-editor',
   isWorkspaceRoot: true,
   isWorkspacePackage: false,
   offline: false,

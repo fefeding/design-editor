@@ -1,6 +1,6 @@
 {
   "name": "j-html-design-editor",
-  "version": "1.0.53",
+  "version": "1.0.54",
   "description": "design html 设计图片编辑库",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -43,7 +43,7 @@
     "gulp-typescript": "^6.0.0-alpha.1",
     "happy-dom": "^13.3.5",
     "html-to-image": "^1.11.11",
-    "j-figma2html": "^1.0.12",
+    "j-figma2html": "^1.0.13",
     "request": "^2.88.2",
     "rollup": "^4.9.6",
     "rollup-plugin-typescript2": "^0.36.0",

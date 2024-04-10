@@ -1200,7 +1200,7 @@ class TEXTConverter extends BaseConverter {
             //dom.style.minWidth = util.toPX(dom.data.width);
             dom.data.width = dom.bounds.width;
         }
-        dom.style.width = util.toPX(dom.bounds.width);
+        dom.style.width = util.toPX(dom.data.width);
         await this.convertCharacterStyleOverrides(node, res, option); // 处理分字样式
         return res;
     }
