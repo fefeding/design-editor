@@ -27,8 +27,8 @@ export default class JText extends Base {
             fontSize: 22,
             fontWeight: 'normal',
             fontStyle: 'normal',
-            wordBreak: "keep-all",
-            wordWrap: "break-word",
+            //wordBreak: "keep-all",
+            //wordWrap: "break-word",
             ...option.style
         };
         super({

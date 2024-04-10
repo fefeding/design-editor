@@ -4,7 +4,7 @@ export default class JContainer extends Base {
     constructor(option = {}) {
         super({
             ...option,
-            type: option.type || 'svg',
+            type: option.type || 'div',
             dataType: option.dataType || JElementData
         });
     }
