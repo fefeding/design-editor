@@ -1,9 +1,9 @@
-import { Point } from 'j-design-util';
+import { Point, IJFonts } from 'j-design-util';
 import JBase from './core/baseComponent';
 import JText from './components/text';
 import JImage from './components/image';
 import JElement from './core/element';
-import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent, IJFonts, IElementOption, IEditorOption, ITextOption, IImageOption } from './constant/types';
+import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent, IElementOption, IEditorOption, ITextOption, IImageOption } from './constant/types';
 /**
  * @public
  */

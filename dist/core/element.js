@@ -35,17 +35,17 @@ export default class JElement extends EventEmiter {
         this.data = JElementData.createProxy(new dataType());
         // 名称
         this.name = option.name || '';
+        // 变换控制的是核心元素 . 
+        this.transform = JTransform.createProxy(option.transform || {}, {
+            target: this,
+            // 如果指定了只响应某几个属性
+            watchProps: option.transformWatchProps
+        });
         // 如果是组件，不在这里进行数据初始化调用
         this.initData(option);
         // @ts-ignore
         if (option.className)
             this.className = option.className;
-        // 变换控制的是核心元素 . 这里要放在initData后，不然会被覆盖
-        this.transform = JTransform.createProxy(option.transform, {
-            target: this,
-            // 如果指定了只响应某几个属性
-            watchProps: option.transformWatchProps
-        });
         this.bindEvent(); // 事件绑定
     }
     // 初始化一些基础属性
@@ -58,10 +58,10 @@ export default class JElement extends EventEmiter {
                 if (item.name === 'visible') {
                     this.style.display = item.value ? 'block' : 'none';
                 }
-                else if (item.name === 'rotation') {
+                else if (item.name === 'rotation' && item.value) {
                     this.transform.rotateZ = item.value;
                 }
-                else if (item.name === 'angle') {
+                else if (item.name === 'angle' && item.value) {
                     this.transform.rotateZ = util.degToRad(item.value);
                 }
                 else

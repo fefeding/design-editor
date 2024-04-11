@@ -1,4 +1,4 @@
-import util from 'j-design-util';
+import util, { fonts as JFonts } from 'j-design-util';
 import JBase from './core/baseComponent';
 import JText from './components/text';
 import JImage from './components/image';
@@ -6,7 +6,6 @@ import JSvg from './components/svg';
 import JContainer from './components/container';
 import JElement from './core/element';
 import JController from './core/controller';
-import JFonts from './core/fonts';
 import { editorDefaultCssContent } from './constant/styleMap';
 /**
  * @public

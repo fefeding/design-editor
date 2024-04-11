@@ -1,4 +1,4 @@
-import util, { Point } from 'j-design-util';
+import util, { Point, IJFonts, fonts as JFonts } from 'j-design-util';
 import JBase from './core/baseComponent';
 import JText from './components/text';
 import JImage from './components/image';
@@ -6,8 +6,7 @@ import JSvg from './components/svg';
 import JContainer from './components/container';
 import JElement from './core/element';
 import JController from './core/controller';
-import JFonts from './core/fonts';
-import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent, IJFonts, IElementOption, IEditorOption, ITextOption, IImageOption } from './constant/types';
+import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent, IElementOption, IEditorOption, ITextOption, IImageOption } from './constant/types';
 import { editorDefaultCssContent } from './constant/styleMap';
 import { SupportEventNames } from './core/event';
 
@@ -173,7 +172,11 @@ export default class JEditor extends JBase implements IJEditor {
             else if(e.type === 'styleChange') {
                 // 字体发生改变，需要做check, 并加载字体生效
                 if(e.data.name === 'fontFamily' && e.data.value) {
-                    this.fonts.load(e.data.value).catch((e)=>{
+                    this.fonts.load(e.data.value).then((font) => {
+                        if(!font) {
+                            console.warn(`加载字体${e.data.value}失败`);
+                        }
+                    }).catch((e)=>{
                         console.error(e);
                     });// 异步加载字体
                 }
