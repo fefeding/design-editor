@@ -25,3 +25,4 @@ build/package-lock.json
 .vitepress/cache
 # docs/api
 docs/.api
+npminstall-debug.log
