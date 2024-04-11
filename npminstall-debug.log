@@ -3,8 +3,8 @@
   registry: 'https://registry.npmmirror.com',
   pkgs: [
     {
-      name: 'j-figma2html',
-      version: '1.0.13',
+      name: 'j-design-util',
+      version: '1.0.31',
       type: 'version',
       alias: undefined,
       arg: [Result]
@@ -15,7 +15,7 @@
   cacheDir: 'C:\\Users\\jintengtech\\.npminstall_tarball',
   env: {
     npm_config_registry: 'https://registry.npmmirror.com',
-    npm_config_argv: '{"remain":[],"cooked":["--fix-bug-versions","--china","--userconfig=C:\\\\Users\\\\jintengtech\\\\.cnpmrc","--disturl=https://cdn.npmmirror.com/binaries/node","--registry=https://registry.npmmirror.com","j-figma2html@1.0.13","--save-dev"],"original":["--fix-bug-versions","--china","--userconfig=C:\\\\Users\\\\jintengtech\\\\.cnpmrc","--disturl=https://cdn.npmmirror.com/binaries/node","--registry=https://registry.npmmirror.com","j-figma2html@1.0.13","--save-dev"]}',
+    npm_config_argv: '{"remain":[],"cooked":["--fix-bug-versions","--china","--userconfig=C:\\\\Users\\\\jintengtech\\\\.cnpmrc","--disturl=https://cdn.npmmirror.com/binaries/node","--registry=https://registry.npmmirror.com","j-design-util@1.0.31"],"original":["--fix-bug-versions","--china","--userconfig=C:\\\\Users\\\\jintengtech\\\\.cnpmrc","--disturl=https://cdn.npmmirror.com/binaries/node","--registry=https://registry.npmmirror.com","j-design-util@1.0.31"]}',
     npm_config_user_agent: 'npminstall/7.12.0 npm/? node/v16.20.2 win32 x64',
     npm_config_cache: 'C:\\Users\\jintengtech\\.npminstall_tarball',
     NODE: 'C:\\Program Files\\nodejs\\node.exe',

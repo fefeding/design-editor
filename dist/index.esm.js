@@ -255,6 +255,38 @@ var util = {
         }
     },
     /**
+     * 检测是否支持某字体
+     * @param family 字体名
+     */
+    checkFont(family) {
+        if (!family)
+            return false;
+        const baseFont = 'Arial';
+        if (baseFont.toLowerCase() === family.toLowerCase())
+            return true;
+        const txt = "a";
+        const fontSize = 100;
+        const w = 100, h = 100; // 宽高
+        const cvs = document.createElement('canvas');
+        const ctx = cvs.getContext('2d', {
+            willReadFrequently: true
+        });
+        cvs.width = w;
+        cvs.height = h;
+        ctx.textAlign = "center";
+        ctx.fillStyle = "black";
+        ctx.textBaseline = "middle";
+        const check = function (ctx, family, w, h) {
+            ctx.clearRect(0, 0, w, h);
+            ctx.font = fontSize + "px" + family + ", " + baseFont;
+            ctx.fillText(txt, w / 2, h / 2);
+            const data = ctx.getImageData(0, 0, w, h).data;
+            return [].slice.call(data).filter((p) => p != 0);
+        };
+        const supported = check(ctx, baseFont, w, h).join("") !== check(ctx, family, w, h).join("");
+        return supported;
+    },
+    /**
      * 设置class样式
      * @param dom 节点
      * @param name 样式名
@@ -2934,17 +2966,17 @@ class JElement extends JEventEmitter {
         this.data = JElementData.createProxy(new dataType());
         // 名称
         this.name = option.name || '';
+        // 变换控制的是核心元素 . 
+        this.transform = Transform.createProxy(option.transform || {}, {
+            target: this,
+            // 如果指定了只响应某几个属性
+            watchProps: option.transformWatchProps
+        });
         // 如果是组件，不在这里进行数据初始化调用
         this.initData(option);
         // @ts-ignore
         if (option.className)
             this.className = option.className;
-        // 变换控制的是核心元素 . 这里要放在initData后，不然会被覆盖
-        this.transform = Transform.createProxy(option.transform, {
-            target: this,
-            // 如果指定了只响应某几个属性
-            watchProps: option.transformWatchProps
-        });
         this.bindEvent(); // 事件绑定
     }
     // 初始化一些基础属性
@@ -2957,10 +2989,10 @@ class JElement extends JEventEmitter {
                 if (item.name === 'visible') {
                     this.style.display = item.value ? 'block' : 'none';
                 }
-                else if (item.name === 'rotation') {
+                else if (item.name === 'rotation' && item.value) {
                     this.transform.rotateZ = item.value;
                 }
-                else if (item.name === 'angle') {
+                else if (item.name === 'angle' && item.value) {
                     this.transform.rotateZ = util.degToRad(item.value);
                 }
                 else
