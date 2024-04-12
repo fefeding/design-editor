@@ -255,6 +255,38 @@ var util = {
         }
     },
     /**
+     * 检测是否支持某字体
+     * @param family 字体名
+     */
+    checkFont(family) {
+        if (!family)
+            return false;
+        const baseFont = 'Arial';
+        if (baseFont.toLowerCase() === family.toLowerCase())
+            return true;
+        const txt = "a";
+        const fontSize = 100;
+        const w = 100, h = 100; // 宽高
+        const cvs = document.createElement('canvas');
+        const ctx = cvs.getContext('2d', {
+            willReadFrequently: true
+        });
+        cvs.width = w;
+        cvs.height = h;
+        ctx.textAlign = "center";
+        ctx.fillStyle = "black";
+        ctx.textBaseline = "middle";
+        const check = function (ctx, family, w, h) {
+            ctx.clearRect(0, 0, w, h);
+            ctx.font = fontSize + "px" + family + ", " + baseFont;
+            ctx.fillText(txt, w / 2, h / 2);
+            const data = ctx.getImageData(0, 0, w, h).data;
+            return [].slice.call(data).filter((p) => p != 0);
+        };
+        const supported = check(ctx, baseFont, w, h).join("") !== check(ctx, family, w, h).join("");
+        return supported;
+    },
+    /**
      * 设置class样式
      * @param dom 节点
      * @param name 样式名
@@ -407,6 +439,346 @@ var util = {
         });
     }
 };
+
+var eventemitter3 = {exports: {}};
+
+(function (module) {
+
+	var has = Object.prototype.hasOwnProperty
+	  , prefix = '~';
+
+	/**
+	 * Constructor to create a storage for our `EE` objects.
+	 * An `Events` instance is a plain object whose properties are event names.
+	 *
+	 * @constructor
+	 * @private
+	 */
+	function Events() {}
+
+	//
+	// We try to not inherit from `Object.prototype`. In some engines creating an
+	// instance in this way is faster than calling `Object.create(null)` directly.
+	// If `Object.create(null)` is not supported we prefix the event names with a
+	// character to make sure that the built-in object properties are not
+	// overridden or used as an attack vector.
+	//
+	if (Object.create) {
+	  Events.prototype = Object.create(null);
+
+	  //
+	  // This hack is needed because the `__proto__` property is still inherited in
+	  // some old browsers like Android 4, iPhone 5.1, Opera 11 and Safari 5.
+	  //
+	  if (!new Events().__proto__) prefix = false;
+	}
+
+	/**
+	 * Representation of a single event listener.
+	 *
+	 * @param {Function} fn The listener function.
+	 * @param {*} context The context to invoke the listener with.
+	 * @param {Boolean} [once=false] Specify if the listener is a one-time listener.
+	 * @constructor
+	 * @private
+	 */
+	function EE(fn, context, once) {
+	  this.fn = fn;
+	  this.context = context;
+	  this.once = once || false;
+	}
+
+	/**
+	 * Add a listener for a given event.
+	 *
+	 * @param {EventEmitter} emitter Reference to the `EventEmitter` instance.
+	 * @param {(String|Symbol)} event The event name.
+	 * @param {Function} fn The listener function.
+	 * @param {*} context The context to invoke the listener with.
+	 * @param {Boolean} once Specify if the listener is a one-time listener.
+	 * @returns {EventEmitter}
+	 * @private
+	 */
+	function addListener(emitter, event, fn, context, once) {
+	  if (typeof fn !== 'function') {
+	    throw new TypeError('The listener must be a function');
+	  }
+
+	  var listener = new EE(fn, context || emitter, once)
+	    , evt = prefix ? prefix + event : event;
+
+	  if (!emitter._events[evt]) emitter._events[evt] = listener, emitter._eventsCount++;
+	  else if (!emitter._events[evt].fn) emitter._events[evt].push(listener);
+	  else emitter._events[evt] = [emitter._events[evt], listener];
+
+	  return emitter;
+	}
+
+	/**
+	 * Clear event by name.
+	 *
+	 * @param {EventEmitter} emitter Reference to the `EventEmitter` instance.
+	 * @param {(String|Symbol)} evt The Event name.
+	 * @private
+	 */
+	function clearEvent(emitter, evt) {
+	  if (--emitter._eventsCount === 0) emitter._events = new Events();
+	  else delete emitter._events[evt];
+	}
+
+	/**
+	 * Minimal `EventEmitter` interface that is molded against the Node.js
+	 * `EventEmitter` interface.
+	 *
+	 * @constructor
+	 * @public
+	 */
+	function EventEmitter() {
+	  this._events = new Events();
+	  this._eventsCount = 0;
+	}
+
+	/**
+	 * Return an array listing the events for which the emitter has registered
+	 * listeners.
+	 *
+	 * @returns {Array}
+	 * @public
+	 */
+	EventEmitter.prototype.eventNames = function eventNames() {
+	  var names = []
+	    , events
+	    , name;
+
+	  if (this._eventsCount === 0) return names;
+
+	  for (name in (events = this._events)) {
+	    if (has.call(events, name)) names.push(prefix ? name.slice(1) : name);
+	  }
+
+	  if (Object.getOwnPropertySymbols) {
+	    return names.concat(Object.getOwnPropertySymbols(events));
+	  }
+
+	  return names;
+	};
+
+	/**
+	 * Return the listeners registered for a given event.
+	 *
+	 * @param {(String|Symbol)} event The event name.
+	 * @returns {Array} The registered listeners.
+	 * @public
+	 */
+	EventEmitter.prototype.listeners = function listeners(event) {
+	  var evt = prefix ? prefix + event : event
+	    , handlers = this._events[evt];
+
+	  if (!handlers) return [];
+	  if (handlers.fn) return [handlers.fn];
+
+	  for (var i = 0, l = handlers.length, ee = new Array(l); i < l; i++) {
+	    ee[i] = handlers[i].fn;
+	  }
+
+	  return ee;
+	};
+
+	/**
+	 * Return the number of listeners listening to a given event.
+	 *
+	 * @param {(String|Symbol)} event The event name.
+	 * @returns {Number} The number of listeners.
+	 * @public
+	 */
+	EventEmitter.prototype.listenerCount = function listenerCount(event) {
+	  var evt = prefix ? prefix + event : event
+	    , listeners = this._events[evt];
+
+	  if (!listeners) return 0;
+	  if (listeners.fn) return 1;
+	  return listeners.length;
+	};
+
+	/**
+	 * Calls each of the listeners registered for a given event.
+	 *
+	 * @param {(String|Symbol)} event The event name.
+	 * @returns {Boolean} `true` if the event had listeners, else `false`.
+	 * @public
+	 */
+	EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
+	  var evt = prefix ? prefix + event : event;
+
+	  if (!this._events[evt]) return false;
+
+	  var listeners = this._events[evt]
+	    , len = arguments.length
+	    , args
+	    , i;
+
+	  if (listeners.fn) {
+	    if (listeners.once) this.removeListener(event, listeners.fn, undefined, true);
+
+	    switch (len) {
+	      case 1: return listeners.fn.call(listeners.context), true;
+	      case 2: return listeners.fn.call(listeners.context, a1), true;
+	      case 3: return listeners.fn.call(listeners.context, a1, a2), true;
+	      case 4: return listeners.fn.call(listeners.context, a1, a2, a3), true;
+	      case 5: return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
+	      case 6: return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
+	    }
+
+	    for (i = 1, args = new Array(len -1); i < len; i++) {
+	      args[i - 1] = arguments[i];
+	    }
+
+	    listeners.fn.apply(listeners.context, args);
+	  } else {
+	    var length = listeners.length
+	      , j;
+
+	    for (i = 0; i < length; i++) {
+	      if (listeners[i].once) this.removeListener(event, listeners[i].fn, undefined, true);
+
+	      switch (len) {
+	        case 1: listeners[i].fn.call(listeners[i].context); break;
+	        case 2: listeners[i].fn.call(listeners[i].context, a1); break;
+	        case 3: listeners[i].fn.call(listeners[i].context, a1, a2); break;
+	        case 4: listeners[i].fn.call(listeners[i].context, a1, a2, a3); break;
+	        default:
+	          if (!args) for (j = 1, args = new Array(len -1); j < len; j++) {
+	            args[j - 1] = arguments[j];
+	          }
+
+	          listeners[i].fn.apply(listeners[i].context, args);
+	      }
+	    }
+	  }
+
+	  return true;
+	};
+
+	/**
+	 * Add a listener for a given event.
+	 *
+	 * @param {(String|Symbol)} event The event name.
+	 * @param {Function} fn The listener function.
+	 * @param {*} [context=this] The context to invoke the listener with.
+	 * @returns {EventEmitter} `this`.
+	 * @public
+	 */
+	EventEmitter.prototype.on = function on(event, fn, context) {
+	  return addListener(this, event, fn, context, false);
+	};
+
+	/**
+	 * Add a one-time listener for a given event.
+	 *
+	 * @param {(String|Symbol)} event The event name.
+	 * @param {Function} fn The listener function.
+	 * @param {*} [context=this] The context to invoke the listener with.
+	 * @returns {EventEmitter} `this`.
+	 * @public
+	 */
+	EventEmitter.prototype.once = function once(event, fn, context) {
+	  return addListener(this, event, fn, context, true);
+	};
+
+	/**
+	 * Remove the listeners of a given event.
+	 *
+	 * @param {(String|Symbol)} event The event name.
+	 * @param {Function} fn Only remove the listeners that match this function.
+	 * @param {*} context Only remove the listeners that have this context.
+	 * @param {Boolean} once Only remove one-time listeners.
+	 * @returns {EventEmitter} `this`.
+	 * @public
+	 */
+	EventEmitter.prototype.removeListener = function removeListener(event, fn, context, once) {
+	  var evt = prefix ? prefix + event : event;
+
+	  if (!this._events[evt]) return this;
+	  if (!fn) {
+	    clearEvent(this, evt);
+	    return this;
+	  }
+
+	  var listeners = this._events[evt];
+
+	  if (listeners.fn) {
+	    if (
+	      listeners.fn === fn &&
+	      (!once || listeners.once) &&
+	      (!context || listeners.context === context)
+	    ) {
+	      clearEvent(this, evt);
+	    }
+	  } else {
+	    for (var i = 0, events = [], length = listeners.length; i < length; i++) {
+	      if (
+	        listeners[i].fn !== fn ||
+	        (once && !listeners[i].once) ||
+	        (context && listeners[i].context !== context)
+	      ) {
+	        events.push(listeners[i]);
+	      }
+	    }
+
+	    //
+	    // Reset the array, or remove it completely if we have no more listeners.
+	    //
+	    if (events.length) this._events[evt] = events.length === 1 ? events[0] : events;
+	    else clearEvent(this, evt);
+	  }
+
+	  return this;
+	};
+
+	/**
+	 * Remove all listeners, or those of the specified event.
+	 *
+	 * @param {(String|Symbol)} [event] The event name.
+	 * @returns {EventEmitter} `this`.
+	 * @public
+	 */
+	EventEmitter.prototype.removeAllListeners = function removeAllListeners(event) {
+	  var evt;
+
+	  if (event) {
+	    evt = prefix ? prefix + event : event;
+	    if (this._events[evt]) clearEvent(this, evt);
+	  } else {
+	    this._events = new Events();
+	    this._eventsCount = 0;
+	  }
+
+	  return this;
+	};
+
+	//
+	// Alias methods names because people roll like that.
+	//
+	EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
+	EventEmitter.prototype.addListener = EventEmitter.prototype.on;
+
+	//
+	// Expose the prefix.
+	//
+	EventEmitter.prefixed = prefix;
+
+	//
+	// Allow `EventEmitter` to be imported as module namespace.
+	//
+	EventEmitter.EventEmitter = EventEmitter;
+
+	//
+	// Expose the module.
+	//
+	{
+	  module.exports = EventEmitter;
+	} 
+} (eventemitter3));
 
 /** A string enum with value, describing the end caps of vector paths. */
 var StrokeCap;
@@ -606,6 +978,12 @@ var LayoutGridAlignment;
     LayoutGridAlignment["MAX"] = "MAX";
     LayoutGridAlignment["CENTER"] = "CENTER";
 })(LayoutGridAlignment || (LayoutGridAlignment = {}));
+var MaskType;
+(function (MaskType) {
+    MaskType["ALPHA"] = "ALPHA";
+    MaskType["VECTOR"] = "VECTOR";
+    MaskType["LUMINANCE"] = "LUMINANCE"; //the luminance value of each pixel of the mask node will be used to determine the opacity of that pixel in the masked result.
+})(MaskType || (MaskType = {}));
 var AxisSizingMode;
 (function (AxisSizingMode) {
     AxisSizingMode["FIXED"] = "FIXED";
@@ -682,6 +1060,9 @@ class BaseConverter {
         if (node.cornerRadius) {
             dom.style.borderRadius = util.toPX(node.cornerRadius);
         }
+        else if (node.rectangleCornerRadii) {
+            dom.style.borderRadius = node.rectangleCornerRadii.map(p => util.toPX(p)).join(' ');
+        }
         if (node.opacity)
             dom.style.opacity = node.opacity.toString();
         if (node.constraints) {
@@ -697,7 +1078,8 @@ class BaseConverter {
             dom.data.rotation = node.rotation;
             dom.style.transform = `rotate(${util.toRad(node.rotation)})`;
         }
-        if (node.clipsContent === true)
+        // 裁剪超出区域
+        if (node.clipsContent === true || (parentNode && parentNode.clipsContent === true))
             dom.style.overflow = 'hidden';
         dom.preserveRatio = node.preserveRatio;
         // padding
@@ -1297,6 +1679,117 @@ class TEXTConverter extends BaseConverter {
     }
 }
 
+class ELLIPSEConverter extends BaseConverter {
+    async convert(node, dom, parentNode, option) {
+        dom.type = 'svg';
+        let ellipse = this.createDomNode('ellipse');
+        const defs = this.createDomNode('defs');
+        dom.children.push(defs);
+        dom.children.push(ellipse);
+        // svg外转用定位和大小，其它样式都给子元素
+        dom = await super.convert(node, dom, parentNode, option);
+        ellipse.bounds = dom.bounds;
+        return dom;
+    }
+    // 处理填充
+    async convertFills(node, dom, option) {
+        if (node.fills) {
+            const ellipse = dom.children[1];
+            for (const fill of node.fills) {
+                if (fill.visible === false)
+                    continue;
+                switch (fill.type) {
+                    case PaintType.SOLID: {
+                        ellipse.fill = util.colorToString(fill.color, 255);
+                        break;
+                    }
+                    // 线性渐变
+                    case PaintType.GRADIENT_LINEAR: {
+                        ellipse.fill = this.convertLinearGradient(fill, dom);
+                        break;
+                    }
+                    // 径向性渐变
+                    case PaintType.GRADIENT_RADIAL: {
+                        ellipse.fill = this.convertRadialGradient(fill, dom);
+                        break;
+                    }
+                    // 图片
+                    case PaintType.IMAGE: {
+                        await super.convertFills(node, ellipse, option);
+                        break;
+                    }
+                }
+            }
+        }
+        return dom;
+    }
+    // 处理边框
+    async convertStrokes(node, dom, option) {
+        if (node.strokes && node.strokes.length) {
+            const ellipse = dom.children[1];
+            await super.convertStrokes(node, ellipse, option);
+        }
+        return dom;
+    }
+    // 转换线性渐变
+    convertLinearGradient(gradient, dom) {
+        if (dom.type !== 'svg')
+            return super.convertLinearGradient(gradient, dom);
+        const defs = dom.children[0];
+        const gradientDom = this.createDomNode('linearGradient');
+        gradientDom.id = 'gradient_' + util.uuid();
+        const handlePositions = gradient.gradientHandlePositions;
+        if (handlePositions && handlePositions.length > 1) {
+            gradientDom.x1 = (handlePositions[0].x) * 100 + '%';
+            gradientDom.y1 = (handlePositions[0].y) * 100 + '%';
+            gradientDom.x2 = (handlePositions[1].x) * 100 + '%';
+            gradientDom.y2 = (handlePositions[1].y) * 100 + '%';
+        }
+        const gradientStops = gradient.gradientStops;
+        const stops = this.getGradientStopDoms(gradientStops);
+        gradientDom.children.push(...stops);
+        defs.children.push(gradientDom);
+        return `url(#${gradientDom.id})`;
+    }
+    // 转换径向性渐变
+    convertRadialGradient(gradient, dom) {
+        if (dom.type !== 'svg')
+            return super.convertRadialGradient(gradient, dom);
+        const defs = dom.children[0];
+        const gradientDom = this.createDomNode('radialGradient');
+        gradientDom.id = 'gradient_' + util.uuid();
+        const handlePositions = gradient.gradientHandlePositions;
+        // 该字段包含三个矢量，每个矢量都是归一化对象空间中的一个位置（归一化对象空间是如果对象的边界框的左上角是（0，0），右下角是（1,1））。第一个位置对应于渐变的开始（为了计算渐变停止，值为0），第二个位置是渐变的结束（值为1），第三个手柄位置决定渐变的宽度。
+        if (handlePositions && handlePositions.length > 2) {
+            gradientDom.fx = Math.round(handlePositions[0].x * 100) + '%';
+            gradientDom.fy = Math.round(handlePositions[0].y * 100) + '%';
+            gradientDom.cx = gradientDom.fx;
+            gradientDom.cy = gradientDom.fy;
+            // 大小位置跟起点的距离为渐变宽
+            const dx = handlePositions[1].x - handlePositions[0].x;
+            const dy = handlePositions[1].y - handlePositions[0].y;
+            const r = Math.sqrt(dx * dx + dy * dy);
+            gradientDom.r = Math.round(r * 100) + '%';
+        }
+        const gradientStops = gradient.gradientStops;
+        const stops = this.getGradientStopDoms(gradientStops);
+        gradientDom.children.push(...stops);
+        defs.children.push(gradientDom);
+        return `url(#${gradientDom.id})`;
+    }
+    // Helper function to get the gradient stops
+    getGradientStopDoms(gradientStops) {
+        const stops = [];
+        for (const s of gradientStops) {
+            const stop = this.createDomNode('stop');
+            stop.offset = `${Math.round(s.position * 100)}%`;
+            stop.style.stopColor = util.colorToString(s.color, 255);
+            stops.push(stop);
+        }
+        return stops;
+    }
+}
+
 class FRAMEConverter extends BaseConverter {
     async convert(node, dom, parentNode, option) {
         // 如果是填充的图5片，则直接用img
@@ -1315,7 +1808,7 @@ const ConverterMaps = {
     'TEXT': new TEXTConverter(),
     'DOCUMENT': new DocumentConverter(),
     'CANVAS': new PageConverter(),
-    //'ELLIPSE': new EllipseConverter(),
+    'ELLIPSE': new ELLIPSEConverter(),
     'RECTANGLE': new FRAMEConverter(),
 };
 // 转node为html结构对象
