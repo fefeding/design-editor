@@ -1,7 +1,7 @@
 import Base from '../core/baseComponent';
 import util from 'j-design-util';
 import { JSvgData } from '../constant/data';
-import { IJSvgComponent, ISvgOption } from '../constant/types';
+import { IJSvgComponent, ISvgOption, IJBaseComponent, IJElement } from '../constant/types';
 
 export default class JSvg extends Base<HTMLDivElement> implements IJSvgComponent {
     constructor(option={} as ISvgOption) {
@@ -39,12 +39,13 @@ export default class JSvg extends Base<HTMLDivElement> implements IJSvgComponent
         return 'svg';
     }
 
-    // 替换变量
-    renderSvg(svg: string) {
-        this.data.map((name, value) => {
-            svg = svg.replace(new RegExp(`\\{${name}\\}`, 'g'), value);
-        });
-        return svg;
+    // 添加元素到画布
+    addChild(child: IJBaseComponent | IJElement | HTMLElement) {
+        if(child === this.target || child instanceof HTMLElement) {
+            return super.addChild(child);
+        }
+       
+        return super.addChild(child);
     }
 
     // 加载svg内容

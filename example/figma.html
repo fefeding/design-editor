@@ -88,7 +88,14 @@
 			images,
 			async getImage(key) {
 				console.log('get image', key);
-				if(images[key]) return images[key];
+				if(images[key]) {
+                    const url = images[key];
+                    if(url && url.startsWith('https://')) {
+                        console.log('convert to base64', key, url);
+                        return images[key] = await util.image2Base64(url);
+                    }
+                    return url;
+                }
 				return '';// 待实现动态获取图片地址
 			}
 		});
