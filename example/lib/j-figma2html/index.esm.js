@@ -372,7 +372,7 @@ var util = {
      * @param rotation
      * @returns
      */
-    async rotateImage(url, rotation) {
+    async rotateImage(url, rotation, quality, type = 'image/png') {
         if (!url)
             return url;
         return new Promise((resolve, reject) => {
@@ -384,11 +384,14 @@ var util = {
                 cvs.height = img.height;
                 const ctx = cvs.getContext('2d');
                 ctx.clearRect(0, 0, cvs.width, cvs.height);
-                ctx.translate(cvs.width / 2, cvs.height / 2);
-                ctx.rotate(rotation);
-                ctx.translate(-cvs.width / 2, -cvs.height / 2);
+                // 如果角度为0，则只是转为了base64
+                if (rotation) {
+                    ctx.translate(cvs.width / 2, cvs.height / 2);
+                    ctx.rotate(rotation);
+                    ctx.translate(-cvs.width / 2, -cvs.height / 2);
+                }
                 ctx.drawImage(img, 0, 0);
-                const data = cvs.toDataURL();
+                const data = cvs.toDataURL(type, quality);
                 resolve(data);
             };
             img.onerror = function (e) {
@@ -396,6 +399,15 @@ var util = {
             };
             img.src = url;
         });
+    },
+    /**
+     * 把图片转为bae64
+     * @param url 图片地址
+     * @returns
+     */
+    async image2Base64(url, quality, type = 'image/png') {
+        const base64 = await this.rotateImage(url, 0, quality, type);
+        return base64;
     },
     /**
      * 请求远程资源
@@ -1028,7 +1040,7 @@ var LineTypes;
 })(LineTypes || (LineTypes = {}));
 
 class BaseConverter {
-    async convert(node, dom, parentNode, option) {
+    async convert(node, dom, parentNode, page, option) {
         dom.style = dom.style || {};
         // 位置
         dom.bounds = {
@@ -1040,8 +1052,13 @@ class BaseConverter {
         if (node.absoluteBoundingBox) {
             dom.bounds.width = node.absoluteBoundingBox.width;
             dom.bounds.height = node.absoluteBoundingBox.height;
+            // 优先相对于页面坐标, isElement是相于它的父级的
+            if (page && !dom.isElement) {
+                dom.data.left = dom.bounds.x = node.absoluteBoundingBox.x - page.absoluteBoundingBox.x;
+                dom.data.top = dom.bounds.y = node.absoluteBoundingBox.y - page.absoluteBoundingBox.y;
+            }
             // 相对于父位置
-            if (parentNode && parentNode.absoluteBoundingBox) {
+            else if (parentNode && parentNode.absoluteBoundingBox) {
                 dom.data.left = dom.bounds.x = node.absoluteBoundingBox.x - parentNode.absoluteBoundingBox.x;
                 dom.data.top = dom.bounds.y = node.absoluteBoundingBox.y - parentNode.absoluteBoundingBox.y;
             }
@@ -1304,6 +1321,32 @@ class BaseConverter {
         }
         return dom;
     }
+    // 是否是空的dom节点
+    isEmptyDom(dom) {
+        if (dom.children && dom.children.length)
+            return false;
+        if (dom.text)
+            return false;
+        if (dom.type !== 'div')
+            return false;
+        if (dom.style.filter)
+            return false;
+        if (dom.style.borderImageSource || dom.style.backgroundImage || dom.style.background)
+            return false;
+        if (dom.style.backgroundColor && !this.isTransparentColor(dom.style.backgroundColor))
+            return false;
+        return true;
+    }
+    // 是否是透明色
+    isTransparentColor(color) {
+        if (color == 'transparent')
+            return true;
+        if (color === 'rgba(0,0,0,0)' || /rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*0\)/.test(color))
+            return true;
+        if (typeof color === 'object' && 'a' in color && color.a === 0)
+            return true;
+        return false;
+    }
     // 转换线性渐变
     convertLinearGradient(gradient, dom) {
         const handlePositions = gradient.gradientHandlePositions;
@@ -1508,23 +1551,23 @@ class BaseConverter {
 }
 
 class DocumentConverter extends BaseConverter {
-    async convert(node, dom, parentNode, option) {
+    async convert(node, dom, parentNode, page, option) {
         dom.type = 'div';
         dom.style.position = 'relative';
-        return super.convert(node, dom, parentNode, option);
+        return super.convert(node, dom, parentNode, page, option);
     }
 }
 
 class PageConverter extends BaseConverter {
-    async convert(node, dom, parentNode, option) {
+    async convert(node, dom, parentNode, page, option) {
         dom.type = 'page';
         dom.style.position = 'relative';
-        return super.convert(node, dom, parentNode, option);
+        return super.convert(node, dom, parentNode, page, option);
     }
 }
 
 let FRAMEConverter$1 = class FRAMEConverter extends BaseConverter {
-    async convert(node, dom, parentNode, option) {
+    async convert(node, dom, parentNode, page, option) {
         if (parentNode && parentNode.type === 'CANVAS') {
             dom.style.overflow = 'hidden';
             if (parentNode && !parentNode.absoluteBoundingBox) {
@@ -1546,16 +1589,16 @@ let FRAMEConverter$1 = class FRAMEConverter extends BaseConverter {
                 }
             }
         }
-        return super.convert(node, dom, parentNode, option);
+        return super.convert(node, dom, parentNode, page, option);
     }
 };
 
 class TEXTConverter extends BaseConverter {
-    async convert(node, dom, parentNode, option) {
+    async convert(node, dom, parentNode, page, option) {
         dom.type = 'span';
         if (node.characters)
             dom.text = dom.data.text = node.characters;
-        const res = await super.convert(node, dom, parentNode, option);
+        const res = await super.convert(node, dom, parentNode, page, option);
         //dom.style.letterSpacing = dom.style.letterSpacing || '1px';
         /*if(dom.style.letterSpacing) {
             const v = util.toNumber(dom.style.letterSpacing);
@@ -1563,38 +1606,27 @@ class TEXTConverter extends BaseConverter {
         }*/
         // 如果行高好高度一致,则表示单行文本，可以不指定宽度
         if (dom.bounds?.height < node.style?.fontSize * 2) {
-            const span = document.createElement('span');
-            Object.assign(span.style, dom.style);
-            span.style.width = 'auto';
-            span.style.position = 'absolute';
-            span.innerText = dom.text;
-            span.style.visibility = 'hidden';
-            document.body.appendChild(span);
-            let w = span.offsetWidth || span.clientWidth;
-            if (dom.style.letterSpacing) {
-                const v = util.toNumber(dom.style.letterSpacing);
-                w += v;
-            }
-            document.body.removeChild(span);
+            const w = this.testTextWidth(dom);
             dom.data.width = Math.max(w, util.toNumber(dom.data.width));
         }
         else {
             //dom.style.minWidth = util.toPX(dom.data.width);
             dom.data.width = dom.bounds.width;
         }
-        dom.style.width = util.toPX(dom.data.width);
         await this.convertCharacterStyleOverrides(node, res, option); // 处理分字样式
+        dom.style.width = util.toPX(dom.data.width);
         return res;
     }
     // 解析字体多样式
     async convertCharacterStyleOverrides(node, dom, option) {
+        let width = 0;
         if (node.characterStyleOverrides && node.characterStyleOverrides.length && node.styleOverrideTable) {
             const text = dom.text || '';
             let index = 0;
             for (; index < node.characterStyleOverrides.length; index++) {
                 const s = node.characterStyleOverrides[index];
                 const f = text[index];
-                if (!s || !f)
+                if (!f)
                     continue;
                 const fDom = this.createDomNode('span');
                 fDom.text = f;
@@ -1605,16 +1637,22 @@ class TEXTConverter extends BaseConverter {
                     await this.convertStyle(style, fDom, option);
                 }
                 dom.children.push(fDom);
+                const w = this.testTextWidth(fDom);
+                width += w;
             }
             // 还有未处理完的，则加到后面
             if (text.length > index) {
                 const fDom = this.createDomNode('span');
                 fDom.text = text.substring(index);
                 dom.children.push(fDom);
+                const w = this.testTextWidth(fDom);
+                width += w;
             }
             dom.text = '';
             dom.type = 'div';
         }
+        // 这种方式文本宽度需要重新计算
+        dom.data.width = Math.max(width, util.toNumber(dom.data.width));
     }
     // 处理填充, 文本的fill就是字体的颜色
     async convertFills(node, dom, option) {
@@ -1677,17 +1715,34 @@ class TEXTConverter extends BaseConverter {
         }
         return dom;
     }
+    // 测试字宽度
+    testTextWidth(dom) {
+        const span = document.createElement('span');
+        Object.assign(span.style, dom.style);
+        span.style.width = 'auto';
+        span.style.position = 'absolute';
+        span.innerText = dom.text;
+        span.style.visibility = 'hidden';
+        document.body.appendChild(span);
+        let w = span.offsetWidth || span.clientWidth;
+        if (dom.style.letterSpacing) {
+            const v = util.toNumber(dom.style.letterSpacing);
+            w += v;
+        }
+        document.body.removeChild(span);
+        return w;
+    }
 }
 
 class ELLIPSEConverter extends BaseConverter {
-    async convert(node, dom, parentNode, option) {
+    async convert(node, dom, parentNode, page, option) {
         dom.type = 'svg';
         let ellipse = this.createDomNode('ellipse');
         const defs = this.createDomNode('defs');
         dom.children.push(defs);
         dom.children.push(ellipse);
         // svg外转用定位和大小，其它样式都给子元素
-        dom = await super.convert(node, dom, parentNode, option);
+        dom = await super.convert(node, dom, parentNode, page, option);
         ellipse.bounds = dom.bounds;
         return dom;
     }
@@ -1791,12 +1846,12 @@ class ELLIPSEConverter extends BaseConverter {
 }
 
 class FRAMEConverter extends BaseConverter {
-    async convert(node, dom, parentNode, option) {
+    async convert(node, dom, parentNode, page, option) {
         // 如果是填充的图5片，则直接用img
         if (node.fills && node.fills.length && node.fills[0].type === 'IMAGE') {
             dom.type = 'img';
         }
-        return super.convert(node, dom, parentNode, option);
+        return super.convert(node, dom, parentNode, page, option);
     }
 }
 
@@ -1812,17 +1867,19 @@ const ConverterMaps = {
     'RECTANGLE': new FRAMEConverter(),
 };
 // 转node为html结构对象
-async function convert(node, parentNode, option) {
+async function convert(node, parentNode, page, option) {
     // 如果是根，则返回document
     if (node.document) {
-        const docDom = await convert(node.document, node, option);
+        const docDom = await convert(node.document, node, page, option);
         return docDom;
     }
+    if (node.visible === false)
+        return null;
     const dom = ConverterMaps.BASE.createDomNode('div', {
         id: node.id,
         name: node.name,
         type: 'div',
-        visible: node.visible === false ? false : true,
+        visible: true,
         data: {},
         style: {
             // 默认采用绝对定位
@@ -1831,14 +1888,30 @@ async function convert(node, parentNode, option) {
         children: [],
         figmaData: node,
     });
+    // 普通元素，不可当作容器
+    dom.isElement = ['VECTOR', 'BOOLEAN', 'BOOLEAN_OPERATION', 'STAR', 'LINE', 'ELLIPSE', 'REGULAR_POLYGON', 'SLICE'].includes(node.type) || (parentNode && parentNode.clipsContent);
     const converter = ConverterMaps[node.type] || ConverterMaps.BASE;
     if (converter)
-        await converter.convert(node, dom, parentNode, option);
+        await converter.convert(node, dom, parentNode, page, option);
+    if (!page && node.type === 'FRAME' && option?.expandToPage)
+        page = dom; // 当前节点开始，为页面模板
+    else if (page) {
+        // 没有显示意义的div不处理
+        if (!dom.isElement)
+            page.children.push(dom);
+    }
     if (node.children && node.children.length) {
         for (const child of node.children) {
             //if(child.isMask) continue;
-            const c = await convert(child, node, option);
-            dom.children.push(c);
+            const c = await convert(child, node, page, option);
+            if (!c)
+                continue;
+            if (ConverterMaps.BASE.isEmptyDom(c)) {
+                console.log('empty dom', c);
+                continue;
+            }
+            if (!page || c.isElement)
+                dom.children.push(c);
         }
     }
     return dom;
