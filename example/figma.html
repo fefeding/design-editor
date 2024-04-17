@@ -84,11 +84,19 @@
 		}
 
 		// 转换模板，并动态获取图片地址
-		const tpl = await convert(data, null, {
+		const tpl = await convert(data, null, null, {
+            expandToPage: true, // 是否展开
 			images,
 			async getImage(key) {
 				console.log('get image', key);
-				if(images[key]) return images[key];
+				if(images[key]) {
+                    const url = images[key];
+                    if(url && url.startsWith('https://')) {
+                        //console.log('convert to base64', key, url);
+                        //return images[key] = await util.image2Base64(url);
+                    }
+                    return url;
+                }
 				return '';// 待实现动态获取图片地址
 			}
 		});

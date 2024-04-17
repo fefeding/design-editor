@@ -47,6 +47,6 @@ export default class JEditor extends JBase implements IJEditor {
      * @param container 容器
      * @param data
      */
-    static renderDom(data: any, option?: IEditorOption): Promise<unknown>;
+    static renderDom(data: any, option?: IEditorOption): Promise<JEditor>;
 }
 export { JEditor, JImage, JText, };

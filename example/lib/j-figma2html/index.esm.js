@@ -255,6 +255,38 @@ var util = {
         }
     },
     /**
+     * 检测是否支持某字体
+     * @param family 字体名
+     */
+    checkFont(family) {
+        if (!family)
+            return false;
+        const baseFont = 'Arial';
+        if (baseFont.toLowerCase() === family.toLowerCase())
+            return true;
+        const txt = "a";
+        const fontSize = 100;
+        const w = 100, h = 100; // 宽高
+        const cvs = document.createElement('canvas');
+        const ctx = cvs.getContext('2d', {
+            willReadFrequently: true
+        });
+        cvs.width = w;
+        cvs.height = h;
+        ctx.textAlign = "center";
+        ctx.fillStyle = "black";
+        ctx.textBaseline = "middle";
+        const check = function (ctx, family, w, h) {
+            ctx.clearRect(0, 0, w, h);
+            ctx.font = fontSize + "px" + family + ", " + baseFont;
+            ctx.fillText(txt, w / 2, h / 2);
+            const data = ctx.getImageData(0, 0, w, h).data;
+            return [].slice.call(data).filter((p) => p != 0);
+        };
+        const supported = check(ctx, baseFont, w, h).join("") !== check(ctx, family, w, h).join("");
+        return supported;
+    },
+    /**
      * 设置class样式
      * @param dom 节点
      * @param name 样式名
@@ -340,7 +372,7 @@ var util = {
      * @param rotation
      * @returns
      */
-    async rotateImage(url, rotation) {
+    async rotateImage(url, rotation, quality, type = 'image/png') {
         if (!url)
             return url;
         return new Promise((resolve, reject) => {
@@ -352,11 +384,14 @@ var util = {
                 cvs.height = img.height;
                 const ctx = cvs.getContext('2d');
                 ctx.clearRect(0, 0, cvs.width, cvs.height);
-                ctx.translate(cvs.width / 2, cvs.height / 2);
-                ctx.rotate(rotation);
-                ctx.translate(-cvs.width / 2, -cvs.height / 2);
+                // 如果角度为0，则只是转为了base64
+                if (rotation) {
+                    ctx.translate(cvs.width / 2, cvs.height / 2);
+                    ctx.rotate(rotation);
+                    ctx.translate(-cvs.width / 2, -cvs.height / 2);
+                }
                 ctx.drawImage(img, 0, 0);
-                const data = cvs.toDataURL();
+                const data = cvs.toDataURL(type, quality);
                 resolve(data);
             };
             img.onerror = function (e) {
@@ -364,6 +399,15 @@ var util = {
             };
             img.src = url;
         });
+    },
+    /**
+     * 把图片转为bae64
+     * @param url 图片地址
+     * @returns
+     */
+    async image2Base64(url, quality, type = 'image/png') {
+        const base64 = await this.rotateImage(url, 0, quality, type);
+        return base64;
     },
     /**
      * 请求远程资源
@@ -407,6 +451,346 @@ var util = {
         });
     }
 };
+
+var eventemitter3 = {exports: {}};
+
+(function (module) {
+
+	var has = Object.prototype.hasOwnProperty
+	  , prefix = '~';
+
+	/**
+	 * Constructor to create a storage for our `EE` objects.
+	 * An `Events` instance is a plain object whose properties are event names.
+	 *
+	 * @constructor
+	 * @private
+	 */
+	function Events() {}
+
+	//
+	// We try to not inherit from `Object.prototype`. In some engines creating an
+	// instance in this way is faster than calling `Object.create(null)` directly.
+	// If `Object.create(null)` is not supported we prefix the event names with a
+	// character to make sure that the built-in object properties are not
+	// overridden or used as an attack vector.
+	//
+	if (Object.create) {
+	  Events.prototype = Object.create(null);
+
+	  //
+	  // This hack is needed because the `__proto__` property is still inherited in
+	  // some old browsers like Android 4, iPhone 5.1, Opera 11 and Safari 5.
+	  //
+	  if (!new Events().__proto__) prefix = false;
+	}
+
+	/**
+	 * Representation of a single event listener.
+	 *
+	 * @param {Function} fn The listener function.
+	 * @param {*} context The context to invoke the listener with.
+	 * @param {Boolean} [once=false] Specify if the listener is a one-time listener.
+	 * @constructor
+	 * @private
+	 */
+	function EE(fn, context, once) {
+	  this.fn = fn;
+	  this.context = context;
+	  this.once = once || false;
+	}
+
+	/**
+	 * Add a listener for a given event.
+	 *
+	 * @param {EventEmitter} emitter Reference to the `EventEmitter` instance.
+	 * @param {(String|Symbol)} event The event name.
+	 * @param {Function} fn The listener function.
+	 * @param {*} context The context to invoke the listener with.
+	 * @param {Boolean} once Specify if the listener is a one-time listener.
+	 * @returns {EventEmitter}
+	 * @private
+	 */
+	function addListener(emitter, event, fn, context, once) {
+	  if (typeof fn !== 'function') {
+	    throw new TypeError('The listener must be a function');
+	  }
+
+	  var listener = new EE(fn, context || emitter, once)
+	    , evt = prefix ? prefix + event : event;
+
+	  if (!emitter._events[evt]) emitter._events[evt] = listener, emitter._eventsCount++;
+	  else if (!emitter._events[evt].fn) emitter._events[evt].push(listener);
+	  else emitter._events[evt] = [emitter._events[evt], listener];
+
+	  return emitter;
+	}
+
+	/**
+	 * Clear event by name.
+	 *
+	 * @param {EventEmitter} emitter Reference to the `EventEmitter` instance.
+	 * @param {(String|Symbol)} evt The Event name.
+	 * @private
+	 */
+	function clearEvent(emitter, evt) {
+	  if (--emitter._eventsCount === 0) emitter._events = new Events();
+	  else delete emitter._events[evt];
+	}
+
+	/**
+	 * Minimal `EventEmitter` interface that is molded against the Node.js
+	 * `EventEmitter` interface.
+	 *
+	 * @constructor
+	 * @public
+	 */
+	function EventEmitter() {
+	  this._events = new Events();
+	  this._eventsCount = 0;
+	}
+
+	/**
+	 * Return an array listing the events for which the emitter has registered
+	 * listeners.
+	 *
+	 * @returns {Array}
+	 * @public
+	 */
+	EventEmitter.prototype.eventNames = function eventNames() {
+	  var names = []
+	    , events
+	    , name;
+
+	  if (this._eventsCount === 0) return names;
+
+	  for (name in (events = this._events)) {
+	    if (has.call(events, name)) names.push(prefix ? name.slice(1) : name);
+	  }
+
+	  if (Object.getOwnPropertySymbols) {
+	    return names.concat(Object.getOwnPropertySymbols(events));
+	  }
+
+	  return names;
+	};
+
+	/**
+	 * Return the listeners registered for a given event.
+	 *
+	 * @param {(String|Symbol)} event The event name.
+	 * @returns {Array} The registered listeners.
+	 * @public
+	 */
+	EventEmitter.prototype.listeners = function listeners(event) {
+	  var evt = prefix ? prefix + event : event
+	    , handlers = this._events[evt];
+
+	  if (!handlers) return [];
+	  if (handlers.fn) return [handlers.fn];
+
+	  for (var i = 0, l = handlers.length, ee = new Array(l); i < l; i++) {
+	    ee[i] = handlers[i].fn;
+	  }
+
+	  return ee;
+	};
+
+	/**
+	 * Return the number of listeners listening to a given event.
+	 *
+	 * @param {(String|Symbol)} event The event name.
+	 * @returns {Number} The number of listeners.
+	 * @public
+	 */
+	EventEmitter.prototype.listenerCount = function listenerCount(event) {
+	  var evt = prefix ? prefix + event : event
+	    , listeners = this._events[evt];
+
+	  if (!listeners) return 0;
+	  if (listeners.fn) return 1;
+	  return listeners.length;
+	};
+
+	/**
+	 * Calls each of the listeners registered for a given event.
+	 *
+	 * @param {(String|Symbol)} event The event name.
+	 * @returns {Boolean} `true` if the event had listeners, else `false`.
+	 * @public
+	 */
+	EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
+	  var evt = prefix ? prefix + event : event;
+
+	  if (!this._events[evt]) return false;
+
+	  var listeners = this._events[evt]
+	    , len = arguments.length
+	    , args
+	    , i;
+
+	  if (listeners.fn) {
+	    if (listeners.once) this.removeListener(event, listeners.fn, undefined, true);
+
+	    switch (len) {
+	      case 1: return listeners.fn.call(listeners.context), true;
+	      case 2: return listeners.fn.call(listeners.context, a1), true;
+	      case 3: return listeners.fn.call(listeners.context, a1, a2), true;
+	      case 4: return listeners.fn.call(listeners.context, a1, a2, a3), true;
+	      case 5: return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
+	      case 6: return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
+	    }
+
+	    for (i = 1, args = new Array(len -1); i < len; i++) {
+	      args[i - 1] = arguments[i];
+	    }
+
+	    listeners.fn.apply(listeners.context, args);
+	  } else {
+	    var length = listeners.length
+	      , j;
+
+	    for (i = 0; i < length; i++) {
+	      if (listeners[i].once) this.removeListener(event, listeners[i].fn, undefined, true);
+
+	      switch (len) {
+	        case 1: listeners[i].fn.call(listeners[i].context); break;
+	        case 2: listeners[i].fn.call(listeners[i].context, a1); break;
+	        case 3: listeners[i].fn.call(listeners[i].context, a1, a2); break;
+	        case 4: listeners[i].fn.call(listeners[i].context, a1, a2, a3); break;
+	        default:
+	          if (!args) for (j = 1, args = new Array(len -1); j < len; j++) {
+	            args[j - 1] = arguments[j];
+	          }
+
+	          listeners[i].fn.apply(listeners[i].context, args);
+	      }
+	    }
+	  }
+
+	  return true;
+	};
+
+	/**
+	 * Add a listener for a given event.
+	 *
+	 * @param {(String|Symbol)} event The event name.
+	 * @param {Function} fn The listener function.
+	 * @param {*} [context=this] The context to invoke the listener with.
+	 * @returns {EventEmitter} `this`.
+	 * @public
+	 */
+	EventEmitter.prototype.on = function on(event, fn, context) {
+	  return addListener(this, event, fn, context, false);
+	};
+
+	/**
+	 * Add a one-time listener for a given event.
+	 *
+	 * @param {(String|Symbol)} event The event name.
+	 * @param {Function} fn The listener function.
+	 * @param {*} [context=this] The context to invoke the listener with.
+	 * @returns {EventEmitter} `this`.
+	 * @public
+	 */
+	EventEmitter.prototype.once = function once(event, fn, context) {
+	  return addListener(this, event, fn, context, true);
+	};
+
+	/**
+	 * Remove the listeners of a given event.
+	 *
+	 * @param {(String|Symbol)} event The event name.
+	 * @param {Function} fn Only remove the listeners that match this function.
+	 * @param {*} context Only remove the listeners that have this context.
+	 * @param {Boolean} once Only remove one-time listeners.
+	 * @returns {EventEmitter} `this`.
+	 * @public
+	 */
+	EventEmitter.prototype.removeListener = function removeListener(event, fn, context, once) {
+	  var evt = prefix ? prefix + event : event;
+
+	  if (!this._events[evt]) return this;
+	  if (!fn) {
+	    clearEvent(this, evt);
+	    return this;
+	  }
+
+	  var listeners = this._events[evt];
+
+	  if (listeners.fn) {
+	    if (
+	      listeners.fn === fn &&
+	      (!once || listeners.once) &&
+	      (!context || listeners.context === context)
+	    ) {
+	      clearEvent(this, evt);
+	    }
+	  } else {
+	    for (var i = 0, events = [], length = listeners.length; i < length; i++) {
+	      if (
+	        listeners[i].fn !== fn ||
+	        (once && !listeners[i].once) ||
+	        (context && listeners[i].context !== context)
+	      ) {
+	        events.push(listeners[i]);
+	      }
+	    }
+
+	    //
+	    // Reset the array, or remove it completely if we have no more listeners.
+	    //
+	    if (events.length) this._events[evt] = events.length === 1 ? events[0] : events;
+	    else clearEvent(this, evt);
+	  }
+
+	  return this;
+	};
+
+	/**
+	 * Remove all listeners, or those of the specified event.
+	 *
+	 * @param {(String|Symbol)} [event] The event name.
+	 * @returns {EventEmitter} `this`.
+	 * @public
+	 */
+	EventEmitter.prototype.removeAllListeners = function removeAllListeners(event) {
+	  var evt;
+
+	  if (event) {
+	    evt = prefix ? prefix + event : event;
+	    if (this._events[evt]) clearEvent(this, evt);
+	  } else {
+	    this._events = new Events();
+	    this._eventsCount = 0;
+	  }
+
+	  return this;
+	};
+
+	//
+	// Alias methods names because people roll like that.
+	//
+	EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
+	EventEmitter.prototype.addListener = EventEmitter.prototype.on;
+
+	//
+	// Expose the prefix.
+	//
+	EventEmitter.prefixed = prefix;
+
+	//
+	// Allow `EventEmitter` to be imported as module namespace.
+	//
+	EventEmitter.EventEmitter = EventEmitter;
+
+	//
+	// Expose the module.
+	//
+	{
+	  module.exports = EventEmitter;
+	} 
+} (eventemitter3));
 
 /** A string enum with value, describing the end caps of vector paths. */
 var StrokeCap;
@@ -606,6 +990,12 @@ var LayoutGridAlignment;
     LayoutGridAlignment["MAX"] = "MAX";
     LayoutGridAlignment["CENTER"] = "CENTER";
 })(LayoutGridAlignment || (LayoutGridAlignment = {}));
+var MaskType;
+(function (MaskType) {
+    MaskType["ALPHA"] = "ALPHA";
+    MaskType["VECTOR"] = "VECTOR";
+    MaskType["LUMINANCE"] = "LUMINANCE"; //the luminance value of each pixel of the mask node will be used to determine the opacity of that pixel in the masked result.
+})(MaskType || (MaskType = {}));
 var AxisSizingMode;
 (function (AxisSizingMode) {
     AxisSizingMode["FIXED"] = "FIXED";
@@ -650,7 +1040,7 @@ var LineTypes;
 })(LineTypes || (LineTypes = {}));
 
 class BaseConverter {
-    async convert(node, dom, parentNode, option) {
+    async convert(node, dom, parentNode, page, option, container) {
         dom.style = dom.style || {};
         // 位置
         dom.bounds = {
@@ -662,8 +1052,13 @@ class BaseConverter {
         if (node.absoluteBoundingBox) {
             dom.bounds.width = node.absoluteBoundingBox.width;
             dom.bounds.height = node.absoluteBoundingBox.height;
+            // 优先相对于页面坐标, isElement是相于它的父级的
+            if (page && !dom.isElement) {
+                dom.data.left = dom.bounds.x = node.absoluteBoundingBox.x - page.absoluteBoundingBox.x;
+                dom.data.top = dom.bounds.y = node.absoluteBoundingBox.y - page.absoluteBoundingBox.y;
+            }
             // 相对于父位置
-            if (parentNode && parentNode.absoluteBoundingBox) {
+            else if (parentNode && parentNode.absoluteBoundingBox) {
                 dom.data.left = dom.bounds.x = node.absoluteBoundingBox.x - parentNode.absoluteBoundingBox.x;
                 dom.data.top = dom.bounds.y = node.absoluteBoundingBox.y - parentNode.absoluteBoundingBox.y;
             }
@@ -682,6 +1077,9 @@ class BaseConverter {
         if (node.cornerRadius) {
             dom.style.borderRadius = util.toPX(node.cornerRadius);
         }
+        else if (node.rectangleCornerRadii) {
+            dom.style.borderRadius = node.rectangleCornerRadii.map(p => util.toPX(p)).join(' ');
+        }
         if (node.opacity)
             dom.style.opacity = node.opacity.toString();
         if (node.constraints) {
@@ -692,29 +1090,31 @@ class BaseConverter {
                 dom.style.textAlign = { 'SCALE': 'center', 'LEFT_RIGHT': 'justify-all' }[node.constraints.vertical];
             }
         }
+        dom.style.transformOrigin = 'center center';
         // 旋转
         if (node.rotation) {
             dom.data.rotation = node.rotation;
             dom.style.transform = `rotate(${util.toRad(node.rotation)})`;
         }
-        if (node.clipsContent === true)
+        // 裁剪超出区域
+        if (node.clipsContent === true || (parentNode && parentNode.clipsContent === true))
             dom.style.overflow = 'hidden';
         dom.preserveRatio = node.preserveRatio;
         // padding
-        for (const padding of ['paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom']) {
-            const v = node[padding];
-            if (v) {
-                dom.style[padding] = util.toPX(v);
-                if (['paddingLeft', 'paddingRight'].includes(padding))
-                    dom.bounds.width -= v;
-                else
-                    dom.bounds.height -= v;
+        if (dom.type !== 'svg') {
+            for (const padding of ['paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom']) {
+                const v = node[padding];
+                if (v) {
+                    dom.style[padding] = util.toPX(v);
+                    //if(['paddingLeft', 'paddingRight'].includes(padding)) dom.bounds.width -= v;
+                    //else dom.bounds.height -= v;
+                }
             }
         }
-        await this.convertStyle(node, dom, option);
-        await this.convertFills(node, dom, option); // 解析fills
-        await this.convertStrokes(node, dom, option); // 边框
-        await this.convertEffects(node, dom, option); // 滤镜
+        await this.convertStyle(node, dom, option, container);
+        await this.convertFills(node, dom, option, container); // 解析fills
+        await this.convertStrokes(node, dom, option, container); // 边框
+        await this.convertEffects(node, dom, option, container); // 滤镜
         dom.data.width = dom.bounds.width;
         dom.data.height = dom.bounds.height;
         dom.style.width = util.toPX(dom.bounds.width).toString();
@@ -725,15 +1125,22 @@ class BaseConverter {
     createDomNode(type, option) {
         const dom = {
             data: {},
-            style: {},
+            attributes: {},
             children: [],
             ...option,
+            style: {
+                boxSizing: 'border-box',
+                ...option?.style,
+            },
             type: type,
         };
         return dom;
     }
     // 转换style
-    async convertStyle(node, dom, option) {
+    async convertStyle(node, dom, option, container) {
+        // @ts-ignore
+        if (node.type === 'BOOLEAN_OPERATION')
+            return dom;
         // @ts-ignore
         const style = node.style || node;
         if (!style)
@@ -746,7 +1153,7 @@ class BaseConverter {
             dom.style.fontWeight = style.fontWeight.toString();
         if (style.italic)
             dom.style.fontStyle = 'italic';
-        if (style.letterSpacing) {
+        if (typeof style.letterSpacing !== 'undefined') {
             dom.style.letterSpacing = util.toPX(style.letterSpacing);
         }
         if (style.lineHeightPx)
@@ -758,7 +1165,7 @@ class BaseConverter {
         return dom;
     }
     // 转换滤镜
-    async convertEffects(node, dom, option) {
+    async convertEffects(node, dom, option, container) {
         if (!node.isMaskOutline && node.effects) {
             dom.style.filter = dom.style.filter || '';
             for (const effect of node.effects) {
@@ -781,7 +1188,9 @@ class BaseConverter {
         return dom;
     }
     // 处理填充
-    async convertFills(node, dom, option) {
+    async convertFills(node, dom, option, container) {
+        if (node.type === 'BOOLEAN_OPERATION')
+            return dom;
         // isMaskOutline 如果为true则忽略填充样式
         if (!node.isMaskOutline && node.fills) {
             for (const fill of node.fills) {
@@ -794,12 +1203,14 @@ class BaseConverter {
                     }
                     // 线性渐变
                     case PaintType.GRADIENT_LINEAR: {
-                        dom.style.background = this.convertLinearGradient(fill, dom);
+                        dom.style.background = this.convertLinearGradient(fill, dom, container);
                         break;
                     }
                     // 径向性渐变
+                    case PaintType.GRADIENT_DIAMOND:
+                    case PaintType.GRADIENT_ANGULAR:
                     case PaintType.GRADIENT_RADIAL: {
-                        dom.style.background = this.convertRadialGradient(fill, dom);
+                        dom.style.background = this.convertRadialGradient(fill, dom, container);
                         break;
                     }
                     // 图片
@@ -857,7 +1268,9 @@ class BaseConverter {
         return dom;
     }
     // 处理边框
-    async convertStrokes(node, dom, option) {
+    async convertStrokes(node, dom, option, container) {
+        if (node.type === 'BOOLEAN_OPERATION')
+            return dom;
         if (node.strokes && node.strokes.length) {
             for (const stroke of node.strokes) {
                 if (stroke.visible === false)
@@ -872,12 +1285,14 @@ class BaseConverter {
                     }
                     // 线性渐变
                     case PaintType.GRADIENT_LINEAR: {
-                        dom.style.borderImageSource = this.convertLinearGradient(stroke, dom);
+                        dom.style.borderImageSource = this.convertLinearGradient(stroke, dom, container);
                         break;
                     }
                     // 径向性渐变
+                    case PaintType.GRADIENT_DIAMOND:
+                    case PaintType.GRADIENT_ANGULAR:
                     case PaintType.GRADIENT_RADIAL: {
-                        dom.style.borderImageSource = this.convertRadialGradient(stroke, dom);
+                        dom.style.borderImageSource = this.convertRadialGradient(stroke, dom, container);
                         break;
                     }
                     // 图片
@@ -922,8 +1337,34 @@ class BaseConverter {
         }
         return dom;
     }
+    // 是否是空的dom节点
+    isEmptyDom(dom) {
+        if (dom.children && dom.children.length)
+            return false;
+        if (dom.text)
+            return false;
+        if (dom.type !== 'div')
+            return false;
+        if (dom.style.filter)
+            return false;
+        if (dom.style.borderImageSource || dom.style.backgroundImage || dom.style.background)
+            return false;
+        if (dom.style.backgroundColor && !this.isTransparentColor(dom.style.backgroundColor))
+            return false;
+        return true;
+    }
+    // 是否是透明色
+    isTransparentColor(color) {
+        if (color == 'transparent')
+            return true;
+        if (color === 'rgba(0,0,0,0)' || /rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*0\)/.test(color))
+            return true;
+        if (typeof color === 'object' && 'a' in color && color.a === 0)
+            return true;
+        return false;
+    }
     // 转换线性渐变
-    convertLinearGradient(gradient, dom) {
+    convertLinearGradient(gradient, dom, container) {
         const handlePositions = gradient.gradientHandlePositions;
         const gradientStops = gradient.gradientStops;
         /**
@@ -1002,7 +1443,7 @@ class BaseConverter {
         return linearGradient;
     }
     // 转换径向性渐变
-    convertRadialGradient(gradient, dom) {
+    convertRadialGradient(gradient, dom, container) {
         const handlePositions = gradient.gradientHandlePositions;
         const gradientStops = gradient.gradientStops;
         const radialGradient = `radial-gradient(${this.getRadialGradientPosition(handlePositions)}, ${this.getGradientStops(gradientStops)})`;
@@ -1126,23 +1567,23 @@ class BaseConverter {
 }
 
 class DocumentConverter extends BaseConverter {
-    async convert(node, dom, parentNode, option) {
+    async convert(node, dom, parentNode, page, option) {
         dom.type = 'div';
         dom.style.position = 'relative';
-        return super.convert(node, dom, parentNode, option);
+        return super.convert(node, dom, parentNode, page, option);
     }
 }
 
 class PageConverter extends BaseConverter {
-    async convert(node, dom, parentNode, option) {
+    async convert(node, dom, parentNode, page, option) {
         dom.type = 'page';
         dom.style.position = 'relative';
-        return super.convert(node, dom, parentNode, option);
+        return super.convert(node, dom, parentNode, page, option);
     }
 }
 
-let FRAMEConverter$1 = class FRAMEConverter extends BaseConverter {
-    async convert(node, dom, parentNode, option) {
+class FRAMEConverter extends BaseConverter {
+    async convert(node, dom, parentNode, page, option) {
         if (parentNode && parentNode.type === 'CANVAS') {
             dom.style.overflow = 'hidden';
             if (parentNode && !parentNode.absoluteBoundingBox) {
@@ -1164,16 +1605,16 @@ let FRAMEConverter$1 = class FRAMEConverter extends BaseConverter {
                 }
             }
         }
-        return super.convert(node, dom, parentNode, option);
+        return super.convert(node, dom, parentNode, page, option);
     }
-};
+}
 
 class TEXTConverter extends BaseConverter {
-    async convert(node, dom, parentNode, option) {
+    async convert(node, dom, parentNode, page, option) {
         dom.type = 'span';
         if (node.characters)
             dom.text = dom.data.text = node.characters;
-        const res = await super.convert(node, dom, parentNode, option);
+        const res = await super.convert(node, dom, parentNode, page, option);
         //dom.style.letterSpacing = dom.style.letterSpacing || '1px';
         /*if(dom.style.letterSpacing) {
             const v = util.toNumber(dom.style.letterSpacing);
@@ -1181,38 +1622,27 @@ class TEXTConverter extends BaseConverter {
         }*/
         // 如果行高好高度一致,则表示单行文本，可以不指定宽度
         if (dom.bounds?.height < node.style?.fontSize * 2) {
-            const span = document.createElement('span');
-            Object.assign(span.style, dom.style);
-            span.style.width = 'auto';
-            span.style.position = 'absolute';
-            span.innerText = dom.text;
-            span.style.visibility = 'hidden';
-            document.body.appendChild(span);
-            let w = span.offsetWidth || span.clientWidth;
-            if (dom.style.letterSpacing) {
-                const v = util.toNumber(dom.style.letterSpacing);
-                w += v;
-            }
-            document.body.removeChild(span);
+            const w = this.testTextWidth(dom);
             dom.data.width = Math.max(w, util.toNumber(dom.data.width));
         }
         else {
             //dom.style.minWidth = util.toPX(dom.data.width);
             dom.data.width = dom.bounds.width;
         }
-        dom.style.width = util.toPX(dom.data.width);
         await this.convertCharacterStyleOverrides(node, res, option); // 处理分字样式
+        dom.style.width = util.toPX(dom.data.width);
         return res;
     }
     // 解析字体多样式
     async convertCharacterStyleOverrides(node, dom, option) {
+        let width = 0;
         if (node.characterStyleOverrides && node.characterStyleOverrides.length && node.styleOverrideTable) {
             const text = dom.text || '';
             let index = 0;
             for (; index < node.characterStyleOverrides.length; index++) {
                 const s = node.characterStyleOverrides[index];
                 const f = text[index];
-                if (!s || !f)
+                if (!f)
                     continue;
                 const fDom = this.createDomNode('span');
                 fDom.text = f;
@@ -1223,16 +1653,22 @@ class TEXTConverter extends BaseConverter {
                     await this.convertStyle(style, fDom, option);
                 }
                 dom.children.push(fDom);
+                const w = this.testTextWidth(fDom);
+                width += w;
             }
             // 还有未处理完的，则加到后面
             if (text.length > index) {
                 const fDom = this.createDomNode('span');
                 fDom.text = text.substring(index);
                 dom.children.push(fDom);
+                const w = this.testTextWidth(fDom);
+                width += w;
             }
             dom.text = '';
             dom.type = 'div';
         }
+        // 这种方式文本宽度需要重新计算
+        dom.data.width = Math.max(width, util.toNumber(dom.data.width));
     }
     // 处理填充, 文本的fill就是字体的颜色
     async convertFills(node, dom, option) {
@@ -1295,19 +1731,458 @@ class TEXTConverter extends BaseConverter {
         }
         return dom;
     }
-}
-
-class FRAMEConverter extends BaseConverter {
-    async convert(node, dom, parentNode, option) {
-        // 如果是填充的图5片，则直接用img
-        if (node.fills && node.fills.length && node.fills[0].type === 'IMAGE') {
-            dom.type = 'img';
+    // 测试字宽度
+    testTextWidth(dom) {
+        const span = document.createElement('span');
+        Object.assign(span.style, dom.style);
+        span.style.width = 'auto';
+        span.style.position = 'absolute';
+        span.innerText = dom.text;
+        span.style.visibility = 'hidden';
+        document.body.appendChild(span);
+        let w = span.offsetWidth || span.clientWidth;
+        if (dom.style.letterSpacing) {
+            const v = util.toNumber(dom.style.letterSpacing);
+            w += v;
         }
-        return super.convert(node, dom, parentNode, option);
+        document.body.removeChild(span);
+        return w;
     }
 }
 
-const frameConverter = new FRAMEConverter$1();
+class PolygonConverter extends BaseConverter {
+    // 多边形标签名
+    polygonName = 'polygon';
+    async convert(node, dom, parentNode, page, option, container) {
+        let polygon = dom;
+        let defs;
+        // 如果 没有生成父的svg标签，则当前dom就是，然后再生成子元素
+        if (!container) {
+            container = dom;
+            dom.type = 'svg';
+            polygon = this.createDomNode(this.polygonName, {
+                // @ts-ignore
+                figmaData: node
+            });
+            polygon.id = node.id || '';
+            defs = this.createDomNode('defs');
+            dom.children.push(defs);
+        }
+        else {
+            defs = container.children[0];
+            if (!defs) {
+                defs = this.createDomNode('defs');
+                container.children.push(defs);
+            }
+            polygon.type = this.polygonName;
+        }
+        // 如果是蒙板
+        if (node.isMask) {
+            const mask = this.createDomNode('mask');
+            mask.id = 'mask_' + util.uuid();
+            defs.children.push(mask);
+            mask.children.push(polygon);
+            polygon.isMask = true;
+        }
+        else {
+            if (container && !container.children.includes(polygon))
+                container.children.push(polygon);
+            else if (!container) {
+                dom.children.push(polygon);
+            }
+        }
+        polygon.style.fillRule = 'nonzero';
+        // svg外转用定位和大小，其它样式都给子元素
+        dom = await super.convert(node, dom, parentNode, page, option, container);
+        polygon.bounds = dom.bounds;
+        const mask = this.getMask(container);
+        if (node.isMask) {
+            if (mask) {
+                mask.attributes['x'] = polygon.bounds.x + '';
+                mask.attributes['y'] = polygon.bounds.y + '';
+                mask.attributes['width'] = polygon.bounds.width + '';
+                mask.attributes['height'] = polygon.bounds.height + '';
+            }
+        }
+        else if (mask) {
+            polygon.style.mask = `url(#${mask.id})`;
+        }
+        // 虚线
+        /*if(node.strokeDashes) {
+            polygon.attributes['stroke-dasharray'] = node.strokeDashes.join(',');
+        }*/
+        if (dom.type === 'svg') {
+            delete dom.style.borderRadius;
+            delete dom.style.border;
+        }
+        // 生成路径
+        this.createPolygonPath(polygon, node, container);
+        return dom;
+    }
+    // 获取定位
+    getPosition(dom, container) {
+        const isAbsolute = !dom.isMask && container && container.id !== dom.id;
+        const left = isAbsolute ? dom.bounds.x : 0;
+        const top = isAbsolute ? dom.bounds.y : 0;
+        return {
+            x: left,
+            y: top
+        };
+    }
+    // 生成多边形路径
+    createPolygonPath(dom, node, container) {
+        const pos = this.getPosition(dom, container);
+        const points = [
+            [pos.x, pos.y].join(','),
+            [pos.x + dom.bounds.width, pos.y].join(','),
+            [pos.x + dom.bounds.width, pos.y + dom.bounds.height].join(','),
+            [pos.x, pos.y + dom.bounds.height].join(','),
+        ];
+        dom.attributes['points'] = points.join(' ');
+    }
+    // 获取蒙板
+    getMask(container) {
+        const defs = container.children[0];
+        if (defs.children?.length) {
+            for (const child of defs.children) {
+                if (child.type === 'mask')
+                    return child;
+            }
+        }
+        return null;
+    }
+    // 用id获取当前图形
+    getPolygon(node, dom) {
+        if (dom.children && dom.children.length) {
+            for (const child of dom.children) {
+                if (child.id === node.id || child.figmaData?.id === node.id)
+                    return child;
+                if (child.children && child.children.length) {
+                    const d = this.getPolygon(node, child);
+                    if (d && d !== child)
+                        return d;
+                }
+            }
+        }
+        //if(dom.figmaData?.id === node.id) return dom;
+        return dom;
+    }
+    // 处理填充
+    async convertFills(node, dom, option, container) {
+        if (node.fills) {
+            const polygon = this.getPolygon(node, container || dom);
+            for (const fill of node.fills) {
+                if (fill.visible === false)
+                    continue;
+                switch (fill.type) {
+                    case PaintType.SOLID: {
+                        polygon.style.fill = util.colorToString(fill.color, 255);
+                        break;
+                    }
+                    // 线性渐变
+                    case PaintType.GRADIENT_LINEAR: {
+                        polygon.style.fill = this.convertLinearGradient(fill, dom, container);
+                        break;
+                    }
+                    // 径向性渐变
+                    case PaintType.GRADIENT_DIAMOND:
+                    case PaintType.GRADIENT_ANGULAR:
+                    case PaintType.GRADIENT_RADIAL: {
+                        polygon.style.fill = this.convertRadialGradient(fill, dom, container);
+                        break;
+                    }
+                    // 图片
+                    case PaintType.IMAGE: {
+                        await super.convertFills(node, polygon, option, container);
+                        break;
+                    }
+                }
+            }
+            // 默认透明
+            if (!polygon.style.fill)
+                polygon.style.fill = 'transparent';
+        }
+        return dom;
+    }
+    // 处理边框
+    async convertStrokes(node, dom, option, container) {
+        const polygon = this.getPolygon(node, container || dom);
+        if (node.strokes && node.strokes.length) {
+            for (const stroke of node.strokes) {
+                if (stroke.visible === false)
+                    continue;
+                if (stroke.color) {
+                    if (typeof stroke.opacity !== 'undefined')
+                        stroke.color.a = stroke.opacity;
+                    polygon.attributes['stroke'] = util.colorToString(stroke.color, 255);
+                }
+            }
+            if (node.strokeWeight) {
+                if (dom.style.outlineColor)
+                    dom.style.outlineWidth = util.toPX(node.strokeWeight);
+                if (dom.style.borderImageSource)
+                    dom.style.borderImageWidth = util.toPX(node.strokeWeight);
+            }
+            if (node.strokeDashes && node.strokeDashes.length) {
+                polygon.attributes['stroke-dasharray'] = node.strokeDashes.join(',');
+            }
+        }
+        if (node.strokeWeight) {
+            polygon.attributes['stroke-width'] = node.strokeWeight.toString();
+        }
+        if (node.strokeAlign) ;
+        if (node.strokeCap) {
+            polygon.style.strokeLinecap = node.strokeCap;
+        }
+        if (node.strokeJoin) {
+            polygon.style.strokeLinejoin = node.strokeJoin;
+        }
+        return dom;
+    }
+    // 转换线性渐变
+    convertLinearGradient(gradient, dom, container) {
+        container = container || dom;
+        if (container.type !== 'svg')
+            return super.convertLinearGradient(gradient, dom, container);
+        const defs = container.children[0];
+        const gradientDom = this.createDomNode('linearGradient');
+        gradientDom.id = 'gradient_' + util.uuid();
+        const handlePositions = gradient.gradientHandlePositions;
+        if (handlePositions && handlePositions.length > 1) {
+            gradientDom.x1 = (handlePositions[0].x) * 100 + '%';
+            gradientDom.y1 = (handlePositions[0].y) * 100 + '%';
+            gradientDom.x2 = (handlePositions[1].x) * 100 + '%';
+            gradientDom.y2 = (handlePositions[1].y) * 100 + '%';
+        }
+        const gradientStops = gradient.gradientStops;
+        const stops = this.getGradientStopDoms(gradientStops);
+        gradientDom.children.push(...stops);
+        defs.children.push(gradientDom);
+        return `url(#${gradientDom.id})`;
+    }
+    // 转换径向性渐变
+    convertRadialGradient(gradient, dom, container) {
+        container = container || dom;
+        if (container.type !== 'svg')
+            return super.convertRadialGradient(gradient, dom, container);
+        const defs = container.children[0];
+        if (!defs)
+            return '';
+        const gradientDom = this.createDomNode('radialGradient');
+        gradientDom.id = 'gradient_' + util.uuid();
+        const handlePositions = gradient.gradientHandlePositions;
+        // 该字段包含三个矢量，每个矢量都是归一化对象空间中的一个位置（归一化对象空间是如果对象的边界框的左上角是（0，0），右下角是（1,1））。第一个位置对应于渐变的开始（为了计算渐变停止，值为0），第二个位置是渐变的结束（值为1），第三个手柄位置决定渐变的宽度。
+        if (handlePositions && handlePositions.length > 2) {
+            gradientDom.fx = Math.round(handlePositions[0].x * 100) + '%';
+            gradientDom.fy = Math.round(handlePositions[0].y * 100) + '%';
+            gradientDom.cx = gradientDom.fx;
+            gradientDom.cy = gradientDom.fy;
+            // 大小位置跟起点的距离为渐变宽
+            const dx = handlePositions[1].x - handlePositions[0].x;
+            const dy = handlePositions[1].y - handlePositions[0].y;
+            const r = Math.sqrt(dx * dx + dy * dy);
+            gradientDom.r = Math.round(r * 100) + '%';
+        }
+        const gradientStops = gradient.gradientStops;
+        const stops = this.getGradientStopDoms(gradientStops);
+        gradientDom.children.push(...stops);
+        defs.children.push(gradientDom);
+        return `url(#${gradientDom.id})`;
+    }
+    // Helper function to get the gradient stops
+    getGradientStopDoms(gradientStops) {
+        const stops = [];
+        for (const s of gradientStops) {
+            const stop = this.createDomNode('stop');
+            stop.offset = `${Math.round(s.position * 100)}%`;
+            stop.style.stopColor = util.colorToString(s.color, 255);
+            stops.push(stop);
+        }
+        return stops;
+    }
+}
+
+// 五角星
+class StarConverter extends PolygonConverter {
+    // 生成多边形路径
+    createPolygonPath(dom, node, container) {
+        const pos = this.getPosition(dom, container);
+        const radius = Math.min(dom.bounds.width, dom.bounds.height) / 2; // 画五角星的半径
+        const center = {
+            x: dom.bounds.width / 2 + pos.x,
+            y: dom.bounds.height / 2 + pos.y
+        };
+        const point1 = [center.x, 0]; // 顶点
+        const stepAngle = Math.PI * 2 / 5; // 圆分成五份
+        const angle2 = Math.PI / 2 - stepAngle; // 右上角的点的角度
+        const point2 = [
+            center.x + Math.cos(angle2) * radius,
+            center.y - Math.sin(angle2) * radius,
+        ];
+        const angle3 = stepAngle - angle2;
+        const point3 = [
+            center.x + Math.cos(angle3) * radius,
+            center.y + Math.sin(angle3) * radius,
+        ];
+        const point4 = [
+            center.x - Math.cos(angle3) * radius,
+            center.y + Math.sin(angle3) * radius,
+        ];
+        const point5 = [
+            center.x - Math.cos(angle2) * radius,
+            center.y - Math.sin(angle2) * radius,
+        ];
+        // 每隔一个点连线
+        dom.attributes['points'] = [
+            point1.join(','),
+            point3.join(','),
+            point5.join(','),
+            point2.join(','),
+            point4.join(','),
+        ].join(' ');
+    }
+}
+
+class ELLIPSEConverter extends PolygonConverter {
+    // 多边形标签名
+    polygonName = 'ellipse';
+    async convert(node, dom, parentNode, page, option, container) {
+        // 如果有角度信息，则用多边形来计算
+        if (node.arcData && (node.arcData.endingAngle - node.arcData.startingAngle < Math.PI * 2)) {
+            this.polygonName = 'polygon';
+        }
+        else {
+            this.polygonName = 'ellipse';
+        }
+        return super.convert(node, dom, parentNode, page, option, container);
+    }
+    // 生成多边形路径
+    createPolygonPath(dom, node, container) {
+        const pos = this.getPosition(dom, container);
+        const center = {
+            x: dom.bounds.width / 2 + pos.x,
+            y: dom.bounds.height / 2 + pos.y
+        };
+        if (this.polygonName === 'polygon') {
+            // 圆的半径
+            let radius = Math.min(dom.bounds.width, dom.bounds.height) / 2;
+            // 减去边框大小
+            if (node.strokeWeight) {
+                radius -= node.strokeWeight;
+            }
+            const points = this.createArcPoints(center, radius, node.arcData.startingAngle, node.arcData.endingAngle);
+            // 有内圆
+            if (node.arcData.innerRadius > 0) {
+                const innerPoints = this.createArcPoints(center, radius * node.arcData.innerRadius, node.arcData.startingAngle, node.arcData.endingAngle);
+                // 为了首尾相接，把内圆坐标反转
+                points.push(...innerPoints.reverse());
+            }
+            dom.attributes['points'] = points.map(p => p.join(',')).join(' ');
+        }
+        else {
+            dom.attributes['cx'] = center.x + '';
+            dom.attributes['cy'] = center.y + '';
+            dom.attributes['rx'] = dom.bounds.width / 2 + '';
+            dom.attributes['ry'] = dom.bounds.height / 2 + '';
+        }
+    }
+    createArcPoints(center, radius, startAngle = 0, endAngle = Math.PI * 2) {
+        const step = 1 / radius;
+        const points = [];
+        //椭圆方程x=a*cos(r) ,y=b*sin(r)	
+        for (let r = startAngle; r <= endAngle; r += step) {
+            const x = Math.cos(r) * radius + center.x;
+            const y = Math.sin(r) * radius + center.y;
+            points.push([
+                x, y
+            ]);
+        }
+        return points;
+    }
+}
+
+class LINEConverter extends PolygonConverter {
+    polygonName = 'line';
+    async convert(node, dom, parentNode, page, option, container) {
+        const res = await super.convert(node, dom, parentNode, page, option, container);
+        if (dom.style.transform) {
+            //polygon.style.transform = dom.style.transform;
+            delete dom.style.transform;
+        }
+        delete dom.attributes['width'];
+        delete dom.style['width'];
+        delete dom.style['height'];
+        delete dom.attributes['height'];
+        delete dom.data['height'];
+        delete dom.data['height'];
+        return res;
+    }
+    // 生成多边形路径
+    createPolygonPath(dom, node, container) {
+        const pos = this.getPosition(dom, container);
+        dom.attributes['x1'] = pos.x + '';
+        dom.attributes['y1'] = pos.y + '';
+        dom.attributes['x2'] = (pos.x + dom.bounds.width) + '';
+        dom.attributes['y2'] = (pos.y + dom.bounds.height) + '';
+    }
+}
+
+class RECTANGLEConverter extends PolygonConverter {
+    polygonName = 'path';
+    async convert(node, dom, parentNode, page, option, container) {
+        return super.convert(node, dom, parentNode, page, option, container);
+    }
+    // 生成多边形路径
+    createPolygonPath(dom, node, container) {
+        const pos = this.getPosition(dom, container);
+        //dom.attributes['x'] = pos.x + '';
+        //dom.attributes['y'] = pos.y + '';
+        //dom.attributes['width'] = dom.bounds.width + '';
+        //dom.attributes['height'] = dom.bounds.height + '';
+        const path = [];
+        const defaultRadius = node.cornerRadius || 0;
+        const [r1, r2, r3, r4] = node.rectangleCornerRadii || [defaultRadius, defaultRadius, defaultRadius, defaultRadius];
+        if (r1) {
+            path.push('M', pos.x, pos.y + r1);
+            // 圆弧
+            path.push('A', r1, r1, 90, 0, 1); // 小角度，顺时针
+            path.push(pos.x + r1, pos.y); // 终点
+        }
+        else {
+            path.push('M', pos.x, pos.y);
+        }
+        if (r2) {
+            path.push('L', pos.x + dom.bounds.width - r2, pos.y);
+            // 圆弧
+            path.push('A', r2, r2, 90, 0, 1); // 小角度，顺时针
+            path.push(pos.x + dom.bounds.width, pos.y + r2); // 终点
+        }
+        else {
+            path.push('L', pos.x + dom.bounds.width, pos.y);
+        }
+        if (r3) {
+            path.push('L', pos.x + dom.bounds.width, pos.y + dom.bounds.height - r3);
+            // 圆弧
+            path.push('A', r3, r3, 90, 0, 1); // 小角度，顺时针
+            path.push(pos.x + dom.bounds.width - r3, pos.y + dom.bounds.height); // 终点
+        }
+        else {
+            path.push('L', pos.x + dom.bounds.width, pos.y + dom.bounds.height);
+        }
+        if (r4) {
+            path.push('L', pos.x + r4, pos.y + dom.bounds.height);
+            // 圆弧
+            path.push('A', r4, r4, 90, 0, 1); // 小角度，顺时针
+            path.push(pos.x, pos.y + dom.bounds.height - r4); // 终点
+        }
+        else {
+            path.push('L', pos.x, pos.y + dom.bounds.height);
+        }
+        dom.attributes['d'] = path.join(' ') + 'Z';
+    }
+}
+
+const frameConverter = new FRAMEConverter();
 const ConverterMaps = {
     'BASE': new BaseConverter(),
     'FRAME': frameConverter,
@@ -1315,21 +2190,27 @@ const ConverterMaps = {
     'TEXT': new TEXTConverter(),
     'DOCUMENT': new DocumentConverter(),
     'CANVAS': new PageConverter(),
-    //'ELLIPSE': new EllipseConverter(),
-    'RECTANGLE': new FRAMEConverter(),
+    'REGULAR_POLYGON': new PolygonConverter(),
+    'ELLIPSE': new ELLIPSEConverter(),
+    'STAR': new StarConverter(),
+    'RECTANGLE': new RECTANGLEConverter(),
+    'LINE': new LINEConverter(),
+    'VECTOR': new RECTANGLEConverter(),
 };
 // 转node为html结构对象
-async function convert(node, parentNode, option) {
+async function convert(node, parentNode, page, option, container) {
     // 如果是根，则返回document
     if (node.document) {
-        const docDom = await convert(node.document, node, option);
+        const docDom = await convert(node.document, node, page, option);
         return docDom;
     }
+    if (node.visible === false)
+        return null;
     const dom = ConverterMaps.BASE.createDomNode('div', {
         id: node.id,
         name: node.name,
         type: 'div',
-        visible: node.visible === false ? false : true,
+        visible: true,
         data: {},
         style: {
             // 默认采用绝对定位
@@ -1338,14 +2219,67 @@ async function convert(node, parentNode, option) {
         children: [],
         figmaData: node,
     });
-    const converter = ConverterMaps[node.type] || ConverterMaps.BASE;
-    if (converter)
-        await converter.convert(node, dom, parentNode, option);
-    if (node.children && node.children.length) {
+    // 普通元素，不可当作容器
+    dom.isElement = ['VECTOR', 'STAR', 'LINE', 'ELLIPSE', 'REGULAR_POLYGON', 'SLICE', 'RECTANGLE'].includes(node.type) || (parentNode && parentNode.clipsContent);
+    const isContainer = ['GROUP', 'FRAME', 'CANVAS', 'BOOLEAN', 'BOOLEAN_OPERATION'].includes(node.type);
+    const svgElements = ['VECTOR', 'STAR', 'LINE', 'ELLIPSE', 'REGULAR_POLYGON', 'RECTANGLE'];
+    // 容器可能是SVG
+    let isSvg = isContainer && !container;
+    // 容器下所有元素都是SVG元素，则认为是svg块
+    if (isSvg && node.children && node.children.length) {
         for (const child of node.children) {
-            //if(child.isMask) continue;
-            const c = await convert(child, node, option);
-            dom.children.push(c);
+            if (!svgElements.includes(child.type)) {
+                isSvg = false;
+                break;
+            }
+            // 已识别成图片的，不再处理成svg
+            if (child.type === 'RECTANGLE' && child.fills && child.fills.length && child.fills[0].type === 'IMAGE') {
+                isSvg = false;
+                break;
+            }
+        }
+    }
+    else {
+        isSvg = false;
+    }
+    if (isSvg) {
+        dom.type = 'svg';
+        container = dom;
+    }
+    let converter = ConverterMaps[node.type] || ConverterMaps.BASE;
+    // 已识别成图片的，不再处理成svg
+    if (node.type === 'RECTANGLE' && node.fills && node.fills.length && node.fills[0].type === 'IMAGE') {
+        dom.type = 'img';
+        converter = ConverterMaps.BASE;
+    }
+    if (converter)
+        await converter.convert(node, dom, parentNode, page, option, container);
+    if (!page && node.type === 'FRAME' && option?.expandToPage)
+        page = dom; // 当前节点开始，为页面模板
+    else if (page && (!container || dom.type === 'svg')) {
+        // 没有显示意义的div不处理
+        if (!dom.isElement)
+            page.children.push(dom);
+    }
+    if (node.children && node.children.length) {
+        if (isSvg && (node.type === 'BOOLEAN_OPERATION' || node.type === 'BOOLEAN')) ;
+        let lastChildDom = null;
+        for (const child of node.children) {
+            let parent = container;
+            // 如果是蒙板，则加入上一个SVG元素中
+            if (child.isMask && !parent && lastChildDom?.type === 'svg') {
+                parent = lastChildDom;
+            }
+            const c = await convert(child, node, parent || page, option, parent);
+            if (!c)
+                continue;
+            lastChildDom = c;
+            if (ConverterMaps.BASE.isEmptyDom(c)) {
+                console.log('empty dom', c);
+                continue;
+            }
+            if (!c.isMask && !dom.children.includes(c) && (!page || c.isElement))
+                dom.children.push(c);
         }
     }
     return dom;
@@ -1362,11 +2296,15 @@ async function nodeToDom(node, option) {
         case 'svg': {
             return await renderSvg(node, option);
         }
-        case 'ellipse': {
+        case 'ellipse':
+        case 'line':
+        case 'path':
+        case 'polygon': {
             return await renderEllipse(node, option);
         }
         case 'stop':
         case 'defs':
+        case 'mask':
         case 'linearGradient':
         case 'radialGradient': {
             return await renderSvgElement(node, option);
@@ -1387,17 +2325,14 @@ async function renderPage(node, option) {
 }
 async function renderSvg(node, option) {
     const svg = await renderSvgElement(node, option);
-    svg.setAttribute('width', node.bounds.width + '');
-    svg.setAttribute('height', node.bounds.height + '');
+    //svg.setAttribute('width', node.bounds.width + '');
+    //svg.setAttribute('height', node.bounds.height + '');
     return svg;
 }
 async function renderEllipse(node, option) {
     const ellipse = await renderSvgElement(node, option);
-    ellipse.setAttribute('cx', '50%');
-    ellipse.setAttribute('cy', '50%');
-    ellipse.setAttribute('rx', '50%');
-    ellipse.setAttribute('ry', '50%');
-    ellipse.setAttribute('fill', node.fill || node.style.background || node.style.backgroundColor);
+    if (node.fill)
+        ellipse.setAttribute('fill', node.fill);
     return ellipse;
 }
 async function renderSvgElement(node, option) {
@@ -1420,6 +2355,13 @@ async function renderElement(node, option, dom) {
         dom.src = node.url;
     if (node.visible === false)
         dom.style.display = 'none';
+    if (node.attributes) {
+        for (const name in node.attributes) {
+            if (typeof node.attributes[name] !== 'undefined' && typeof name === 'string') {
+                dom.setAttribute(name, node.attributes[name]);
+            }
+        }
+    }
     if (node.name)
         dom.setAttribute('data-name', node.name);
     if (node.id)

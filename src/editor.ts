@@ -21,7 +21,8 @@ export default class JEditor extends JBase implements IJEditor {
         Object.assign(option.style, {
             'boxShadow': '0 0 10px 10px #ccc',
             'position': 'absolute',
-            'backgroundSize': '100% 100%',            
+            'backgroundSize': '100% 100%',   
+            //transformOrigin: 'center top',         
         });
         // @ts-ignore 外层只响应Z轴旋转
         /*option.transformWatchProps = [
@@ -300,6 +301,7 @@ export default class JEditor extends JBase implements IJEditor {
         return el;
     }
 
+    // 加载data渲染图形
     fromJSON(data) {
         this.clear();
         //if(typeof data === 'string') data = JSON.parse(data);
@@ -331,7 +333,7 @@ export default class JEditor extends JBase implements IJEditor {
      * @param container 容器
      * @param data 
      */
-    static async renderDom(data, option?: IEditorOption) {
+    static async renderDom(data, option?: IEditorOption): Promise<JEditor> {
         let editor: JEditor;
         if(data instanceof JEditor) {
             editor = data;

@@ -118,7 +118,7 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 		const domWidth = util.toNumber(editor.view.dom.clientWidth);
 		const domHeight = util.toNumber(editor.view.dom.clientHeight);
 
-		const scale = Math.min(domWidth / (editor.data.width * 1.4), domHeight / (editor.data.height * 1.4));
+		const scale = domWidth / (editor.data.width * 1.4);
 		if (scale < 1 && scale < editor.transform.scaleX) {
 			console.log('scale', scale);
 			editor.scale(scale);
@@ -223,6 +223,8 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
                     cb(tmpl);
 					
 					resetScale();// 重置可视范围
+
+					createPreivew();
                 } else {
                     console.log(e);
                     alert('加载模板失败');
@@ -246,7 +248,7 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 		}
 	});
 
-	loadTemplate(1, (tmpl) => {                    
+	loadTemplate(5, (tmpl) => {                    
 		editor.fromJSON(tmpl);
 	});
 
@@ -299,10 +301,12 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 		//const data = editor.toString();
 		//console.log(data);
 
-		setTimeout(createPreivew, 10000);
+		//setTimeout(createPreivew, 10000);
 
 
 	};
-	setTimeout(createPreivew, 2000);
+	setInterval(() => {
+		createPreivew()
+	}, 2000);
 
     window.editor = editor;

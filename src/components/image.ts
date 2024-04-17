@@ -22,7 +22,7 @@ export default class JImage extends Base<HTMLImageElement> implements IJImageCom
             dataType: option.dataType || JImageData
         });
         // 如果保持宽高比，则不能拉伸到100%高
-        if(option.preserveRatio) {
+        if(option.preserveRatio || option.target?.style?.height === 'auto') {
             this.target.style.height = 'auto';
         }
         // 图像加载完成时触发 'load' 事件

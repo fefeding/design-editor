@@ -31,12 +31,12 @@ export default class JSvg extends Base {
     get typeName() {
         return 'svg';
     }
-    // 替换变量
-    renderSvg(svg) {
-        this.data.map((name, value) => {
-            svg = svg.replace(new RegExp(`\\{${name}\\}`, 'g'), value);
-        });
-        return svg;
+    // 添加元素到画布
+    addChild(child) {
+        if (child === this.target || child instanceof HTMLElement) {
+            return super.addChild(child);
+        }
+        return super.addChild(child);
     }
     // 加载svg内容
     async load(url = this.data.url) {

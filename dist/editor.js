@@ -17,6 +17,7 @@ export default class JEditor extends JBase {
             'boxShadow': '0 0 10px 10px #ccc',
             'position': 'absolute',
             'backgroundSize': '100% 100%',
+            //transformOrigin: 'center top',         
         });
         // @ts-ignore 外层只响应Z轴旋转
         /*option.transformWatchProps = [
@@ -270,6 +271,7 @@ export default class JEditor extends JBase {
         });
         return el;
     }
+    // 加载data渲染图形
     fromJSON(data) {
         this.clear();
         //if(typeof data === 'string') data = JSON.parse(data);
