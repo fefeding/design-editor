@@ -41,12 +41,12 @@ function buildESTask(cb) {
     .on('error', function(err) {
         console.log('bundle', err);
     })
-    .pipe(source('index.es.js'))
+    .pipe(source('index.cjs.js'))
     .pipe(gulp.dest('dist'));
 }
 
 // 构建任务
-const buildTask = gulp.series(buildTSTask);
+const buildTask = gulp.series(buildTSTask, buildESTask);
 
 function watch() {
     console.log('watch', tsProject.config.files);
