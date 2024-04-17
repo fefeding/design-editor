@@ -1,9 +1,11 @@
 const gulp = require('gulp');
+const concat = require('gulp-concat')
 const ts = require('gulp-typescript');
 const browserify = require('browserify');
 const tsify = require('tsify');
 const source = require('vinyl-source-stream');
 const tsProject = ts.createProject('tsconfig.json');
+const tsCJSProject = ts.createProject('tsconfig.cjs.json');
 
 
 function createDtsTask(cb) {
@@ -23,25 +25,12 @@ function buildTSTask() {
 };
 
 function buildESTask(cb) {
-    return browserify({
-        basedir: '.',
-        debug: true,
-        entries: ['./dist/index.js'],        
-        cache: {},
-        packageCache: {}
-    })
-    //.plugin('@babel/plugin-proposal-function-bind')
-    .transform("babelify", {
-        presets: [
-            ['@babel/env', {modules: 'commonjs',}],
-        ],        
-        //plugins: ['transform-runtime'] 
-    })  //使用babel转换es6代码.bundle()*/
-    .bundle()  //合并打包
-    .on('error', function(err) {
-        console.log('bundle', err);
-    })
-    .pipe(source('index.cjs.js'))
+    const pip = tsCJSProject.src()
+    .pipe(tsCJSProject());
+
+    pip.dts.pipe(gulp.dest('dist'));
+
+    return pip.js.pipe(concat('index.cjs.js'))
     .pipe(gulp.dest('dist'));
 }
 
