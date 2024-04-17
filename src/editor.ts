@@ -333,7 +333,7 @@ export default class JEditor extends JBase implements IJEditor {
      * @param container 容器
      * @param data 
      */
-    static async renderDom(data, option?: IEditorOption) {
+    static async renderDom(data, option?: IEditorOption): Promise<JEditor> {
         let editor: JEditor;
         if(data instanceof JEditor) {
             editor = data;
