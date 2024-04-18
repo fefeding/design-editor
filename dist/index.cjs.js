@@ -1,4 +1,3 @@
-"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -24,29 +23,6 @@ var __assign = (this && this.__assign) || function () {
         return t;
     };
     return __assign.apply(this, arguments);
-};
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
 };
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -95,22 +71,15 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.JText = exports.JImage = exports.JEditor = void 0;
-var j_design_util_1 = __importStar(require("j-design-util"));
-var baseComponent_1 = __importDefault(require("./core/baseComponent"));
-var text_1 = __importDefault(require("./components/text"));
-exports.JText = text_1.default;
-var image_1 = __importDefault(require("./components/image"));
-exports.JImage = image_1.default;
-var svg_1 = __importDefault(require("./components/svg"));
-var container_1 = __importDefault(require("./components/container"));
-var element_1 = __importDefault(require("./core/element"));
-var controller_1 = __importDefault(require("./core/controller"));
-var styleMap_1 = require("./constant/styleMap");
+import util, { fonts as JFonts } from 'j-design-util';
+import JBase from './core/baseComponent';
+import JText from './components/text';
+import JImage from './components/image';
+import JSvg from './components/svg';
+import JContainer from './components/container';
+import JElement from './core/element';
+import JController from './core/controller';
+import { editorDefaultCssContent } from './constant/styleMap';
 /**
  * @public
  */
@@ -136,7 +105,7 @@ var JEditor = /** @class */ (function (_super) {
         _this.shapes = new Map();
         if (typeof option.container === 'string')
             option.container = document.getElementById(option.container);
-        _this.view = new element_1.default({
+        _this.view = new JElement({
             style: {
                 'border': '0',
                 'padding': '0',
@@ -147,7 +116,7 @@ var JEditor = /** @class */ (function (_super) {
             }
         });
         // 字体管理实例
-        _this.fonts = new j_design_util_1.fonts(option.fonts);
+        _this.fonts = new JFonts(option.fonts);
         _this.target.css({
             'overflow': 'hidden'
         });
@@ -156,13 +125,13 @@ var JEditor = /** @class */ (function (_super) {
         _this.view.addChild(_this.dom);
         // @ts-ignore
         _this.regShape({
-            'image': image_1.default,
-            'img': image_1.default,
-            'text': text_1.default,
-            'span': text_1.default,
-            'svg': svg_1.default,
-            'container': container_1.default,
-            'div': container_1.default,
+            'image': JImage,
+            'img': JImage,
+            'text': JText,
+            'span': JText,
+            'svg': JSvg,
+            'container': JContainer,
+            'div': JContainer,
         });
         _this.init(option);
         _this.bindEvent(_this.view.dom);
@@ -174,10 +143,10 @@ var JEditor = /** @class */ (function (_super) {
         if (option.style.containerBackgroundColor)
             this.dom.style.backgroundColor = option.style.containerBackgroundColor;
         // 生成控制器
-        this.elementController = new controller_1.default(__assign(__assign({}, option.controllerOption), { visible: false, editor: this }));
+        this.elementController = new JController(__assign(__assign({}, option.controllerOption), { visible: false, editor: this }));
         var styleNode = document.createElement('style');
         if (this.editable)
-            styleNode.innerHTML = styleMap_1.editorDefaultCssContent;
+            styleNode.innerHTML = editorDefaultCssContent;
         this.dom.appendChild(styleNode);
         // 字体加载成功，同时加入到dom结构中
         this.fonts.on('load', function (font) {
@@ -236,7 +205,7 @@ var JEditor = /** @class */ (function (_super) {
             try {
                 for (var _b = __values(this.children), _c = _b.next(); !_c.done; _c = _b.next()) {
                     var el = _c.value;
-                    if (el instanceof baseComponent_1.default && el.selected) {
+                    if (el instanceof JBase && el.selected) {
                         res.push(el);
                     }
                 }
@@ -262,7 +231,7 @@ var JEditor = /** @class */ (function (_super) {
         _super.prototype.bindEvent.call(this, this.view.dom); // 编辑器事件绑到整个容器上
         // 监听子元素改变
         this.on(['elementChange'], function (e) {
-            var isComponent = e.target instanceof baseComponent_1.default;
+            var isComponent = e.target instanceof JBase;
             // 左健选中
             if (e.type === 'mousedown' && isComponent) {
                 _this.select(e.target, e.event);
@@ -353,7 +322,7 @@ var JEditor = /** @class */ (function (_super) {
     // 把domcument坐标转为编辑器相对坐标
     JEditor.prototype.toEditorPosition = function (pos, dom) {
         if (dom === void 0) { dom = this.target.dom; }
-        return j_design_util_1.default.toDomPosition(pos, dom);
+        return util.toDomPosition(pos, dom);
     };
     JEditor.prototype.clear = function () {
         this.css({
@@ -461,11 +430,11 @@ var JEditor = /** @class */ (function (_super) {
                     case 3:
                         // 如果指定了宽度，则把dom缩放到指定的大小
                         if ((_a = option === null || option === void 0 ? void 0 : option.data) === null || _a === void 0 ? void 0 : _a.width) {
-                            scale = j_design_util_1.default.toNumber(option.data.width) / j_design_util_1.default.toNumber(editor.data.width);
+                            scale = util.toNumber(option.data.width) / util.toNumber(editor.data.width);
                             editor.scale(scale);
                         }
                         else if ((_b = option === null || option === void 0 ? void 0 : option.data) === null || _b === void 0 ? void 0 : _b.width) {
-                            scale = j_design_util_1.default.toNumber(option.data.height) / j_design_util_1.default.toNumber(editor.data.height);
+                            scale = util.toNumber(option.data.height) / util.toNumber(editor.data.height);
                             editor.scale(scale);
                         }
                         dom = editor.dom;
@@ -480,56 +449,559 @@ var JEditor = /** @class */ (function (_super) {
         });
     };
     return JEditor;
-}(baseComponent_1.default));
-exports.JEditor = JEditor;
-exports.default = JEditor;
+}(JBase));
+export default JEditor;
+export { JEditor, JImage, JText, };
 
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
+import util from 'j-design-util';
+import JBaseComponent from './core/baseComponent';
+import JText from './components/text';
+import JImage from './components/image';
+import JElement from './core/element';
+import JEditor from './editor';
+import JData from './constant/data';
+import JEvent from './core/event';
+import { filters as CssFilters } from 'j-css-filters';
+export { JElementStyleDeclaration, JElementStyleProperty } from './constant/styleMap';
+export * from './constant/data';
+export * from './constant/types';
+export { util, JEvent, JBaseComponent, JText, JData, JImage, JElement, JEditor, CssFilters };
+export default JEditor;
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+import Base from '../core/baseComponent';
+import { JElementData } from '../constant/data';
+var JContainer = /** @class */ (function (_super) {
+    __extends(JContainer, _super);
+    function JContainer(option) {
+        if (option === void 0) { option = {}; }
+        return _super.call(this, __assign(__assign({}, option), { type: option.type || 'div', dataType: option.dataType || JElementData })) || this;
     }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.CssFilters = exports.JEditor = exports.JElement = exports.JImage = exports.JData = exports.JText = exports.JBaseComponent = exports.JEvent = exports.util = exports.JElementStyleProperty = exports.JElementStyleDeclaration = void 0;
-var j_design_util_1 = __importDefault(require("j-design-util"));
-exports.util = j_design_util_1.default;
-var baseComponent_1 = __importDefault(require("./core/baseComponent"));
-exports.JBaseComponent = baseComponent_1.default;
-var text_1 = __importDefault(require("./components/text"));
-exports.JText = text_1.default;
-var image_1 = __importDefault(require("./components/image"));
-exports.JImage = image_1.default;
-var element_1 = __importDefault(require("./core/element"));
-exports.JElement = element_1.default;
-var editor_1 = __importDefault(require("./editor"));
-exports.JEditor = editor_1.default;
-var data_1 = __importDefault(require("./constant/data"));
-exports.JData = data_1.default;
-var event_1 = __importDefault(require("./core/event"));
-exports.JEvent = event_1.default;
-var j_css_filters_1 = require("j-css-filters");
-Object.defineProperty(exports, "CssFilters", { enumerable: true, get: function () { return j_css_filters_1.filters; } });
-var styleMap_1 = require("./constant/styleMap");
-Object.defineProperty(exports, "JElementStyleDeclaration", { enumerable: true, get: function () { return styleMap_1.JElementStyleDeclaration; } });
-Object.defineProperty(exports, "JElementStyleProperty", { enumerable: true, get: function () { return styleMap_1.JElementStyleProperty; } });
-__exportStar(require("./constant/data"), exports);
-__exportStar(require("./constant/types"), exports);
-exports.default = editor_1.default;
+    Object.defineProperty(JContainer.prototype, "typeName", {
+        /**
+         * 类型名称
+         */
+        get: function () {
+            return 'container';
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(JContainer.prototype, "children", {
+        // 重写子集为target
+        get: function () {
+            return this.target.children;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    return JContainer;
+}(Base));
+export default JContainer;
 
-"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
+import Base from '../core/baseComponent';
+import { JImageData } from '../constant/data';
+/**
+ * 图像组件类 JImage，继承于基础组件 Base。
+ * @public
+ */
+var JImage = /** @class */ (function (_super) {
+    __extends(JImage, _super);
+    /**
+     * JImage组件构造函数。
+     * @param option - 图像选项，包括 url, src 等。
+     */
+    function JImage(option) {
+        if (option === void 0) { option = {}; }
+        var _this = this;
+        var _a, _b;
+        if (!option.style)
+            option.style = {};
+        if (!option.style.overflow)
+            option.style.overflow = 'hidden';
+        _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'img', type: option.type || 'image', dataType: option.dataType || JImageData })) || this;
+        // 如果保持宽高比，则不能拉伸到100%高
+        if (option.preserveRatio || ((_b = (_a = option.target) === null || _a === void 0 ? void 0 : _a.style) === null || _b === void 0 ? void 0 : _b.height) === 'auto') {
+            _this.target.style.height = 'auto';
+        }
+        // 图像加载完成时触发 'load' 事件
+        _this.target.dom.onload = function (e) {
+            _this.emit('load', e);
+        };
+        // 图像加载错误时触发 'error' 事件
+        _this.target.dom.onerror = function (e) {
+            _this.emit('error', e);
+        };
+        // 允许跨域获取图像资源（避免CORS问题）
+        _this.target.attr('crossorigin', 'anonymous');
+        // 'src' 属性变化映射到 style
+        _this.data.watch([
+            'src'
+        ], {
+            // 设置 'src' 属性
+            set: function (item) {
+                if (item.name === 'src')
+                    _this.target.dom.src = item.value;
+            },
+            get: function (name) {
+                if (name === 'src')
+                    return _this.target.dom.src;
+            }
+        });
+        // 如果在选项中提供，设置 'src' 或 'url' 属性
+        // @ts-ignore
+        var src = option.url || option.src;
+        if (src)
+            _this.data.src = src;
+        return _this;
+    }
+    Object.defineProperty(JImage.prototype, "typeName", {
+        /**
+         * 类型名称
+         */
+        get: function () {
+            return 'image';
+        },
+        enumerable: false,
+        configurable: true
+    });
+    // 设置css到dom
+    JImage.prototype.setDomStyle = function (name, value) {
+        // transform应用于图片元素上面
+        if (name === 'transform') {
+            return this.target && this.target.setDomStyle(name, value);
+        }
+        return _super.prototype.setDomStyle.call(this, name, value);
+    };
+    JImage.prototype.toJSON = function (props) {
+        if (props === void 0) { props = []; }
+        return _super.prototype.toJSON.call(this, __spreadArray([
+            'filters'
+        ], __read(props), false));
+    };
+    return JImage;
+}(Base));
+export default JImage;
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
+import Base from '../core/baseComponent';
+import util from 'j-design-util';
+import { JSvgData } from '../constant/data';
+import JElement from 'src/core/element';
+var JSvg = /** @class */ (function (_super) {
+    __extends(JSvg, _super);
+    function JSvg(option) {
+        if (option === void 0) { option = {}; }
+        var _this = _super.call(this, __assign(__assign({}, option), { type: option.type || 'svg', nodeType: 'svg', dataType: option.dataType || JSvgData })) || this;
+        // 属性变化映射到style
+        _this.data.watch([
+            'url', 'svg', 'src'
+        ], {
+            set: function (item) {
+                if (item.name === 'url') {
+                    _this.load(item.value);
+                }
+                if (item.name === 'src') {
+                    _this.data.url = item.value;
+                }
+                else if (item.name === 'svg') {
+                    _this.target.dom.innerHTML = item.value;
+                }
+            }
+        });
+        return _this;
+    }
+    Object.defineProperty(JSvg.prototype, "typeName", {
+        /**
+         * 类型名称
+         */
+        get: function () {
+            return 'svg';
+        },
+        enumerable: false,
+        configurable: true
+    });
+    // 添加元素到画布
+    JSvg.prototype.addChild = function (child) {
+        var e_1, _a;
+        var _b, _c, _d;
+        if (child === this.target || child instanceof Element || !(child instanceof Base)) {
+            return _super.prototype.addChild.call(this, child);
+        }
+        var children = ((_b = child.option) === null || _b === void 0 ? void 0 : _b.children) || ((_d = (_c = child.option) === null || _c === void 0 ? void 0 : _c.target) === null || _d === void 0 ? void 0 : _d.children);
+        if (children === null || children === void 0 ? void 0 : children.length) {
+            try {
+                for (var _e = __values(child.option.children), _f = _e.next(); !_f.done; _f = _e.next()) {
+                    var opt = _f.value;
+                    var c = this.createSvgElement(opt.type || opt.nodeType, opt);
+                    c && child.addChild(c);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (_f && !_f.done && (_a = _e.return)) _a.call(_e);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+        }
+        return child;
+    };
+    JSvg.prototype.createSvgElement = function (tag, node) {
+        var el = new JElement(__assign(__assign({}, node), { nodeType: tag }));
+        this.renderSvgElement(node, el);
+        return el;
+    };
+    // 设置dom属性
+    JSvg.prototype.renderSvgElement = function (node, el) {
+        var e_2, _a;
+        // @ts-ignore
+        if (node.preserveRatio && node.type === 'img')
+            el.style.height = 'auto';
+        // @ts-ignore
+        if (node.fill)
+            el.attr('fill', node.fill);
+        if (node.id)
+            el.attr('id', node.id);
+        if (node.name)
+            el.attr('data-name', node.name);
+        if (node.children) {
+            try {
+                for (var _b = __values(node.children), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var child = _c.value;
+                    if (child.visible === false)
+                        continue;
+                    var c = this.createSvgElement(child.type || child.nodeType, child);
+                    c && el.addChild(c);
+                }
+            }
+            catch (e_2_1) { e_2 = { error: e_2_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                }
+                finally { if (e_2) throw e_2.error; }
+            }
+        }
+        return el;
+    };
+    // 加载svg内容
+    JSvg.prototype.load = function (url) {
+        if (url === void 0) { url = this.data.url; }
+        return __awaiter(this, void 0, void 0, function () {
+            var svg;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, util.request(url)];
+                    case 1:
+                        svg = _a.sent();
+                        this.data.svg = svg;
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    return JSvg;
+}(Base));
+export default JSvg;
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+import Base from '../core/baseComponent';
+import { JTextData } from '../constant/data';
+import util from 'j-design-util';
+/**
+ * 文本组件类 JText，继承于基础组件 Base。
+ * @public
+ */
+var JText = /** @class */ (function (_super) {
+    __extends(JText, _super);
+    /**
+     * JText组件构造函数。
+     * @example
+     * ```
+     * const textInstance = new JText({
+     *   text: 'Hello World',
+     *   style: {
+     *     color: 'red',
+     *     fontSize: '18px'
+     *   }
+     * });
+     * ```
+     * @param option - 文本组件选项，包括 text, style 等。
+     */
+    function JText(option) {
+        if (option === void 0) { option = {}; }
+        var _this = this;
+        option.style = __assign({ fontFamily: 'Arial', textAlign: 'left', fontSize: 22, fontWeight: 'normal', fontStyle: 'normal' }, option.style);
+        _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'div', type: option.type || 'text', dataType: option.dataType || JTextData })) || this;
+        // 'text' 属性变化映射到 innerText
+        _this.data.watch([
+            'text', 'fontFamily', 'fontSize'
+        ], {
+            set: function (item) {
+                if (item.name === 'text')
+                    _this.target.dom.innerText = item.value;
+                else
+                    _this.style[item.name] = item.value;
+            },
+            get: function (name) {
+                if (name === 'text')
+                    return _this.target.dom.innerText;
+                else
+                    return _this.style[name];
+            }
+        });
+        // 如果在选项中提供，设置 'text' 属性
+        // @ts-ignore
+        var text = option.text;
+        if (text)
+            _this.data.text = text;
+        // 添加双击事件监听器，进入编辑状态
+        _this.on('dblclick', function (e) {
+            _this.edit(e);
+        });
+        // 添加选择事件监听器，退出编辑状态
+        _this.on('select', function () {
+            if (!_this.selected)
+                _this.closeEdit();
+        });
+        _this.target.on('click', function (e) {
+            util.setRange(_this.target.dom, e); // 光标位置在点击位置
+        });
+        _this.target.on('blur', function () {
+            _this.closeEdit();
+        });
+        JText.TextControlCache.set(_this.id, _this); // 缓存起来
+        return _this;
+    }
+    Object.defineProperty(JText.prototype, "typeName", {
+        /**
+         * 类型名称
+         */
+        get: function () {
+            return 'text';
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(JText.prototype, "contenteditable", {
+        /**
+         * 当前编辑状态
+         */
+        get: function () {
+            return util.attr(this.target.dom, 'contenteditable');
+        },
+        set: function (v) {
+            if (!this.editable && v)
+                return; // 组件不支持编辑则不处理
+            util.attr(this.target.dom, 'contenteditable', v.toString());
+        },
+        enumerable: false,
+        configurable: true
+    });
+    /**
+     * 进入文本编辑状态
+     */
+    JText.prototype.edit = function (e) {
+        if (!this.editable)
+            return;
+        this.editor.elementController.visible = false;
+        this.contenteditable = true; // 编辑态
+        util.setRange(this.target.dom, e); // 光标位置在最后
+        this.target.dom.focus(); // 进入控件
+    };
+    /**
+     * 退出文本编辑状态
+     */
+    JText.prototype.closeEdit = function () {
+        this.contenteditable = false;
+    };
+    /**
+     * 移除 JText 实例
+     */
+    JText.prototype.dispose = function () {
+        JText.TextControlCache.delete(this.id);
+        _super.prototype.dispose.call(this);
+    };
+    // 所有 JText 实例的缓存
+    JText.TextControlCache = new Map();
+    return JText;
+}(Base));
+export default JText;
+
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -556,12 +1028,7 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.JTextData = exports.JSvgData = exports.JImageData = exports.JElementData = void 0;
-var j_eventemitter_1 = __importDefault(require("j-eventemitter"));
+import EventEmiter from 'j-eventemitter';
 /**
  * JData 类：提供了一种方式来处理和管理数据
  * @public
@@ -735,8 +1202,8 @@ var JData = /** @class */ (function (_super) {
         return proxy;
     };
     return JData;
-}(j_eventemitter_1.default));
-exports.default = JData;
+}(EventEmiter));
+export default JData;
 /**
  * 元素的基础数据类
  * @public
@@ -749,7 +1216,7 @@ var JElementData = /** @class */ (function (_super) {
     }
     return JElementData;
 }(JData));
-exports.JElementData = JElementData;
+export { JElementData };
 /**
  * 图片元素的数据类，继承自元素的基础数据类 JElementData
  * @public
@@ -761,7 +1228,7 @@ var JImageData = /** @class */ (function (_super) {
     }
     return JImageData;
 }(JElementData));
-exports.JImageData = JImageData;
+export { JImageData };
 /**
  * svg
  * @public
@@ -773,7 +1240,7 @@ var JSvgData = /** @class */ (function (_super) {
     }
     return JSvgData;
 }(JImageData));
-exports.JSvgData = JSvgData;
+export { JSvgData };
 /**
  * 文本元素的数据类，继承自元素的基础数据类 JElementData
  * @public
@@ -785,9 +1252,10 @@ var JTextData = /** @class */ (function (_super) {
     }
     return JTextData;
 }(JElementData));
-exports.JTextData = JTextData;
+export { JTextData };
 
-"use strict";
+export {};
+
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -803,8 +1271,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.BlurFilter = exports.Filter = void 0;
 var Filter = /** @class */ (function () {
     function Filter(option) {
         if (option) {
@@ -827,7 +1293,7 @@ var Filter = /** @class */ (function () {
     };
     return Filter;
 }());
-exports.Filter = Filter;
+export { Filter };
 /**
  * 高斯模糊
  */
@@ -843,12 +1309,11 @@ var BlurFilter = /** @class */ (function (_super) {
     }
     return BlurFilter;
 }(Filter));
-exports.BlurFilter = BlurFilter;
+export { BlurFilter };
 var filters = {
     BlurFilter: BlurFilter
 };
 
-"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -875,13 +1340,8 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.editorDefaultCssContent = exports.ContainerDefaultStyle = exports.JElementStyleProperty = exports.JElementStyleDeclaration = exports.topZIndex = void 0;
-var j_eventemitter_1 = __importDefault(require("j-eventemitter"));
-exports.topZIndex = 10000;
+import EventEmiter from 'j-eventemitter';
+export var topZIndex = 10000;
 /**
  * 支持的样式属性列表
  * @public
@@ -892,8 +1352,8 @@ var JElementStyleDeclaration = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     return JElementStyleDeclaration;
-}(j_eventemitter_1.default));
-exports.JElementStyleDeclaration = JElementStyleDeclaration;
+}(EventEmiter));
+export { JElementStyleDeclaration };
 /**
  * 样式属性集合
  * @public
@@ -1378,7 +1838,7 @@ var JElementStyleProperty = /** @class */ (function () {
     }
     return JElementStyleProperty;
 }());
-exports.JElementStyleProperty = JElementStyleProperty;
+export { JElementStyleProperty };
 /**
  * @public
  */
@@ -1418,9 +1878,9 @@ var JElementCssStyle = /** @class */ (function (_super) {
     JElementCssStyle.styleNamesMap = [];
     return JElementCssStyle;
 }(JElementStyleDeclaration));
-exports.default = JElementCssStyle;
+export default JElementCssStyle;
 // 最外层容器默认样式
-exports.ContainerDefaultStyle = {
+export var ContainerDefaultStyle = {
     position: 'absolute',
     left: '0',
     top: '0',
@@ -1448,9 +1908,8 @@ exports.ContainerDefaultStyle = {
 /**
  * 默认编辑器样式
  */
-exports.editorDefaultCssContent = ".j-design-editor-container {\n        border: none;\n        box-sizing: content-box;\n    }.j-design-editor-container * {\n        box-sizing: content-box;\n    }\n    .j-design-editor-container.selected {\n        box-shadow: 0 0 1px rgba(6,155,181,1);\n    }\n    .j-design-editor-container:hover {\n        box-shadow: 0 0 1px 1px rgba(0,0,0,0.2);\n    }\n    .j-design-editor-controller .item-skew {\n        box-shadow: 0 0 2px 2px #ccc;\n        opacity: 0.2;\n    }\n    .j-design-editor-controller .item-skew:hover {\n        opacity: 0.9;\n    }\n    .j-design-editor-controller .item-rotate {\n        opacity: 0.5;\n    }\n    .j-design-editor-controller .item-rotate:hover {\n        opacity: 1;\n    }\n    ";
+export var editorDefaultCssContent = ".j-design-editor-container {\n        border: none;\n        box-sizing: content-box;\n    }.j-design-editor-container * {\n        box-sizing: content-box;\n    }\n    .j-design-editor-container.selected {\n        box-shadow: 0 0 1px rgba(6,155,181,1);\n    }\n    .j-design-editor-container:hover {\n        box-shadow: 0 0 1px 1px rgba(0,0,0,0.2);\n    }\n    .j-design-editor-controller .item-skew {\n        box-shadow: 0 0 2px 2px #ccc;\n        opacity: 0.2;\n    }\n    .j-design-editor-controller .item-skew:hover {\n        opacity: 0.9;\n    }\n    .j-design-editor-controller .item-rotate {\n        opacity: 0.5;\n    }\n    .j-design-editor-controller .item-rotate:hover {\n        opacity: 1;\n    }\n    ";
 
-"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -1477,12 +1936,8 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var j_eventemitter_1 = __importDefault(require("j-eventemitter"));
-var j_design_util_1 = __importDefault(require("j-design-util"));
+import EventEmiter from 'j-eventemitter';
+import util from 'j-design-util';
 var Transform = /** @class */ (function (_super) {
     __extends(Transform, _super);
     function Transform(option, targetOption) {
@@ -1512,8 +1967,8 @@ var Transform = /** @class */ (function (_super) {
     Object.defineProperty(Transform.prototype, "translateXString", {
         get: function () {
             var x = this.translateX;
-            if (j_design_util_1.default.isNumber(x))
-                x = j_design_util_1.default.toPX(x);
+            if (util.isNumber(x))
+                x = util.toPX(x);
             return "translateX(".concat(x, ")");
         },
         enumerable: false,
@@ -1522,8 +1977,8 @@ var Transform = /** @class */ (function (_super) {
     Object.defineProperty(Transform.prototype, "translateYString", {
         get: function () {
             var y = this.translateY;
-            if (j_design_util_1.default.isNumber(y))
-                y = j_design_util_1.default.toPX(y);
+            if (util.isNumber(y))
+                y = util.toPX(y);
             return "translateY(".concat(y, ")");
         },
         enumerable: false,
@@ -1532,8 +1987,8 @@ var Transform = /** @class */ (function (_super) {
     Object.defineProperty(Transform.prototype, "translateZString", {
         get: function () {
             var x = this.translateZ;
-            if (j_design_util_1.default.isNumber(x))
-                x = j_design_util_1.default.toPX(x);
+            if (util.isNumber(x))
+                x = util.toPX(x);
             return "translateZ(".concat(x, ")");
         },
         enumerable: false,
@@ -1541,21 +1996,21 @@ var Transform = /** @class */ (function (_super) {
     });
     Object.defineProperty(Transform.prototype, "rotateXString", {
         get: function () {
-            return "rotateX(".concat(j_design_util_1.default.toRad(this.rotateX), ")");
+            return "rotateX(".concat(util.toRad(this.rotateX), ")");
         },
         enumerable: false,
         configurable: true
     });
     Object.defineProperty(Transform.prototype, "rotateYString", {
         get: function () {
-            return "rotateY(".concat(j_design_util_1.default.toRad(this.rotateY), ")");
+            return "rotateY(".concat(util.toRad(this.rotateY), ")");
         },
         enumerable: false,
         configurable: true
     });
     Object.defineProperty(Transform.prototype, "rotateZString", {
         get: function () {
-            return "rotateZ(".concat(j_design_util_1.default.toRad(this.rotateZ), ")");
+            return "rotateZ(".concat(util.toRad(this.rotateZ), ")");
         },
         enumerable: false,
         configurable: true
@@ -1583,14 +2038,14 @@ var Transform = /** @class */ (function (_super) {
     });
     Object.defineProperty(Transform.prototype, "skewXString", {
         get: function () {
-            return "skewX(".concat(j_design_util_1.default.toRad(this.skewX), ")");
+            return "skewX(".concat(util.toRad(this.skewX), ")");
         },
         enumerable: false,
         configurable: true
     });
     Object.defineProperty(Transform.prototype, "skewYString", {
         get: function () {
-            return "skewY(".concat(j_design_util_1.default.toRad(this.skewY), ")");
+            return "skewY(".concat(util.toRad(this.skewY), ")");
         },
         enumerable: false,
         configurable: true
@@ -1696,504 +2151,12 @@ var Transform = /** @class */ (function (_super) {
         };
     };
     return Transform;
-}(j_eventemitter_1.default));
-exports.default = Transform;
+}(EventEmiter));
+export default Transform;
 
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.JElementCssStyle = void 0;
-var styleMap_1 = __importDefault(require("./styleMap"));
-exports.JElementCssStyle = styleMap_1.default;
+import JElementCssStyle from './styleMap';
+export { JElementCssStyle };
 
-"use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var baseComponent_1 = __importDefault(require("../core/baseComponent"));
-var data_1 = require("../constant/data");
-var JContainer = /** @class */ (function (_super) {
-    __extends(JContainer, _super);
-    function JContainer(option) {
-        if (option === void 0) { option = {}; }
-        return _super.call(this, __assign(__assign({}, option), { type: option.type || 'div', dataType: option.dataType || data_1.JElementData })) || this;
-    }
-    Object.defineProperty(JContainer.prototype, "typeName", {
-        /**
-         * 类型名称
-         */
-        get: function () {
-            return 'container';
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JContainer.prototype, "children", {
-        // 重写子集为target
-        get: function () {
-            return this.target.children;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    return JContainer;
-}(baseComponent_1.default));
-exports.default = JContainer;
-
-"use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
-var __read = (this && this.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var baseComponent_1 = __importDefault(require("../core/baseComponent"));
-var data_1 = require("../constant/data");
-/**
- * 图像组件类 JImage，继承于基础组件 Base。
- * @public
- */
-var JImage = /** @class */ (function (_super) {
-    __extends(JImage, _super);
-    /**
-     * JImage组件构造函数。
-     * @param option - 图像选项，包括 url, src 等。
-     */
-    function JImage(option) {
-        if (option === void 0) { option = {}; }
-        var _this = this;
-        var _a, _b;
-        if (!option.style)
-            option.style = {};
-        if (!option.style.overflow)
-            option.style.overflow = 'hidden';
-        _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'img', type: option.type || 'image', dataType: option.dataType || data_1.JImageData })) || this;
-        // 如果保持宽高比，则不能拉伸到100%高
-        if (option.preserveRatio || ((_b = (_a = option.target) === null || _a === void 0 ? void 0 : _a.style) === null || _b === void 0 ? void 0 : _b.height) === 'auto') {
-            _this.target.style.height = 'auto';
-        }
-        // 图像加载完成时触发 'load' 事件
-        _this.target.dom.onload = function (e) {
-            _this.emit('load', e);
-        };
-        // 图像加载错误时触发 'error' 事件
-        _this.target.dom.onerror = function (e) {
-            _this.emit('error', e);
-        };
-        // 允许跨域获取图像资源（避免CORS问题）
-        _this.target.attr('crossorigin', 'anonymous');
-        // 'src' 属性变化映射到 style
-        _this.data.watch([
-            'src'
-        ], {
-            // 设置 'src' 属性
-            set: function (item) {
-                if (item.name === 'src')
-                    _this.target.dom.src = item.value;
-            },
-            get: function (name) {
-                if (name === 'src')
-                    return _this.target.dom.src;
-            }
-        });
-        // 如果在选项中提供，设置 'src' 或 'url' 属性
-        // @ts-ignore
-        var src = option.url || option.src;
-        if (src)
-            _this.data.src = src;
-        return _this;
-    }
-    Object.defineProperty(JImage.prototype, "typeName", {
-        /**
-         * 类型名称
-         */
-        get: function () {
-            return 'image';
-        },
-        enumerable: false,
-        configurable: true
-    });
-    // 设置css到dom
-    JImage.prototype.setDomStyle = function (name, value) {
-        // transform应用于图片元素上面
-        if (name === 'transform') {
-            return this.target && this.target.setDomStyle(name, value);
-        }
-        return _super.prototype.setDomStyle.call(this, name, value);
-    };
-    JImage.prototype.toJSON = function (props) {
-        if (props === void 0) { props = []; }
-        return _super.prototype.toJSON.call(this, __spreadArray([
-            'filters'
-        ], __read(props), false));
-    };
-    return JImage;
-}(baseComponent_1.default));
-exports.default = JImage;
-
-"use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (g && (g = 0, op[0] && (_ = 0)), _) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var baseComponent_1 = __importDefault(require("../core/baseComponent"));
-var j_design_util_1 = __importDefault(require("j-design-util"));
-var data_1 = require("../constant/data");
-var JSvg = /** @class */ (function (_super) {
-    __extends(JSvg, _super);
-    function JSvg(option) {
-        if (option === void 0) { option = {}; }
-        var _this = _super.call(this, __assign(__assign({}, option), { type: option.type || 'svg', dataType: option.dataType || data_1.JSvgData })) || this;
-        // 属性变化映射到style
-        _this.data.watch([
-            'url', 'svg', 'src'
-        ], {
-            set: function (item) {
-                if (item.name === 'url') {
-                    _this.load(item.value);
-                }
-                if (item.name === 'src') {
-                    _this.data.url = item.value;
-                }
-                else if (item.name === 'svg') {
-                    _this.target.dom.innerHTML = item.value;
-                }
-            }
-        });
-        return _this;
-    }
-    Object.defineProperty(JSvg.prototype, "typeName", {
-        /**
-         * 类型名称
-         */
-        get: function () {
-            return 'svg';
-        },
-        enumerable: false,
-        configurable: true
-    });
-    // 添加元素到画布
-    JSvg.prototype.addChild = function (child) {
-        if (child === this.target || child instanceof HTMLElement) {
-            return _super.prototype.addChild.call(this, child);
-        }
-        return _super.prototype.addChild.call(this, child);
-    };
-    // 加载svg内容
-    JSvg.prototype.load = function (url) {
-        if (url === void 0) { url = this.data.url; }
-        return __awaiter(this, void 0, void 0, function () {
-            var svg;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, j_design_util_1.default.request(url)];
-                    case 1:
-                        svg = _a.sent();
-                        this.data.svg = svg;
-                        return [2 /*return*/];
-                }
-            });
-        });
-    };
-    return JSvg;
-}(baseComponent_1.default));
-exports.default = JSvg;
-
-"use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var baseComponent_1 = __importDefault(require("../core/baseComponent"));
-var data_1 = require("../constant/data");
-var j_design_util_1 = __importDefault(require("j-design-util"));
-/**
- * 文本组件类 JText，继承于基础组件 Base。
- * @public
- */
-var JText = /** @class */ (function (_super) {
-    __extends(JText, _super);
-    /**
-     * JText组件构造函数。
-     * @example
-     * ```
-     * const textInstance = new JText({
-     *   text: 'Hello World',
-     *   style: {
-     *     color: 'red',
-     *     fontSize: '18px'
-     *   }
-     * });
-     * ```
-     * @param option - 文本组件选项，包括 text, style 等。
-     */
-    function JText(option) {
-        if (option === void 0) { option = {}; }
-        var _this = this;
-        option.style = __assign({ fontFamily: 'Arial', textAlign: 'left', fontSize: 22, fontWeight: 'normal', fontStyle: 'normal' }, option.style);
-        _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'div', type: option.type || 'text', dataType: option.dataType || data_1.JTextData })) || this;
-        // 'text' 属性变化映射到 innerText
-        _this.data.watch([
-            'text', 'fontFamily', 'fontSize'
-        ], {
-            set: function (item) {
-                if (item.name === 'text')
-                    _this.target.dom.innerText = item.value;
-                else
-                    _this.style[item.name] = item.value;
-            },
-            get: function (name) {
-                if (name === 'text')
-                    return _this.target.dom.innerText;
-                else
-                    return _this.style[name];
-            }
-        });
-        // 如果在选项中提供，设置 'text' 属性
-        // @ts-ignore
-        var text = option.text;
-        if (text)
-            _this.data.text = text;
-        // 添加双击事件监听器，进入编辑状态
-        _this.on('dblclick', function (e) {
-            _this.edit(e);
-        });
-        // 添加选择事件监听器，退出编辑状态
-        _this.on('select', function () {
-            if (!_this.selected)
-                _this.closeEdit();
-        });
-        _this.target.on('click', function (e) {
-            j_design_util_1.default.setRange(_this.target.dom, e); // 光标位置在点击位置
-        });
-        _this.target.on('blur', function () {
-            _this.closeEdit();
-        });
-        JText.TextControlCache.set(_this.id, _this); // 缓存起来
-        return _this;
-    }
-    Object.defineProperty(JText.prototype, "typeName", {
-        /**
-         * 类型名称
-         */
-        get: function () {
-            return 'text';
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JText.prototype, "contenteditable", {
-        /**
-         * 当前编辑状态
-         */
-        get: function () {
-            return j_design_util_1.default.attr(this.target.dom, 'contenteditable');
-        },
-        set: function (v) {
-            if (!this.editable && v)
-                return; // 组件不支持编辑则不处理
-            j_design_util_1.default.attr(this.target.dom, 'contenteditable', v.toString());
-        },
-        enumerable: false,
-        configurable: true
-    });
-    /**
-     * 进入文本编辑状态
-     */
-    JText.prototype.edit = function (e) {
-        if (!this.editable)
-            return;
-        this.editor.elementController.visible = false;
-        this.contenteditable = true; // 编辑态
-        j_design_util_1.default.setRange(this.target.dom, e); // 光标位置在最后
-        this.target.dom.focus(); // 进入控件
-    };
-    /**
-     * 退出文本编辑状态
-     */
-    JText.prototype.closeEdit = function () {
-        this.contenteditable = false;
-    };
-    /**
-     * 移除 JText 实例
-     */
-    JText.prototype.dispose = function () {
-        JText.TextControlCache.delete(this.id);
-        _super.prototype.dispose.call(this);
-    };
-    // 所有 JText 实例的缓存
-    JText.TextControlCache = new Map();
-    return JText;
-}(baseComponent_1.default));
-exports.default = JText;
-
-"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -2256,15 +2219,11 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     }
     return to.concat(ar || Array.prototype.slice.call(from));
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var j_design_util_1 = __importDefault(require("j-design-util"));
-var j_css_filters_1 = __importDefault(require("j-css-filters"));
-var styleMap_1 = require("../constant/styleMap");
-var event_1 = require("../core/event");
-var element_1 = __importDefault(require("../core/element"));
+import util from 'j-design-util';
+import CssFilterManager from 'j-css-filters';
+import { ContainerDefaultStyle } from '../constant/styleMap';
+import { SupportEventNames, ElementWatchEventNames } from '../core/event';
+import JElement from '../core/element';
 /**
  * @public
  */
@@ -2276,7 +2235,7 @@ var JBaseComponent = /** @class */ (function (_super) {
         var _this = this;
         option.style = option.style || {};
         // position和overflow预设的值优先级最高
-        option.style = Object.assign(__assign({}, styleMap_1.ContainerDefaultStyle), option.style, {
+        option.style = Object.assign(__assign({}, ContainerDefaultStyle), option.style, {
         //position: ContainerDefaultStyle.position,
         //overflow: ContainerDefaultStyle.overflow
         });
@@ -2303,7 +2262,7 @@ var JBaseComponent = /** @class */ (function (_super) {
         if (!targetOption.nodeType)
             targetOption.nodeType = option.nodeType;
         // 生成当前控制的元素
-        _this.target = new element_1.default(targetOption);
+        _this.target = new JElement(targetOption);
         _this.addChild(_this.target.dom);
         // 变换改为控制主元素
         /*this.transform.bind({
@@ -2312,7 +2271,7 @@ var JBaseComponent = /** @class */ (function (_super) {
                 'rotateX', 'rotateY', 'translateX', 'translateY', 'skewX', 'skewY'
             ]
         });*/
-        _this.filters = new j_css_filters_1.default(_this, option.filters); // 滤镜
+        _this.filters = new CssFilterManager(_this, option.filters); // 滤镜
         _this.data.on('change', function (e) {
             _this.emit('dataChange', {
                 type: 'dataChange',
@@ -2339,7 +2298,7 @@ var JBaseComponent = /** @class */ (function (_super) {
         set: function (v) {
             this._selected = v;
             // 如果选中则加上样式
-            j_design_util_1.default.class(this.dom, 'selected', !v);
+            util.class(this.dom, 'selected', !v);
             this.emit('select', {
                 type: 'select',
                 target: this,
@@ -2440,8 +2399,18 @@ var JBaseComponent = /** @class */ (function (_super) {
     JBaseComponent.prototype.addChild = function (child) {
         var e_1, _a;
         var _b, _c;
-        if (child === this.target || child instanceof HTMLElement) {
+        if (child === this)
+            return child;
+        if (child === this.target || child === this.target.dom) {
             return _super.prototype.addChild.call(this, child);
+        }
+        // 非组件直接加到target中
+        if (!(child instanceof JBaseComponent)) {
+            var el = this.target.addChild(child);
+            if (child instanceof JElement) {
+                this.children.push(child);
+            }
+            return child;
         }
         this.bindElementEvent(child);
         child.parent = this; // 把父设置成编辑器
@@ -2450,6 +2419,10 @@ var JBaseComponent = /** @class */ (function (_super) {
         // 刷新样式
         child.style.refresh();
         this.target.addChild(child);
+        // SVG内部自行处理
+        if (child.type === 'svg') {
+            return child.addChild(child);
+        }
         if ((_c = (_b = child.option) === null || _b === void 0 ? void 0 : _b.children) === null || _c === void 0 ? void 0 : _c.length) {
             try {
                 for (var _d = __values(child.option.children), _e = _d.next(); !_e.done; _e = _d.next()) {
@@ -2474,23 +2447,23 @@ var JBaseComponent = /** @class */ (function (_super) {
             return;
         }
         this.target.removeChild(el);
-        if (el instanceof element_1.default) {
-            el.off(event_1.SupportEventNames);
-            el.off(event_1.ElementWatchEventNames);
+        if (el instanceof JElement) {
+            el.off(SupportEventNames);
+            el.off(ElementWatchEventNames);
         }
     };
     // 绑定元素事件
     JBaseComponent.prototype.bindElementEvent = function (el) {
         var self = this;
         // 监听样式改变
-        el.on(__spreadArray(__spreadArray([], __read(event_1.SupportEventNames), false), __read(event_1.ElementWatchEventNames), false), function (e) {
+        el.on(__spreadArray(__spreadArray([], __read(SupportEventNames), false), __read(ElementWatchEventNames), false), function (e) {
             self.emit('elementChange', {
                 type: e.type,
                 data: __assign({ id: this.id }, e.data),
                 event: e.event || e,
                 target: this
             });
-        });
+        }, el);
     };
     // 通过ID获取子元素
     JBaseComponent.prototype.getChild = function (id) {
@@ -2519,7 +2492,7 @@ var JBaseComponent = /** @class */ (function (_super) {
     // 设置css到dom
     JBaseComponent.prototype.setDomStyle = function (name, value) {
         // 如果外层容器的样式，则加到container上
-        if (name in styleMap_1.ContainerDefaultStyle) {
+        if (name in ContainerDefaultStyle) {
             _super.prototype.setDomStyle.call(this, name, value);
         }
         else {
@@ -2551,10 +2524,9 @@ var JBaseComponent = /** @class */ (function (_super) {
         return el;
     };
     return JBaseComponent;
-}(element_1.default));
-exports.default = JBaseComponent;
+}(JElement));
+export default JBaseComponent;
 
-"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -2580,29 +2552,6 @@ var __assign = (this && this.__assign) || function () {
         return t;
     };
     return __assign.apply(this, arguments);
-};
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
 };
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -2651,14 +2600,9 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.JControllerItem = void 0;
-var j_design_util_1 = __importStar(require("j-design-util"));
-var element_1 = __importDefault(require("./element"));
-var styleMap_1 = require("../constant/styleMap");
+import util, { controller } from 'j-design-util';
+import JElement from './element';
+import { topZIndex } from '../constant/styleMap';
 // 控制元素移动和矩阵变换
 var JControllerItem = /** @class */ (function (_super) {
     __extends(JControllerItem, _super);
@@ -2774,7 +2718,7 @@ var JControllerItem = /** @class */ (function (_super) {
                         _a.trys.push([0, 2, , 3]);
                         if (!this.dir)
                             return [2 /*return*/];
-                        return [4 /*yield*/, j_design_util_1.controller.Cursors.get(this.dir, rotation, data)];
+                        return [4 /*yield*/, controller.Cursors.get(this.dir, rotation, data)];
                     case 1:
                         cursor = _a.sent();
                         if (!cursor)
@@ -2792,8 +2736,8 @@ var JControllerItem = /** @class */ (function (_super) {
         });
     };
     return JControllerItem;
-}(element_1.default));
-exports.JControllerItem = JControllerItem;
+}(JElement));
+export { JControllerItem };
 // 元素大小位置控制器
 var JControllerComponent = /** @class */ (function (_super) {
     __extends(JControllerComponent, _super);
@@ -2804,7 +2748,7 @@ var JControllerComponent = /** @class */ (function (_super) {
             } }, option.style), { pointerEvents: 'none' });
         option.dir = 'element';
         option.className = 'j-design-editor-controller';
-        option.data = __assign(__assign({}, option.data), { zIndex: styleMap_1.topZIndex });
+        option.data = __assign(__assign({}, option.data), { zIndex: topZIndex });
         _this = _super.call(this, option) || this;
         _this.items = [];
         // 选择框边距
@@ -2946,8 +2890,8 @@ var JControllerComponent = /** @class */ (function (_super) {
     Object.defineProperty(JControllerComponent.prototype, "center", {
         get: function () {
             var center = {
-                x: j_design_util_1.default.toNumber(this.data.left) + j_design_util_1.default.toNumber(this.data.width) / 2,
-                y: j_design_util_1.default.toNumber(this.data.top) + j_design_util_1.default.toNumber(this.data.height) / 2,
+                x: util.toNumber(this.data.left) + util.toNumber(this.data.width) / 2,
+                y: util.toNumber(this.data.top) + util.toNumber(this.data.height) / 2,
             };
             return center;
         },
@@ -2984,13 +2928,13 @@ var JControllerComponent = /** @class */ (function (_super) {
             }
         };
         var center = this.center;
-        var width = j_design_util_1.default.toNumber(this.data.width);
-        var height = j_design_util_1.default.toNumber(this.data.height);
+        var width = util.toNumber(this.data.width);
+        var height = util.toNumber(this.data.height);
         if (dir === 'rotate') {
             // 编辑器坐标, 因为是在编辑器渲染区域操作，需要把坐标转到此区域再处理
             var pos1 = this.editor.toEditorPosition(oldPosition);
             var pos2 = this.editor.toEditorPosition(newPosition);
-            args.rotation = j_design_util_1.controller.rotateChange(pos1, pos2, center);
+            args.rotation = controller.rotateChange(pos1, pos2, center);
         }
         else if (dir === 'skew') {
             var rx = offX / width * Math.PI;
@@ -3005,7 +2949,7 @@ var JControllerComponent = /** @class */ (function (_super) {
         }
         else {
             // 根据操作参数，计算大小和偏移量
-            args = j_design_util_1.controller.getChangeData(dir, {
+            args = controller.getChangeData(dir, {
                 x: offX,
                 y: offY
             }, oldPosition, newPosition, center, this.transform.rotateZ);
@@ -3017,7 +2961,7 @@ var JControllerComponent = /** @class */ (function (_super) {
                 this.move(args.x, args.y);
         }
         if (args.width) {
-            var oldWidth = j_design_util_1.default.toNumber(this.data.width);
+            var oldWidth = util.toNumber(this.data.width);
             var width_1 = oldWidth + args.width;
             this.data.width = Math.max(Number(width_1.toFixed(2)), 1);
             // 如果是编辑器，且不支持移动， 则需要保持居中，移动一半大小改变一半
@@ -3027,7 +2971,7 @@ var JControllerComponent = /** @class */ (function (_super) {
             }*/
         }
         if (args.height) {
-            var oldHeight = j_design_util_1.default.toNumber(this.data.height);
+            var oldHeight = util.toNumber(this.data.height);
             var height_1 = oldHeight + args.height;
             this.data.height = Math.max(Number(height_1.toFixed(2)), 1);
             // 如果是编辑器，且不支持移动， 则需要保持居中，移动一半大小改变一半
@@ -3045,8 +2989,8 @@ var JControllerComponent = /** @class */ (function (_super) {
         // 如果有操作旋转
         if (args.rotation) {
             this.transform.rotateZ += args.rotation;
-            if (Math.abs(this.transform.rotateZ) > j_design_util_1.controller.fullCircleRadius)
-                this.transform.rotateZ = this.transform.rotateZ % j_design_util_1.controller.fullCircleRadius;
+            if (Math.abs(this.transform.rotateZ) > controller.fullCircleRadius)
+                this.transform.rotateZ = this.transform.rotateZ % controller.fullCircleRadius;
             this.transform.apply();
             // 发生了旋转，要处理指针图标
             this.resetCursor();
@@ -3076,8 +3020,8 @@ var JControllerComponent = /** @class */ (function (_super) {
             //skewY: this.transform.skewY,
             rotateZ: this.transform.rotateZ,
         });
-        var width = j_design_util_1.default.toNumber(this.data.width) - this.paddingSize * 2;
-        var height = j_design_util_1.default.toNumber(this.data.height) - this.paddingSize * 2;
+        var width = util.toNumber(this.data.width) - this.paddingSize * 2;
+        var height = util.toNumber(this.data.height) - this.paddingSize * 2;
         if (this.target.data.width !== width)
             this.target.data.width = width;
         if (this.target.data.height !== height)
@@ -3235,13 +3179,13 @@ var JControllerComponent = /** @class */ (function (_super) {
             return;
         // 编辑器的话，需要把它的坐标转为相对于容器的
         var pos = {
-            x: (this.isEditor ? 0 : j_design_util_1.default.toNumber(this.target.data.left)),
-            y: (this.isEditor ? 0 : j_design_util_1.default.toNumber(this.target.data.top))
+            x: (this.isEditor ? 0 : util.toNumber(this.target.data.left)),
+            y: (this.isEditor ? 0 : util.toNumber(this.target.data.top))
         };
         this.data.left = pos.x;
         this.data.top = pos.y;
-        this.data.width = j_design_util_1.default.toNumber(this.target.data.width) + this.paddingSize * 2;
-        this.data.height = j_design_util_1.default.toNumber(this.target.data.height) + this.paddingSize * 2;
+        this.data.width = util.toNumber(this.target.data.width) + this.paddingSize * 2;
+        this.data.height = util.toNumber(this.target.data.height) + this.paddingSize * 2;
         this.transform.from({
             // rotateX: target.transform.rotateX,
             // rotateY: target.transform.rotateY,
@@ -3258,13 +3202,13 @@ var JControllerComponent = /** @class */ (function (_super) {
     JControllerComponent.prototype.setTip = function () {
         if (this.positionItem && this.positionItem.visible) {
             var pos = {
-                x: j_design_util_1.default.toNumber(this.data.left, 2) + (this.isEditor ? j_design_util_1.default.toNumber(this.target.data.left, 2) : 0),
-                y: j_design_util_1.default.toNumber(this.data.top, 2) + (this.isEditor ? j_design_util_1.default.toNumber(this.target.data.top, 2) : 0)
+                x: util.toNumber(this.data.left, 2) + (this.isEditor ? util.toNumber(this.target.data.left, 2) : 0),
+                y: util.toNumber(this.data.top, 2) + (this.isEditor ? util.toNumber(this.target.data.top, 2) : 0)
             };
             this.positionItem.dom.innerHTML = "X: ".concat(pos.x, " Y: ").concat(pos.y);
         }
         if (this.sizeItem && this.sizeItem.visible)
-            this.sizeItem.dom.innerHTML = "".concat(j_design_util_1.default.toNumber(this.data.width, 2), " X ").concat(j_design_util_1.default.toNumber(this.data.height, 2));
+            this.sizeItem.dom.innerHTML = "".concat(util.toNumber(this.data.width, 2), " X ").concat(util.toNumber(this.data.height, 2));
     };
     // 解除绑定
     JControllerComponent.prototype.unbind = function (target) {
@@ -3280,9 +3224,8 @@ var JControllerComponent = /** @class */ (function (_super) {
     };
     return JControllerComponent;
 }(JControllerItem));
-exports.default = JControllerComponent;
+export default JControllerComponent;
 
-"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -3334,16 +3277,12 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     }
     return to.concat(ar || Array.prototype.slice.call(from));
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var j_eventemitter_1 = __importDefault(require("j-eventemitter"));
-var transform_1 = __importDefault(require("../constant/transform"));
-var style_1 = __importDefault(require("./style"));
-var j_design_util_1 = __importDefault(require("j-design-util"));
-var event_1 = __importDefault(require("../core/event"));
-var data_1 = require("../constant/data");
+import EventEmiter from 'j-eventemitter';
+import JTransform from '../constant/transform';
+import JStyle from './style';
+import util from 'j-design-util';
+import JEvent from '../core/event';
+import { JElementData } from '../constant/data';
 /**
  * @public
  */
@@ -3357,20 +3296,24 @@ var JElement = /** @class */ (function (_super) {
         _this._type = '';
         // 子元素
         _this._children = [];
+        /**
+         * dom上的附加属性
+         */
+        _this.attributes = {};
         // 是否可编辑
         _this.editable = true;
-        _this._id = _this.id || option.id || j_design_util_1.default.uuid();
+        _this._id = _this.id || option.id || util.uuid();
         _this._type = _this.type || option.type || '';
         var nodeType = option.nodeType || 'div';
         // @ts-ignore
-        _this._dom = document.createElement(nodeType);
+        _this._dom = util.createElement(nodeType);
         _this.attr('data-id', _this.id);
         _this.attr('data-type', _this.type);
         if (option.editor)
             _this.editor = option.editor;
         _this._option = option;
         // 样式代理处理
-        _this.style = style_1.default.createProxy();
+        _this.style = JStyle.createProxy();
         _this.style.on('change', function (s) {
             _this.setDomStyle(s.name, s.value);
             _this.emit('styleChange', {
@@ -3379,13 +3322,13 @@ var JElement = /** @class */ (function (_super) {
                 target: _this
             });
         });
-        var dataType = option.dataType || data_1.JElementData;
+        var dataType = option.dataType || JElementData;
         // @ts-ignore
-        _this.data = data_1.JElementData.createProxy(new dataType());
+        _this.data = JElementData.createProxy(new dataType());
         // 名称
         _this.name = option.name || '';
         // 变换控制的是核心元素 . 
-        _this.transform = transform_1.default.createProxy(option.transform || {}, {
+        _this.transform = JTransform.createProxy(option.transform || {}, {
             target: _this,
             // 如果指定了只响应某几个属性
             watchProps: option.transformWatchProps
@@ -3413,7 +3356,7 @@ var JElement = /** @class */ (function (_super) {
                     _this.transform.rotateZ = item.value;
                 }
                 else if (item.name === 'angle' && item.value) {
-                    _this.transform.rotateZ = j_design_util_1.default.degToRad(item.value);
+                    _this.transform.rotateZ = util.degToRad(item.value);
                 }
                 else
                     _this.style[item.name] = item.value;
@@ -3435,7 +3378,7 @@ var JElement = /** @class */ (function (_super) {
                     return _this.transform.rotateZ;
                 }
                 else if (name === 'angle') {
-                    return j_design_util_1.default.radToDeg(_this.transform.rotateZ);
+                    return util.radToDeg(_this.transform.rotateZ);
                 }
                 else if (name === 'visible') {
                     return _this.style.display !== 'none';
@@ -3452,12 +3395,23 @@ var JElement = /** @class */ (function (_super) {
         if (option.data) {
             this.data.from(option.data);
         }
+        if (option.attributes) {
+            Object.assign(this.attributes, option.attributes);
+            if (this.attributes) {
+                for (var name_1 in this.attributes) {
+                    var v = this.attributes[name_1];
+                    if (typeof v !== 'undefined' && typeof name_1 === 'string') {
+                        this.attr(name_1, v);
+                    }
+                }
+            }
+        }
     };
     // 绑定事件
     JElement.prototype.bindEvent = function (dom) {
         var _this = this;
         // 事件托管
-        this.event = new event_1.default(dom || this.dom);
+        this.event = new JEvent(dom || this.dom);
         this.event.init(function (e) {
             _this.emit(e.type, e);
         });
@@ -3513,7 +3467,8 @@ var JElement = /** @class */ (function (_super) {
             return this.dom.className;
         },
         set: function (v) {
-            this.dom.className = v;
+            if (this.dom.classList.contains(v))
+                this.dom.classList.add(v);
         },
         enumerable: false,
         configurable: true
@@ -3531,7 +3486,7 @@ var JElement = /** @class */ (function (_super) {
     Object.defineProperty(JElement.prototype, "bounds", {
         // 元素框
         get: function () {
-            var rect = j_design_util_1.default.getElementBoundingRect(this.dom);
+            var rect = util.getElementBoundingRect(this.dom);
             if (this.editor) {
                 var pos = this.editor.toEditorPosition(rect);
                 rect.x = pos.x;
@@ -3571,21 +3526,21 @@ var JElement = /** @class */ (function (_super) {
             if (!/^\s*url\(/.test(value))
                 value = "url(".concat(value, ")");
         }
-        j_design_util_1.default.css(this.dom, name, value);
+        util.css(this.dom, name, value);
     };
     // 设置样式
     JElement.prototype.css = function (name, value) {
-        j_design_util_1.default.css(this, name, value);
+        util.css(this, name, value);
         return this;
     };
     // dom属性
     JElement.prototype.attr = function (name, value) {
-        return j_design_util_1.default.attr(this.dom, name, value);
+        return util.attr(this.dom, name, value);
     };
     // 移位
     JElement.prototype.move = function (dx, dy) {
-        var x = j_design_util_1.default.toNumber(this.data.left) + dx;
-        var y = j_design_util_1.default.toNumber(this.data.top) + dy;
+        var x = util.toNumber(this.data.left) + dx;
+        var y = util.toNumber(this.data.top) + dy;
         this.data.left = Number(x.toFixed(2));
         this.data.top = Number(y.toFixed(2));
         this.emit('move', { dx: dx, dy: dy });
@@ -3634,7 +3589,7 @@ var JElement = /** @class */ (function (_super) {
             parent.children.push(child);
             this.emit('childAdded', child);
         }
-        else if (child instanceof HTMLElement) {
+        else if (child instanceof Element && child !== parent.dom) {
             parent.dom.appendChild(child);
         }
     };
@@ -3663,7 +3618,7 @@ var JElement = /** @class */ (function (_super) {
         var e_3, _a, e_4, _b;
         if (props === void 0) { props = []; }
         if (ig === void 0) { ig = function (p) { return true; }; }
-        var fields = __spreadArray(['type', 'data', 'style', 'transform', 'id', 'filters'], __read(props), false);
+        var fields = __spreadArray(['type', 'data', 'attributes', 'style', 'transform', 'id', 'filters'], __read(props), false);
         var obj = {
             children: []
         };
@@ -3676,6 +3631,14 @@ var JElement = /** @class */ (function (_super) {
                 }
                 else if (v && v.toJSON) {
                     obj[k] = v.toJSON();
+                }
+                else if (typeof v === 'object') {
+                    obj[k] = {};
+                    for (var n in v) {
+                        if (typeof n !== 'string' || (typeof v[n] !== 'string' && typeof v[n] !== 'number'))
+                            continue;
+                        obj[k][n] = v[n];
+                    }
                 }
             }
         }
@@ -3726,10 +3689,9 @@ var JElement = /** @class */ (function (_super) {
         this.removeAllListeners();
     };
     return JElement;
-}(j_eventemitter_1.default));
-exports.default = JElement;
+}(EventEmiter));
+export default JElement;
 
-"use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
@@ -3741,13 +3703,11 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ElementWatchEventNames = exports.SupportEventNames = void 0;
-exports.SupportEventNames = [
+export var SupportEventNames = [
     'mousedown', 'mouseup', 'mouseover', 'mousemove', 'mouseout', 'mouseleave', 'mousewheel', 'click', 'dblclick', 'keydown', 'keypress', 'keyup', 'blur', 'change', 'focus', 'drag', 'dragenter', 'dragleave', 'dragover', 'dragstart', 'drop', 'contextmenu'
 ];
 // 元素监听的自定议事件
-exports.ElementWatchEventNames = ['select', 'styleChange', 'dataChange', 'elementChange', 'childAdded'];
+export var ElementWatchEventNames = ['select', 'styleChange', 'dataChange', 'elementChange', 'childAdded'];
 /**
  * @public
  */
@@ -3767,7 +3727,7 @@ var JEvent = /** @class */ (function () {
             events = name.split(' ');
         }
         // 过滤掉不支持的事件
-        return events.filter(function (k) { return exports.SupportEventNames.includes(k); });
+        return events.filter(function (k) { return SupportEventNames.includes(k); });
     };
     /**
      * 初始化所有支持的事件，在init之前不要on，不然在init的时候会被释放掉。
@@ -3780,7 +3740,7 @@ var JEvent = /** @class */ (function () {
             this.dispose();
             this.target = target;
         }
-        this.on(exports.SupportEventNames, handler, false);
+        this.on(SupportEventNames, handler, false);
     };
     /**
      * 绑定事件到html对象
@@ -3839,9 +3799,8 @@ var JEvent = /** @class */ (function () {
     };
     return JEvent;
 }());
-exports.default = JEvent;
+export default JEvent;
 
-"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -3868,12 +3827,8 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var styleMap_1 = __importDefault(require("../constant/styleMap"));
-var j_design_util_1 = __importDefault(require("j-design-util"));
+import JElementCssStyle from '../constant/styleMap';
+import util from 'j-design-util';
 var NumberStyleMap = ['left', 'top', 'right', 'bottom', 'width', 'height'];
 var JElementStyle = /** @class */ (function (_super) {
     __extends(JElementStyle, _super);
@@ -3975,8 +3930,8 @@ var JElementStyle = /** @class */ (function (_super) {
                 if (typeof p === 'string' && NumberStyleMap.includes(p)) {
                     if (v === '0' || typeof v === 'undefined')
                         return 0;
-                    if (j_design_util_1.default.isPXNumber(v))
-                        return j_design_util_1.default.toNumber(v);
+                    if (util.isPXNumber(v))
+                        return util.toNumber(v);
                 }
                 return v;
             },
@@ -3988,7 +3943,7 @@ var JElementStyle = /** @class */ (function (_super) {
                 }
                 // 数字样式，处理px问题
                 if (NumberStyleMap.includes(p)) {
-                    value = typeof value === 'number' || j_design_util_1.default.isNumber(value) ? "".concat(value, "px") : value;
+                    value = typeof value === 'number' || util.isNumber(value) ? "".concat(value, "px") : value;
                 }
                 target.setStyle(p, value); // 应用到元素和类
                 return true;
@@ -3997,5 +3952,5 @@ var JElementStyle = /** @class */ (function (_super) {
         return proxy;
     };
     return JElementStyle;
-}(styleMap_1.default));
-exports.default = JElementStyle;
+}(JElementCssStyle));
+export default JElementStyle;

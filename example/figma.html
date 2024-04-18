@@ -83,7 +83,7 @@
 			};
 		}
 
-		// 转换模板，并动态获取图片地址
+        // 转换模板，并动态获取图片地址
 		const tpl = await convert(data, null, null, {
             expandToPage: true, // 是否展开
 			images,
@@ -99,8 +99,8 @@
                 }
 				return '';// 待实现动态获取图片地址
 			}
-		});
-		
+		});		
+	
 		console.log(tpl);
         const container = document.getElementById('container');
         container.innerHTML = '';
@@ -123,7 +123,7 @@
         }
 
         // 如果不是页面，只是一个组件，则完善数据结构
-        if(item.type == 'img' || item.type === 'span') {
+        if(item.type == 'img' || item.type === 'span' || item.type === 'svg') {
             const child = item;
             item = {
                 children: [

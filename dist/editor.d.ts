@@ -15,17 +15,17 @@ export default class JEditor extends JBase implements IJEditor {
      */
     get typeName(): string;
     view: JElement<HTMLDivElement>;
-    protected shapes: Map<string, IJBaseComponent<HTMLElement>>;
+    protected shapes: Map<string, IJBaseComponent<import("./constant/elementTypes").JDomElement>>;
     elementController: IJControllerComponent;
     fonts: IJFonts;
-    get children(): IJElement<HTMLElement>[];
+    get children(): IJElement<import("./constant/elementTypes").JDomElement>[];
     get selectedElements(): Array<JBase>;
     bindEvent(dom?: HTMLElement): void;
     select(el: IJBaseComponent, event?: MouseEvent): boolean;
     resize(width?: string | number, height?: string | number): void;
     private sizeChange;
-    addChild(child: IJBaseComponent): IJElement<HTMLElement>;
-    toEditorPosition(pos: Point, dom?: HTMLElement): {
+    addChild(child: IJBaseComponent): any;
+    toEditorPosition(pos: Point, dom?: import("./constant/elementTypes").JDomElement): {
         x: number;
         y: number;
     };
@@ -33,7 +33,7 @@ export default class JEditor extends JBase implements IJEditor {
     scale(x: number, y?: number): void;
     regShape(name: string | {
         [key: string]: IJBaseComponent;
-    }, shape: IJBaseComponent): IJBaseComponent<HTMLElement>;
+    }, shape: IJBaseComponent): IJBaseComponent<import("./constant/elementTypes").JDomElement>;
     createShape(type: string | JElement, option?: IElementOption | ITextOption | IImageOption): any;
     fromJSON(data: any): void;
     /**

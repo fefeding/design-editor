@@ -178,8 +178,18 @@ export default class JBaseComponent extends JElement {
     }
     // 添加元素到画布
     addChild(child) {
-        if (child === this.target || child instanceof HTMLElement) {
+        if (child === this)
+            return child;
+        if (child === this.target || child === this.target.dom) {
             return super.addChild(child);
+        }
+        // 非组件直接加到target中
+        if (!(child instanceof JBaseComponent)) {
+            const el = this.target.addChild(child);
+            if (child instanceof JElement) {
+                this.children.push(child);
+            }
+            return child;
         }
         this.bindElementEvent(child);
         child.parent = this; // 把父设置成编辑器
@@ -188,6 +198,10 @@ export default class JBaseComponent extends JElement {
         // 刷新样式
         child.style.refresh();
         this.target.addChild(child);
+        // SVG内部自行处理
+        if (child.type === 'svg') {
+            return child.addChild(child);
+        }
         if (child.option?.children?.length) {
             for (const opt of child.option.children) {
                 const c = child.editor.createShape(opt.type, opt);
@@ -224,7 +238,7 @@ export default class JBaseComponent extends JElement {
                 event: e.event || e,
                 target: this
             });
-        });
+        }, el);
     }
     // 通过ID获取子元素
     getChild(id) {

@@ -90,7 +90,7 @@ export default class JEditor extends JBase implements IJEditor {
         this.on('select', (e) => {
             this.select(this);// 选中自已
         });
-        this.on('mousedown', function(e: MouseEvent) {
+        this.on('mousedown', function(this: JEditor, e: MouseEvent) {
             if(e.button === 0) {
                 this.select(this, e);
             }
@@ -249,7 +249,7 @@ export default class JEditor extends JBase implements IJEditor {
 
     // 把domcument坐标转为编辑器相对坐标
     toEditorPosition(pos: Point, dom = this.target.dom) {
-        return util.toDomPosition(pos, dom);
+        return util.toDomPosition(pos, dom as HTMLElement);
     }
 
     clear() {

@@ -1,3 +1,5 @@
+import { JDomElement } from "src/constant/elementTypes";
+
 export const SupportEventNames = [
     'mousedown','mouseup','mouseover','mousemove','mouseout', 'mouseleave', 'mousewheel','click','dblclick','keydown','keypress','keyup','blur','change','focus','drag','dragenter','dragleave','dragover','dragstart','drop', 'contextmenu'
 ];
@@ -9,9 +11,9 @@ export const ElementWatchEventNames = ['select', 'styleChange', 'dataChange', 'e
  * @public
  */
 export default class JEvent {
-    target: HTMLElement;
+    target: JDomElement;
 
-    constructor(target?: HTMLElement) {
+    constructor(target?: JDomElement) {
         if(target) this.target = target;
     }
 
@@ -32,7 +34,7 @@ export default class JEvent {
      * @param handler - 事件处理函数
      * @param target - 元素
      */
-    init(handler: EventListenerOrEventListenerObject, target?: HTMLElement) {
+    init(handler: EventListenerOrEventListenerObject, target?: JDomElement) {
         if(target){
             // 释放掉原target的事件
             this.dispose();

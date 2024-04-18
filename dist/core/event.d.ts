@@ -1,18 +1,19 @@
+import { JDomElement } from "src/constant/elementTypes";
 export declare const SupportEventNames: string[];
 export declare const ElementWatchEventNames: string[];
 /**
  * @public
  */
 export default class JEvent {
-    target: HTMLElement;
-    constructor(target?: HTMLElement);
+    target: JDomElement;
+    constructor(target?: JDomElement);
     normalizeEventNames<T extends string | Array<string>>(name: T): Array<string>;
     /**
      * 初始化所有支持的事件，在init之前不要on，不然在init的时候会被释放掉。
      * @param handler - 事件处理函数
      * @param target - 元素
      */
-    init(handler: EventListenerOrEventListenerObject, target?: HTMLElement): void;
+    init(handler: EventListenerOrEventListenerObject, target?: JDomElement): void;
     private _eventCache;
     /**
      * 绑定事件到html对象

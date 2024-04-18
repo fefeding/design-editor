@@ -1,8 +1,9 @@
 import { Point, ItemType, ControllerCursorData, IJFonts } from 'j-design-util';
 import { IFilter, IFilterManager } from 'j-css-filters';
-import JElementCssStyle, { IJElementStyleDeclaration } from './styleMap';
+import JElementCssStyle, { IJElementStyleDeclaration, IStyleTransform } from './styleMap';
 import { JElementData, JTextData, JImageData, IJElementData, IJTexteData, IJImageData, IJFontData, JSvgData, IJSvgData } from './data';
 import type EventEmitter from 'j-eventemitter';
+import type { DomNode, JDomElement, StringKeyValue } from './elementTypes';
 
 export {
     EventEmitter,
@@ -20,7 +21,7 @@ export interface IElementOption<T extends IJElementData = IJElementData> {
     // 名称
     name?: string;
     // 元素类型
-    nodeType?: keyof HTMLElementTagNameMap;
+    nodeType?: keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap;
     // 无需指定，一般是组件设定
     type?: string;
     // 编辑器对象，无需指定
@@ -57,6 +58,8 @@ export interface IElementOption<T extends IJElementData = IJElementData> {
 
     // 滤镜
     filters?: IFilter[];
+
+    attributes?: StringKeyValue;
 }
 /**
  * 文本选项接口
@@ -155,66 +158,7 @@ export interface IEditorOption extends IElementOption {
      */
     controllerOption?: IControllerOption;
 }
-/**
- * 样式转换接口，用于描述元素在空间中的定位、旋转和缩放。
- * @public
- */
-export interface IStyleTransform {
-    /**
-     * 沿 X 轴平移的值
-     */
-    translateX?: string|number;
 
-    /**
-     * 沿 Y 轴平移的值
-     */
-    translateY?: string|number;
-
-    /**
-     * 沿 Z 轴平移的值
-     */
-    translateZ?: string|number;
-
-    /**
-     * 绕 X 轴旋转的值
-     */
-    rotateX?: number;
-
-    /**
-     * 绕 Y 轴旋转的值
-     */
-    rotateY?: number;
-
-    /**
-     * 绕 Z 轴旋转的值
-     */
-    rotateZ?: number;
-
-    /**
-     * 沿 X 轴的缩放值
-     */
-    scaleX?: number;
-
-    /**
-     * 沿 Y 轴的缩放值
-     */
-    scaleY?: number;
-
-    /**
-     * 沿 Z 轴的缩放值
-     */
-    scaleZ?: number;
-
-    /**
-     * 沿 X 轴的倾斜值
-     */
-    skewX?: number;
-
-    /**
-     * 沿 Y 轴的倾斜值
-     */
-    skewY?: number;
-}
 /**
  * 变换描述接口，继承自 IStyleTransform 和 EventEmitter
  * @public
@@ -246,8 +190,8 @@ export interface TransformWatcher {
  * @public
  */
 export interface IJEvent {
-    init(handler: EventListenerOrEventListenerObject, target?: HTMLElement): void;
-    target: HTMLElement;
+    init(handler: EventListenerOrEventListenerObject, target?: JDomElement): void;
+    target: JDomElement;
     /**
      * 绑定事件到html对象
      * @param name - 事件名称
@@ -274,7 +218,7 @@ export interface IElementJSON {
  * @typeParam T - The type of the HTML element.
  * @public
  */
-export interface IJElement<T extends HTMLElement = HTMLElement> extends EventEmitter {
+export interface IJElement<T extends JDomElement = JDomElement> extends EventEmitter {
     
     get id(): string;
     get type(): string;
@@ -283,7 +227,7 @@ export interface IJElement<T extends HTMLElement = HTMLElement> extends EventEmi
     // 选项
     option: IElementOption;
 
-    get children(): IJElement<HTMLElement>[];
+    get children(): IJElement<JDomElement>[];
     get dom(): T;
     parent: IJElement | undefined;
     // 当前编辑器
@@ -291,6 +235,11 @@ export interface IJElement<T extends HTMLElement = HTMLElement> extends EventEmi
     event: IJEvent;
     style: JElementCssStyle;
     data: JElementData;  
+    /**
+     * dom上的附加属性
+     */
+    attributes: StringKeyValue;
+
     get className(): string;
     set className(v: string);
     transform: ITransform;
@@ -305,9 +254,9 @@ export interface IJElement<T extends HTMLElement = HTMLElement> extends EventEmi
     // 把子元素按zIndex排序
     childrenSort(): Array<IJElement>;
     resize(w: any, h: any): void;
-    addChild(child: IJElement | HTMLElement, parent?: IJElement): IJElement<HTMLElement>;
+    addChild(child: IJElement | JDomElement, parent?: IJElement): IJElement<JDomElement>;
     remove(): void;
-    removeChild(el: IJElement | HTMLElement): void;
+    removeChild(el: IJElement | JDomElement): void;
     toJSON(props?: any[], ig?: (p: IJElement) => boolean): IElementJSON;
     toString(): string;
     toHtml(): string;
@@ -319,7 +268,7 @@ export interface IJElement<T extends HTMLElement = HTMLElement> extends EventEmi
  * @typeParam T - The type of the HTML element.
  * @public
  */
-export interface IJBaseComponent<T extends HTMLElement = HTMLElement> extends IJElement<T> {
+export interface IJBaseComponent<T extends JDomElement = JDomElement> extends IJElement<T> {
     target: IJElement<T>;
 
     /**
@@ -364,7 +313,7 @@ export interface IJImageComponent extends IJBaseComponent<HTMLImageElement> {
 /**
  * @public
  */
-export interface IJSvgComponent extends IJBaseComponent<HTMLDivElement> {
+export interface IJSvgComponent extends IJBaseComponent<SVGElement> {
     data: JSvgData;
 }
 
@@ -457,7 +406,7 @@ export interface IJEditor extends IJBaseComponent {
     elementController: IJControllerComponent;
 
     /** 绑定事件 */
-    bindEvent(dom?: HTMLElement): void;
+    bindEvent(dom?: JDomElement): void;
 
     /** 选择元素 */
     select(el: IJBaseComponent): void;
@@ -474,7 +423,7 @@ export interface IJEditor extends IJBaseComponent {
  * @remarks 转换至编辑器的位置
  */
     /**转换至编辑器的位置 */
-    toEditorPosition(pos: Point, dom?: HTMLElement): Point;
+    toEditorPosition(pos: Point, dom?: JDomElement): Point;
     /**清空编辑器 */
     clear(): void;
     scale(x: any, y?: any): void;

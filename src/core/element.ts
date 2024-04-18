@@ -6,10 +6,11 @@ import JEvent, { SupportEventNames } from '../core/event';
 import JElementCssStyle from '../constant/styleMap';
 import { IJElement, ITransform, IJEditor, IElementOption, IElementJSON } from '../constant/types';
 import JData, { JElementData } from '../constant/data';
+import { JDomElement, StringKeyValue } from 'src/constant/elementTypes';
 /**
  * @public
  */
-export default class JElement<T extends HTMLElement = HTMLElement> extends EventEmiter  implements IJElement{
+export default class JElement<T extends JDomElement = JDomElement> extends EventEmiter  implements IJElement{
 
     constructor(option = {} as IElementOption) {
         super();
@@ -20,7 +21,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         const nodeType = option.nodeType || 'div';
 
         // @ts-ignore
-        this._dom = document.createElement(nodeType);  
+        this._dom = util.createElement(nodeType);  
 
         this.attr('data-id', this.id); 
         this.attr('data-type', this.type);
@@ -109,10 +110,21 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         if(option.data) {
             this.data.from(option.data);
         }
+        if(option.attributes) {
+            Object.assign(this.attributes, option.attributes);
+            if(this.attributes) {
+                for(const name in this.attributes) {
+                    const v = this.attributes[name];
+                    if(typeof v !== 'undefined' && typeof name === 'string') {
+                        this.attr(name, v);
+                    }
+                }
+            }
+        }
     }
 
     // 绑定事件
-    bindEvent(dom?: HTMLElement) {
+    bindEvent(dom?: JDomElement) {
         // 事件托管
         this.event = new JEvent(dom || this.dom);
         this.event.init((e: Event|MouseEvent) => {  
@@ -153,6 +165,12 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     get dom() {
         return this._dom;
     }
+
+    /**
+     * dom上的附加属性
+     */
+    attributes: StringKeyValue = {};
+    
     // 父元素
     parent: IJElement | undefined;
 
@@ -171,7 +189,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
         return this.dom.className;
     }
     set className(v: string) {
-        this.dom.className = v;
+        if(this.dom.classList.contains(v)) this.dom.classList.add(v);
     }  
 
     get visible() {
@@ -183,7 +201,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
 
     // 元素框
     get bounds() {
-        const rect = util.getElementBoundingRect(this.dom);
+        const rect = util.getElementBoundingRect(this.dom as any);
         if(this.editor) {
             const pos = this.editor.toEditorPosition(rect);
             rect.x = pos.x;
@@ -249,7 +267,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     }
 
     // 新增子元素
-    addChild(child: IJElement|HTMLElement, parent: IJElement = this) {
+    addChild(child: IJElement | Element, parent: IJElement = this) {
         if(Array.isArray(child)) {
             for(const c of child) {
                 parent.addChild(c);
@@ -267,7 +285,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
 
             this.emit('childAdded', child);
         }
-        else if(child instanceof HTMLElement) {
+        else if(child instanceof Element && child !== parent.dom) {           
             parent.dom.appendChild(child);
         }
     }
@@ -278,7 +296,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
     }
 
     // 移除子元素
-    removeChild(el: IJElement|HTMLElement) {
+    removeChild(el: IJElement|Element) {
         // @ts-ignore
         if(el.dom && el.dom.parentElement === this.dom) this.dom.removeChild(el.dom || el);
 
@@ -294,7 +312,7 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
 
     // 转为json
     toJSON(props=[], ig=(p: IJElement)=>true): IElementJSON {
-        const fields = ['type', 'data', 'style', 'transform', 'id', 'filters',  ...props];
+        const fields = ['type', 'data', 'attributes', 'style', 'transform', 'id', 'filters',  ...props];
         const obj = {
             children: []
         };
@@ -307,12 +325,19 @@ export default class JElement<T extends HTMLElement = HTMLElement> extends Event
             else if(v && v.toJSON) {
                 obj[k] = v.toJSON();
             }
+            else if(typeof v === 'object') {
+                obj[k] = {};
+                for(const n in v) {
+                    if(typeof n !== 'string' || (typeof v[n] !== 'string' && typeof v[n] !== 'number')) continue;
+                    obj[k][n] = v[n];
+                }
+            }
         }
 
         if(this.children && this.children.length) {
             for(const child of this.children) {
                 if(child === this || ig(child) === false) continue;
-                obj.children.push(child.toJSON())
+                obj.children.push(child.toJSON());
             }
         }
         return obj;

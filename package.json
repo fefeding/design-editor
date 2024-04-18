@@ -1,6 +1,6 @@
 {
   "name": "j-html-design-editor",
-  "version": "1.0.59",
+  "version": "1.0.60",
   "description": "design html 设计图片编辑库",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "dev": "node test/dev",
-    "build": "gulp && node build.js && npm run docs:build",
+    "build": "gulp && node build.js",
     "test": "vitest",
     "update": "npx taze major  -w",
     "release": "npx bumpp --commit --tag --push",
@@ -43,7 +43,7 @@
     "gulp-typescript": "^6.0.0-alpha.1",
     "happy-dom": "^13.3.5",
     "html-to-image": "^1.11.11",
-    "j-figma2html": "^1.0.23",
+    "j-figma2html": "^1.0.27",
     "request": "^2.88.2",
     "rollup": "^4.9.6",
     "rollup-plugin-typescript2": "^0.36.0",
@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "j-css-filters": "^1.0.3",
-    "j-design-util": "^1.0.36",
+    "j-design-util": "^1.0.37",
     "j-eventemitter": "^1.0.1"
   },
   "author": "fefeding",

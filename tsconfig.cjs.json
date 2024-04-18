@@ -2,7 +2,8 @@
     "extends": "./tsconfig.json",
     "compilerOptions": {
       "target": "ES5",
-      "module": "CommonJS"
+      "module": "ESNext",
+      "strict": true // 启用严格模式
     }
   }
   

@@ -1,13 +1,16 @@
 import Base from '../core/baseComponent';
 import util from 'j-design-util';
 import { JSvgData } from '../constant/data';
-import { IJSvgComponent, ISvgOption, IJBaseComponent, IJElement } from '../constant/types';
+import { IJSvgComponent, ISvgOption, IJBaseComponent, IJElement, IElementOption } from '../constant/types';
+import { DomNode, JDomElement } from 'src/constant/elementTypes';
+import JElement from 'src/core/element';
 
-export default class JSvg extends Base<HTMLDivElement> implements IJSvgComponent {
+export default class JSvg extends Base<SVGElement> implements IJSvgComponent {
     constructor(option={} as ISvgOption) {
         super({
             ...option,
             type: option.type || 'svg',
+            nodeType: 'svg',
             dataType: option.dataType || JSvgData
         });
 
@@ -40,12 +43,49 @@ export default class JSvg extends Base<HTMLDivElement> implements IJSvgComponent
     }
 
     // 添加元素到画布
-    addChild(child: IJBaseComponent | IJElement | HTMLElement) {
-        if(child === this.target || child instanceof HTMLElement) {
+    addChild(child: IJBaseComponent | IJElement | JDomElement) {
+        if(child === this.target || child instanceof Element || !(child instanceof Base)) {
             return super.addChild(child);
         }
+        const children = child.option?.children || child.option?.target?.children;
+        if(children?.length) {
+            for(const opt of child.option.children) {
+                const c = this.createSvgElement(opt.type || opt.nodeType, opt);
+                c && child.addChild(c);
+            }
+        }
+
+        return child;
+    }
+    
+    createSvgElement(tag, node: IElementOption) {
+        const el = new JElement<JDomElement>({
+            ...node,
+            nodeType: tag,            
+        });
+    
+        this.renderSvgElement(node, el);
        
-        return super.addChild(child);
+        return el;
+    }
+    
+    // 设置dom属性
+    renderSvgElement(node: IElementOption, el: JElement) {
+        // @ts-ignore
+        if(node.preserveRatio && node.type === 'img') el.style.height = 'auto';
+        // @ts-ignore
+        if(node.fill) el.attr('fill', node.fill); 
+        if(node.id) el.attr('id', node.id);    
+        if(node.name) el.attr('data-name', node.name);    
+    
+        if(node.children) {
+            for(const child of node.children) {
+                if(child.visible === false) continue;
+                const c = this.createSvgElement(child.type||child.nodeType, child);
+                c && el.addChild(c);
+            }
+        }
+        return el;
     }
 
     // 加载svg内容

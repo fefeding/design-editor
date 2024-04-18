@@ -14,7 +14,7 @@ export default class JElement extends EventEmiter {
         this._type = this.type || option.type || '';
         const nodeType = option.nodeType || 'div';
         // @ts-ignore
-        this._dom = document.createElement(nodeType);
+        this._dom = util.createElement(nodeType);
         this.attr('data-id', this.id);
         this.attr('data-type', this.type);
         if (option.editor)
@@ -101,6 +101,17 @@ export default class JElement extends EventEmiter {
         if (option.data) {
             this.data.from(option.data);
         }
+        if (option.attributes) {
+            Object.assign(this.attributes, option.attributes);
+            if (this.attributes) {
+                for (const name in this.attributes) {
+                    const v = this.attributes[name];
+                    if (typeof v !== 'undefined' && typeof name === 'string') {
+                        this.attr(name, v);
+                    }
+                }
+            }
+        }
     }
     // 绑定事件
     bindEvent(dom) {
@@ -140,6 +151,10 @@ export default class JElement extends EventEmiter {
     get dom() {
         return this._dom;
     }
+    /**
+     * dom上的附加属性
+     */
+    attributes = {};
     // 父元素
     parent;
     // 当前编辑器
@@ -153,7 +168,8 @@ export default class JElement extends EventEmiter {
         return this.dom.className;
     }
     set className(v) {
-        this.dom.className = v;
+        if (this.dom.classList.contains(v))
+            this.dom.classList.add(v);
     }
     get visible() {
         return this.data.visible;
@@ -240,7 +256,7 @@ export default class JElement extends EventEmiter {
             parent.children.push(child);
             this.emit('childAdded', child);
         }
-        else if (child instanceof HTMLElement) {
+        else if (child instanceof Element && child !== parent.dom) {
             parent.dom.appendChild(child);
         }
     }
@@ -266,7 +282,7 @@ export default class JElement extends EventEmiter {
     }
     // 转为json
     toJSON(props = [], ig = (p) => true) {
-        const fields = ['type', 'data', 'style', 'transform', 'id', 'filters', ...props];
+        const fields = ['type', 'data', 'attributes', 'style', 'transform', 'id', 'filters', ...props];
         const obj = {
             children: []
         };
@@ -277,6 +293,14 @@ export default class JElement extends EventEmiter {
             }
             else if (v && v.toJSON) {
                 obj[k] = v.toJSON();
+            }
+            else if (typeof v === 'object') {
+                obj[k] = {};
+                for (const n in v) {
+                    if (typeof n !== 'string' || (typeof v[n] !== 'string' && typeof v[n] !== 'number'))
+                        continue;
+                    obj[k][n] = v[n];
+                }
             }
         }
         if (this.children && this.children.length) {

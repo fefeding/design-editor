@@ -4,10 +4,11 @@ import { IElementOption, IJBaseComponent, IJElement } from '../constant/types';
 import { ContainerDefaultStyle } from '../constant/styleMap';
 import { SupportEventNames, ElementWatchEventNames } from '../core/event';
 import JElement from '../core/element';
+import { JDomElement } from 'src/constant/elementTypes';
 /**
  * @public
  */
-export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends JElement<T> implements IJBaseComponent {
+export default class JBaseComponent<T extends JDomElement = JDomElement> extends JElement<T> implements IJBaseComponent {
     constructor(option = {} as IElementOption) {
         option.style = option.style || {};
         // position和overflow预设的值优先级最高
@@ -95,7 +96,7 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
     set selected(v: boolean) {
         this._selected = v;
         // 如果选中则加上样式
-        util.class(this.dom, 'selected', !v);
+        util.class(this.dom as HTMLElement, 'selected', !v);
 
         this.emit('select', {
             type: 'select',
@@ -184,9 +185,20 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
     }
     
     // 添加元素到画布
-    addChild(child: IJBaseComponent | IJElement | HTMLElement) {
-        if(child === this.target || child instanceof HTMLElement) {
+    addChild(child: IJBaseComponent | IJElement | JDomElement) {
+        if(child === this) return child;
+
+        if(child === this.target || child === this.target.dom) {
             return super.addChild(child);
+        }
+
+        // 非组件直接加到target中
+        if(!(child instanceof JBaseComponent)) {
+            const el = this.target.addChild(child);
+            if(child instanceof JElement) {
+                this.children.push(child);
+            }
+            return child;
         }
        
         this.bindElementEvent(child);        
@@ -198,6 +210,11 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
         child.style.refresh();
         this.target.addChild(child);
 
+        // SVG内部自行处理
+        if(child.type === 'svg') {
+            return child.addChild(child);
+        }
+
         if(child.option?.children?.length) {
             for(const opt of child.option.children) {
                 const c = child.editor.createShape(opt.type, opt);
@@ -207,7 +224,7 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
     }
 
     // 移除
-    removeChild(el: IJElement|HTMLElement) {
+    removeChild(el: IJElement|JDomElement) {
         if(el === this.target) {
             //console.warn('不能移除自已');
             return;
@@ -228,7 +245,7 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
         el.on([
             ...SupportEventNames,
             ...ElementWatchEventNames
-        ], function(e) {
+        ], function(this: IJElement, e) {
             self.emit('elementChange', {
                 type: e.type,
                 data: {
@@ -238,7 +255,7 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
                 event: e.event || e,
                 target: this
             });
-        });
+        }, el);
     }
 
     // 通过ID获取子元素

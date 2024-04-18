@@ -1,10 +1,11 @@
 import { IFilterManager } from 'j-css-filters';
 import { IElementOption, IJBaseComponent, IJElement } from '../constant/types';
 import JElement from '../core/element';
+import { JDomElement } from 'src/constant/elementTypes';
 /**
  * @public
  */
-export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends JElement<T> implements IJBaseComponent {
+export default class JBaseComponent<T extends JDomElement = JDomElement> extends JElement<T> implements IJBaseComponent {
     constructor(option?: IElementOption<import("..").IJElementData>);
     target: IJElement<T>;
     filters: IFilterManager;
@@ -26,8 +27,8 @@ export default class JBaseComponent<T extends HTMLElement = HTMLElement> extends
     setLevel(level: number | 'next' | 'pre' | 'top' | 'bottom'): void;
     private getMyNextLevelChildren;
     private getMyPreLevelChildren;
-    addChild(child: IJBaseComponent | IJElement | HTMLElement): IJElement<HTMLElement>;
-    removeChild(el: IJElement | HTMLElement): void;
+    addChild(child: IJBaseComponent | IJElement | JDomElement): any;
+    removeChild(el: IJElement | JDomElement): void;
     protected bindElementEvent(el: IJElement): void;
     getChild(id: string): IJElement | undefined;
     setDomStyle(name: string, value: string): void;

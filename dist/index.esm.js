@@ -120,6 +120,17 @@ var util = {
         return str;
     },
     /**
+     * 创建dom元素
+     * @param tag 标签名
+     */
+    createElement(tag, option) {
+        // svg标签创建
+        if (['svg', 'defs', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'g', 'path', 'polygon', 'stop', 'text', 'mask', 'linearGradient', 'radialGradient', 'filter', 'feOffset', 'feBlend'].includes(tag)) {
+            return document.createElementNS("http://www.w3.org/2000/svg", tag, option); // 创建SVG元素
+        }
+        return document.createElement(tag, option);
+    },
+    /**
      * 获取元素的绝对定位
      * @param  el - 目标元素对象
      * @returns  位置对象(top,left)
@@ -3082,7 +3093,7 @@ class JElement extends JEventEmitter {
         this._type = this.type || option.type || '';
         const nodeType = option.nodeType || 'div';
         // @ts-ignore
-        this._dom = document.createElement(nodeType);
+        this._dom = util.createElement(nodeType);
         this.attr('data-id', this.id);
         this.attr('data-type', this.type);
         if (option.editor)
@@ -3169,6 +3180,17 @@ class JElement extends JEventEmitter {
         if (option.data) {
             this.data.from(option.data);
         }
+        if (option.attributes) {
+            Object.assign(this.attributes, option.attributes);
+            if (this.attributes) {
+                for (const name in this.attributes) {
+                    const v = this.attributes[name];
+                    if (typeof v !== 'undefined' && typeof name === 'string') {
+                        this.attr(name, v);
+                    }
+                }
+            }
+        }
     }
     // 绑定事件
     bindEvent(dom) {
@@ -3208,6 +3230,10 @@ class JElement extends JEventEmitter {
     get dom() {
         return this._dom;
     }
+    /**
+     * dom上的附加属性
+     */
+    attributes = {};
     // 父元素
     parent;
     // 当前编辑器
@@ -3221,7 +3247,8 @@ class JElement extends JEventEmitter {
         return this.dom.className;
     }
     set className(v) {
-        this.dom.className = v;
+        if (this.dom.classList.contains(v))
+            this.dom.classList.add(v);
     }
     get visible() {
         return this.data.visible;
@@ -3308,7 +3335,7 @@ class JElement extends JEventEmitter {
             parent.children.push(child);
             this.emit('childAdded', child);
         }
-        else if (child instanceof HTMLElement) {
+        else if (child instanceof Element && child !== parent.dom) {
             parent.dom.appendChild(child);
         }
     }
@@ -3334,7 +3361,7 @@ class JElement extends JEventEmitter {
     }
     // 转为json
     toJSON(props = [], ig = (p) => true) {
-        const fields = ['type', 'data', 'style', 'transform', 'id', 'filters', ...props];
+        const fields = ['type', 'data', 'attributes', 'style', 'transform', 'id', 'filters', ...props];
         const obj = {
             children: []
         };
@@ -3345,6 +3372,14 @@ class JElement extends JEventEmitter {
             }
             else if (v && v.toJSON) {
                 obj[k] = v.toJSON();
+            }
+            else if (typeof v === 'object') {
+                obj[k] = {};
+                for (const n in v) {
+                    if (typeof n !== 'string' || (typeof v[n] !== 'string' && typeof v[n] !== 'number'))
+                        continue;
+                    obj[k][n] = v[n];
+                }
             }
         }
         if (this.children && this.children.length) {
@@ -3553,8 +3588,18 @@ class JBaseComponent extends JElement {
     }
     // 添加元素到画布
     addChild(child) {
-        if (child === this.target || child instanceof HTMLElement) {
+        if (child === this)
+            return child;
+        if (child === this.target || child === this.target.dom) {
             return super.addChild(child);
+        }
+        // 非组件直接加到target中
+        if (!(child instanceof JBaseComponent)) {
+            this.target.addChild(child);
+            if (child instanceof JElement) {
+                this.children.push(child);
+            }
+            return child;
         }
         this.bindElementEvent(child);
         child.parent = this; // 把父设置成编辑器
@@ -3563,6 +3608,10 @@ class JBaseComponent extends JElement {
         // 刷新样式
         child.style.refresh();
         this.target.addChild(child);
+        // SVG内部自行处理
+        if (child.type === 'svg') {
+            return child.addChild(child);
+        }
         if (child.option?.children?.length) {
             for (const opt of child.option.children) {
                 const c = child.editor.createShape(opt.type, opt);
@@ -3599,7 +3648,7 @@ class JBaseComponent extends JElement {
                 event: e.event || e,
                 target: this
             });
-        });
+        }, el);
     }
     // 通过ID获取子元素
     getChild(id) {
@@ -3849,6 +3898,7 @@ class JSvg extends JBaseComponent {
         super({
             ...option,
             type: option.type || 'svg',
+            nodeType: 'svg',
             dataType: option.dataType || JSvgData
         });
         // 属性变化映射到style
@@ -3876,10 +3926,47 @@ class JSvg extends JBaseComponent {
     }
     // 添加元素到画布
     addChild(child) {
-        if (child === this.target || child instanceof HTMLElement) {
+        if (child === this.target || child instanceof Element || !(child instanceof JBaseComponent)) {
             return super.addChild(child);
         }
-        return super.addChild(child);
+        const children = child.option?.children || child.option?.target?.children;
+        if (children?.length) {
+            for (const opt of child.option.children) {
+                const c = this.createSvgElement(opt.type || opt.nodeType, opt);
+                c && child.addChild(c);
+            }
+        }
+        return child;
+    }
+    createSvgElement(tag, node) {
+        const el = new JElement({
+            ...node,
+            nodeType: tag,
+        });
+        this.renderSvgElement(node, el);
+        return el;
+    }
+    // 设置dom属性
+    renderSvgElement(node, el) {
+        // @ts-ignore
+        if (node.preserveRatio && node.type === 'img')
+            el.style.height = 'auto';
+        // @ts-ignore
+        if (node.fill)
+            el.attr('fill', node.fill);
+        if (node.id)
+            el.attr('id', node.id);
+        if (node.name)
+            el.attr('data-name', node.name);
+        if (node.children) {
+            for (const child of node.children) {
+                if (child.visible === false)
+                    continue;
+                const c = this.createSvgElement(child.type || child.nodeType, child);
+                c && el.addChild(c);
+            }
+        }
+        return el;
     }
     // 加载svg内容
     async load(url = this.data.url) {
