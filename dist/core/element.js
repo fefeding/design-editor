@@ -282,7 +282,7 @@ export default class JElement extends EventEmiter {
     }
     // 转为json
     toJSON(props = [], ig = (p) => true) {
-        const fields = ['type', 'data', 'attributes', 'style', 'transform', 'id', 'filters', ...props];
+        const fields = ['name', 'type', 'data', 'attributes', 'style', 'transform', 'id', 'filters', ...props];
         const obj = {
             children: []
         };
