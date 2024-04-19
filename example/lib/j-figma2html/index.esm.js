@@ -1209,6 +1209,8 @@ class BaseConverter {
                     continue;
                 switch (fill.type) {
                     case PaintType.SOLID: {
+                        if (typeof fill.opacity !== 'undefined')
+                            fill.color.a = fill.opacity;
                         dom.style.backgroundColor = util.colorToString(fill.color, 255);
                         break;
                     }
@@ -1287,6 +1289,8 @@ class BaseConverter {
                 if (stroke.visible === false)
                     continue;
                 if (stroke.color) {
+                    if (typeof stroke.opacity !== 'undefined')
+                        stroke.color.a = stroke.opacity;
                     dom.style.outlineColor = util.colorToString(stroke.color, 255);
                 }
                 switch (stroke.type) {
@@ -1887,6 +1891,8 @@ class PolygonConverter extends BaseConverter {
                     continue;
                 switch (fill.type) {
                     case PaintType.SOLID: {
+                        if (typeof fill.opacity !== 'undefined')
+                            fill.color.a = fill.opacity;
                         polygon.style.fill = util.colorToString(fill.color, 255);
                         break;
                     }
