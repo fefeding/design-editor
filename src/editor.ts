@@ -310,6 +310,8 @@ export default class JEditor extends JBase implements IJEditor {
         }
         this.resize(data.width || data.data.width, data.height || data.data.height);
 
+        this.name = data.name || '';
+
         for(const c of data.children) {
             if(!c.type) continue;
             const item = this.createShape(c.type, c);

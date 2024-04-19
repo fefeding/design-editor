@@ -4895,6 +4895,7 @@ class JEditor extends JBaseComponent {
             this.style.apply(data.style); // 应用样式
         }
         this.resize(data.width || data.data.width, data.height || data.data.height);
+        this.name = data.name || '';
         for (const c of data.children) {
             if (!c.type)
                 continue;
