@@ -1,7 +1,7 @@
 import Base from '../core/baseComponent';
 import util from 'j-design-util';
 import { JSvgData } from '../constant/data';
-import JElement from 'src/core/element';
+import JElement from '../core/element';
 export default class JSvg extends Base {
     constructor(option = {}) {
         super({

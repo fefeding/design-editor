@@ -1,4 +1,4 @@
-import { JDomElement } from "src/constant/elementTypes";
+import { JDomElement } from "../constant/elementTypes";
 export declare const SupportEventNames: string[];
 export declare const ElementWatchEventNames: string[];
 /**

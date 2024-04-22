@@ -6,7 +6,7 @@ import JEvent, { SupportEventNames } from '../core/event';
 import JElementCssStyle from '../constant/styleMap';
 import { IJElement, ITransform, IJEditor, IElementOption, IElementJSON } from '../constant/types';
 import JData, { JElementData } from '../constant/data';
-import { JDomElement, StringKeyValue } from 'src/constant/elementTypes';
+import { JDomElement, StringKeyValue } from '../constant/elementTypes';
 /**
  * @public
  */

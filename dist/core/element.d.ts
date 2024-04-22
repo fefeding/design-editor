@@ -3,7 +3,7 @@ import JEvent from '../core/event';
 import JElementCssStyle from '../constant/styleMap';
 import { IJElement, ITransform, IJEditor, IElementOption, IElementJSON } from '../constant/types';
 import { JElementData } from '../constant/data';
-import { JDomElement, StringKeyValue } from 'src/constant/elementTypes';
+import { JDomElement, StringKeyValue } from '../constant/elementTypes';
 /**
  * @public
  */

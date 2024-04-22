@@ -1,4 +1,4 @@
-import { JDomElement } from "src/constant/elementTypes";
+import { JDomElement } from "../constant/elementTypes";
 
 export const SupportEventNames = [
     'mousedown','mouseup','mouseover','mousemove','mouseout', 'mouseleave', 'mousewheel','click','dblclick','keydown','keypress','keyup','blur','change','focus','drag','dragenter','dragleave','dragover','dragstart','drop', 'contextmenu'

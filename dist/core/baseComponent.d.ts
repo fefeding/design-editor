@@ -1,7 +1,7 @@
 import { IFilterManager } from 'j-css-filters';
 import { IElementOption, IJBaseComponent, IJElement } from '../constant/types';
 import JElement from '../core/element';
-import { JDomElement } from 'src/constant/elementTypes';
+import { JDomElement } from '../constant/elementTypes';
 /**
  * @public
  */

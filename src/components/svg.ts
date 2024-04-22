@@ -2,8 +2,8 @@ import Base from '../core/baseComponent';
 import util from 'j-design-util';
 import { JSvgData } from '../constant/data';
 import { IJSvgComponent, ISvgOption, IJBaseComponent, IJElement, IElementOption } from '../constant/types';
-import { DomNode, JDomElement } from 'src/constant/elementTypes';
-import JElement from 'src/core/element';
+import { DomNode, JDomElement } from '../constant/elementTypes';
+import JElement from '../core/element';
 
 export default class JSvg extends Base<SVGElement> implements IJSvgComponent {
     constructor(option={} as ISvgOption) {
