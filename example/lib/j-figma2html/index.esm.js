@@ -1130,6 +1130,13 @@ class BaseConverter {
         dom.data.height = dom.bounds.height;
         dom.style.width = util.toPX(dom.bounds.width).toString();
         dom.style.height = util.toPX(dom.bounds.height).toString();
+        // 不支持的模式，直接透明
+        switch (node.blendMode) {
+            case BlendMode.SCREEN: {
+                dom.style.opacity = '0';
+                break;
+            }
+        }
         return dom;
     }
     // 生成节点对象
@@ -1259,6 +1266,13 @@ class BaseConverter {
                     // 平铺
                     case PaintSolidScaleMode.TILE: {
                         dom.style.backgroundRepeat = 'repeat';
+                        break;
+                    }
+                }
+                // 不支持的模式，直接透明
+                switch (fill.blendMode) {
+                    case BlendMode.SCREEN: {
+                        dom.style.opacity = '0';
                         break;
                     }
                 }
@@ -1635,8 +1649,10 @@ class TEXTConverter extends BaseConverter {
             const v = util.toNumber(dom.style.letterSpacing);
             dom.bounds.width += v * (dom.bounds.width/node.style.fontSize);
         }*/
+        let isSingleLine = false; // 单行处理
         // 如果行高好高度一致,则表示单行文本，可以不指定宽度
         if (dom.bounds?.height < node.style?.fontSize * 2) {
+            isSingleLine = true;
             const w = this.testTextWidth(dom);
             dom.data.width = Math.max(w, util.toNumber(dom.data.width));
         }
@@ -1644,12 +1660,12 @@ class TEXTConverter extends BaseConverter {
             //dom.style.minWidth = util.toPX(dom.data.width);
             dom.data.width = dom.bounds.width;
         }
-        await this.convertCharacterStyleOverrides(node, res, option); // 处理分字样式
+        await this.convertCharacterStyleOverrides(node, res, option, isSingleLine); // 处理分字样式
         dom.style.width = util.toPX(dom.data.width);
         return res;
     }
     // 解析字体多样式
-    async convertCharacterStyleOverrides(node, dom, option) {
+    async convertCharacterStyleOverrides(node, dom, option, isSingleLine = false) {
         let width = 0;
         if (node.characterStyleOverrides && node.characterStyleOverrides.length && node.styleOverrideTable) {
             const text = dom.text || '';
@@ -1668,16 +1684,20 @@ class TEXTConverter extends BaseConverter {
                     await this.convertStyle(style, fDom, option);
                 }
                 dom.children.push(fDom);
-                const w = this.testTextWidth(fDom);
-                width += w;
+                if (isSingleLine) {
+                    const w = this.testTextWidth(fDom);
+                    width += w;
+                }
             }
             // 还有未处理完的，则加到后面
             if (text.length > index) {
                 const fDom = this.createDomNode('span');
                 fDom.text = text.substring(index);
                 dom.children.push(fDom);
-                const w = this.testTextWidth(fDom);
-                width += w;
+                if (isSingleLine) {
+                    const w = this.testTextWidth(fDom);
+                    width += w;
+                }
             }
             dom.text = '';
             dom.type = 'div';
@@ -1911,6 +1931,13 @@ class PolygonConverter extends BaseConverter {
                     // 图片
                     case PaintType.IMAGE: {
                         await super.convertFills(node, polygon, option, container);
+                        break;
+                    }
+                }
+                // 不支持的模式，直接透明
+                switch (fill.blendMode) {
+                    case BlendMode.SCREEN: {
+                        dom.style.opacity = '0';
                         break;
                     }
                 }
