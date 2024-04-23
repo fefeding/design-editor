@@ -338,7 +338,7 @@ var JEditor = /** @class */ (function (_super) {
     // 缩放
     JEditor.prototype.scale = function (x, y) {
         if (y === void 0) { y = x; }
-        if (x < 0.1 || y < 0.1)
+        if (x <= 0 || y <= 0)
             return;
         this.transform.scaleX = x;
         this.transform.scaleY = y;

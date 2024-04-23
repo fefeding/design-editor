@@ -238,7 +238,7 @@ export default class JEditor extends JBase {
     }
     // 缩放
     scale(x, y = x) {
-        if (x < 0.1 || y < 0.1)
+        if (x <= 0 || y <= 0)
             return;
         this.transform.scaleX = x;
         this.transform.scaleY = y;
