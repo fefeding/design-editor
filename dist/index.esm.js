@@ -1560,14 +1560,14 @@ class CSSFilters {
         if (filter.name) {
             const existsFilter = this.get(filter.name);
             if (existsFilter) {
-                console.error(`${filter.displayName || filter.name}已经存在滤镜集合中，不能重复`);
-                return existsFilter;
+                console.error(`${filter.name}已经存在滤镜集合中，不能重复`);
+                return;
             }
         }
         if (filter instanceof Filter) {
             this.filters.push(filter);
             this.apply();
-            return filter;
+            return;
         }
         else if (filter.name) {
             return this.add(filter.name, filter.option);
@@ -4931,21 +4931,29 @@ class JEditor extends JBaseComponent {
                     transformOrigin: 'left top',
                 }
             };
-            editor = await this.create(option, data);
-        }
-        // 如果指定了宽度，则把dom缩放到指定的大小
-        if (option?.data?.width) {
-            const scale = util.toNumber(option.data.width) / util.toNumber(editor.data.width);
-            editor.scale(scale);
-        }
-        else if (option?.data?.width) {
-            const scale = util.toNumber(option.data.height) / util.toNumber(editor.data.height);
-            editor.scale(scale);
+            editor = this.create(option, data);
         }
         const dom = editor.dom;
         dom.style.position = 'relative';
         return new Promise(resolve => {
             setTimeout(() => {
+                const scale = {
+                    x: 0,
+                    y: 0
+                };
+                // 如果指定了宽度，则把dom缩放到指定的大小
+                if (editor.option?.data?.width) {
+                    scale.x = util.toNumber(editor.option.data.width) / util.toNumber(editor.data.width);
+                    scale.y = scale.x;
+                }
+                if (editor.option?.data?.height) {
+                    scale.y = util.toNumber(editor.option.data.height) / util.toNumber(editor.data.height);
+                    // 没有指定则保持比例
+                    if (scale.x === 0) {
+                        scale.x = scale.y;
+                    }
+                }
+                editor.scale(scale.x || 1, scale.y || 1);
                 resolve(editor);
             }, 200);
         });

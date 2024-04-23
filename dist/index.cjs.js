@@ -411,41 +411,43 @@ var JEditor = /** @class */ (function (_super) {
      * @param data
      */
     JEditor.renderDom = function (data, option) {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
-            var editor, scale, scale, dom;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
-                    case 0:
-                        if (!(data instanceof JEditor)) return [3 /*break*/, 1];
-                        editor = data;
-                        return [3 /*break*/, 3];
-                    case 1:
-                        option = __assign(__assign({}, option), { editable: false, style: {
-                                transformOrigin: 'left top',
-                            } });
-                        return [4 /*yield*/, this.create(option, data)];
-                    case 2:
-                        editor = _c.sent();
-                        _c.label = 3;
-                    case 3:
-                        // 如果指定了宽度，则把dom缩放到指定的大小
-                        if ((_a = option === null || option === void 0 ? void 0 : option.data) === null || _a === void 0 ? void 0 : _a.width) {
-                            scale = util.toNumber(option.data.width) / util.toNumber(editor.data.width);
-                            editor.scale(scale);
-                        }
-                        else if ((_b = option === null || option === void 0 ? void 0 : option.data) === null || _b === void 0 ? void 0 : _b.width) {
-                            scale = util.toNumber(option.data.height) / util.toNumber(editor.data.height);
-                            editor.scale(scale);
-                        }
-                        dom = editor.dom;
-                        dom.style.position = 'relative';
-                        return [2 /*return*/, new Promise(function (resolve) {
-                                setTimeout(function () {
-                                    resolve(editor);
-                                }, 200);
-                            })];
+            var editor, dom;
+            return __generator(this, function (_a) {
+                if (data instanceof JEditor) {
+                    editor = data;
                 }
+                else {
+                    option = __assign(__assign({}, option), { editable: false, style: {
+                            transformOrigin: 'left top',
+                        } });
+                    editor = this.create(option, data);
+                }
+                dom = editor.dom;
+                dom.style.position = 'relative';
+                return [2 /*return*/, new Promise(function (resolve) {
+                        setTimeout(function () {
+                            var _a, _b, _c, _d;
+                            var scale = {
+                                x: 0,
+                                y: 0
+                            };
+                            // 如果指定了宽度，则把dom缩放到指定的大小
+                            if ((_b = (_a = editor.option) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.width) {
+                                scale.x = util.toNumber(editor.option.data.width) / util.toNumber(editor.data.width);
+                                scale.y = scale.x;
+                            }
+                            if ((_d = (_c = editor.option) === null || _c === void 0 ? void 0 : _c.data) === null || _d === void 0 ? void 0 : _d.height) {
+                                scale.y = util.toNumber(editor.option.data.height) / util.toNumber(editor.data.height);
+                                // 没有指定则保持比例
+                                if (scale.x === 0) {
+                                    scale.x = scale.y;
+                                }
+                            }
+                            editor.scale(scale.x || 1, scale.y || 1);
+                            resolve(editor);
+                        }, 200);
+                    })];
             });
         });
     };

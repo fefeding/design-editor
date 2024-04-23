@@ -348,23 +348,34 @@ export default class JEditor extends JBase implements IJEditor {
                     transformOrigin: 'left top',
                 }
             };
-            editor = await this.create(option, data);
+            editor = this.create(option, data);
         }
-        // 如果指定了宽度，则把dom缩放到指定的大小
-        if(option?.data?.width) {
-            const scale = util.toNumber(option.data.width)/util.toNumber(editor.data.width);           
-            editor.scale(scale);
-        }
-        else if(option?.data?.width) {
-            const scale = util.toNumber(option.data.height)/util.toNumber(editor.data.height);           
-            editor.scale(scale);
-        }
+        
 
         const dom = editor.dom;
         dom.style.position = 'relative';
 
         return new Promise(resolve => {
             setTimeout(()=>{
+                const scale = {
+                    x: 0,
+                    y: 0
+                };
+                // 如果指定了宽度，则把dom缩放到指定的大小
+                if(editor.option?.data?.width) {
+                    scale.x = util.toNumber(editor.option.data.width)/util.toNumber(editor.data.width);   
+                    scale.y = scale.x; 
+                }
+                if(editor.option?.data?.height) {
+                    scale.y = util.toNumber(editor.option.data.height)/util.toNumber(editor.data.height); 
+                    
+                    // 没有指定则保持比例
+                    if(scale.x === 0) {
+                        scale.x = scale.y;
+                    }
+                }
+
+                editor.scale(scale.x||1, scale.y||1);
                 resolve(editor);
             }, 200);
         });
