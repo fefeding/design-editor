@@ -35,6 +35,10 @@
 			<div data-id="2" onclick="alert(2)"></div>
 			<div data-id="3" onclick="alert(3)"></div>
 			<div data-id="4" onclick="alert(4)"></div>
+			<div data-id="5" onclick="alert(5)"></div>
+			<div data-id="6" onclick="alert(6)"></div>
+			<div data-id="7" onclick="alert(7)"></div>
+			<div data-id="8" onclick="alert(8)"></div>
     </div>
 </body>
 <script type="module">
@@ -67,7 +71,9 @@
             fonts,
             data: {
                 // 指定把dom缩放到大小，如果同时指定width和height，优先用width缩放
-                width: child.clientWidth
+                width: child.clientWidth,
+                // 如果宽高同时指定，就会被拉伸缩放
+                height: child.clientHeight
             }
         });
         
