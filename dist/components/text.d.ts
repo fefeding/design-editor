@@ -25,7 +25,7 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
      * JTextData 数据
      */
     data: JTextData;
-    static TextControlCache: Map<string, JText>;
+    isChildrenMode: boolean;
     /**
      * 类型名称
      */
@@ -35,6 +35,11 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
      */
     get contenteditable(): any;
     set contenteditable(v: any);
+    get text(): string;
+    /**
+     * 文本的子元素有点特殊，因为编辑过后，可能存在 text node，需要一并处理
+     */
+    get children(): any[];
     /**
      * 进入文本编辑状态
      */

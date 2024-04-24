@@ -981,4 +981,12 @@ export declare const ContainerDefaultStyle: {
 /**
  * 默认编辑器样式
  */
-export declare const editorDefaultCssContent = ".j-design-editor-container {\n        border: none;\n        box-sizing: content-box;\n    }.j-design-editor-container * {\n        box-sizing: content-box;\n    }\n    .j-design-editor-container.selected {\n        box-shadow: 0 0 1px rgba(6,155,181,1);\n    }\n    .j-design-editor-container:hover {\n        box-shadow: 0 0 1px 1px rgba(0,0,0,0.2);\n    }\n    .j-design-editor-controller .item-skew {\n        box-shadow: 0 0 2px 2px #ccc;\n        opacity: 0.2;\n    }\n    .j-design-editor-controller .item-skew:hover {\n        opacity: 0.9;\n    }\n    .j-design-editor-controller .item-rotate {\n        opacity: 0.5;\n    }\n    .j-design-editor-controller .item-rotate:hover {\n        opacity: 1;\n    }\n    ";
+export declare const editorDefaultCssContent = ".j-design-editor-container {\n        border: none;\n        box-sizing: content-box;\n    }.j-design-editor-container * {\n        box-sizing: content-box;\n    }\n    .j-design-editor-container.selected {\n        box-shadow: 0 0 1px rgba(6,155,181,1);\n    }\n    .j-design-editor-container:hover {\n        box-shadow: 0 0 1px 1px rgba(0,0,0,0.2);\n    }\n    .j-design-editor-controller .item-skew {\n        box-shadow: 0 0 2px 2px #ccc;\n        opacity: 0.2;\n    }\n    .j-design-editor-controller .item-skew:hover {\n        opacity: 0.9;\n    }\n    .j-design-editor-controller .item-rotate {\n        opacity: 0.5;\n    }\n    .j-design-editor-controller .item-rotate:hover {\n        opacity: 1;\n    }\n    .j-design-editor-container div[contenteditable=\"true\"]:empty:before{\n        content: ' ';\n        -webkit-tap-highlight-color:transparent;\n        -webkit-user-modify:read-write;\n        outline:none;\n        border:none;\n    }\n    ";
+export declare const editorDefaultStyle: {
+    boxShadow: string;
+    position: string;
+    left: string;
+    top: string;
+    right: string;
+    bottom: string;
+};

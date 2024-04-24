@@ -25,6 +25,7 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 		style: {
 			backgroundColor: '#fff',
 			containerBackgroundColor: '#eee',
+			caretColor: 'red',// 光标颜色
 			//marginTop: '50%',
 			//marginLeft: '50%'
 		},

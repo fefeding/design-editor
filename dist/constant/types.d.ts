@@ -203,6 +203,9 @@ export interface IJElement<T extends JDomElement = JDomElement> extends EventEmi
     addChild(child: IJElement | JDomElement, parent?: IJElement): IJElement<JDomElement>;
     remove(): void;
     removeChild(el: IJElement | JDomElement): void;
+    getChild(id: string): IJElement | undefined;
+    /** 复制组件 */
+    clone(): IJElement;
     toJSON(props?: any[], ig?: (p: IJElement) => boolean): IElementJSON;
     toString(): string;
     toHtml(): string;
@@ -227,8 +230,6 @@ export interface IJBaseComponent<T extends JDomElement = JDomElement> extends IJ
     set selected(v: boolean);
     filters: IFilterManager;
     setLevel(level: number | 'next' | 'pre' | 'top' | 'bottom'): void;
-    /** 复制组件 */
-    clone(): IJBaseComponent;
 }
 /**
  * 文字组件接口.

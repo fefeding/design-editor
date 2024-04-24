@@ -10,6 +10,7 @@ import { JElementData } from '../constant/data';
 export default class JElement extends EventEmiter {
     constructor(option = {}) {
         super();
+        this.componentType = new.target;
         this._id = this.id || option.id || util.uuid();
         this._type = this.type || option.type || '';
         const nodeType = option.nodeType || 'div';
@@ -152,6 +153,10 @@ export default class JElement extends EventEmiter {
         return this._dom;
     }
     /**
+     * 当前组件new指向的class，可用于复制
+     */
+    componentType;
+    /**
      * dom上的附加属性
      */
     attributes = {};
@@ -168,7 +173,7 @@ export default class JElement extends EventEmiter {
         return this.dom.className;
     }
     set className(v) {
-        if (this.dom.classList.contains(v))
+        if (!this.dom.classList.contains(v))
             this.dom.classList.add(v);
     }
     get visible() {
@@ -253,7 +258,10 @@ export default class JElement extends EventEmiter {
                 child.data.zIndex = this.childrenMaxLevel + 1;
             }
             parent.dom.appendChild(child.dom);
-            parent.children.push(child);
+            if (parent === this)
+                this._children.push(child);
+            else
+                parent.children.push(child);
             this.emit('childAdded', child);
         }
         else if (child instanceof Element && child !== parent.dom) {
@@ -279,6 +287,30 @@ export default class JElement extends EventEmiter {
         }
         // @ts-ignore
         delete el.parent;
+    }
+    // 通过ID获取子元素
+    getChild(id) {
+        for (const child of this.children) {
+            if (child.id === id)
+                return child;
+            // 如果子元素也是一个element，则也轮循它的子元素。
+            if (child.children?.length) {
+                const el = child.getChild(id);
+                if (el)
+                    return el;
+            }
+        }
+    }
+    /**
+     * 复制当前组件
+     * @returns 当前组件同类型副本
+     */
+    clone() {
+        const option = this.toJSON();
+        // @ts-ignore
+        delete option.id;
+        const el = new this.componentType(option);
+        return el;
     }
     // 转为json
     toJSON(props = [], ig = (p) => true) {

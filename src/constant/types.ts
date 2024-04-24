@@ -257,6 +257,11 @@ export interface IJElement<T extends JDomElement = JDomElement> extends EventEmi
     addChild(child: IJElement | JDomElement, parent?: IJElement): IJElement<JDomElement>;
     remove(): void;
     removeChild(el: IJElement | JDomElement): void;
+    // 通过ID获取子元素
+    getChild(id: string): IJElement|undefined;
+    /** 复制组件 */
+    clone(): IJElement;
+
     toJSON(props?: any[], ig?: (p: IJElement) => boolean): IElementJSON;
     toString(): string;
     toHtml(): string;
@@ -286,8 +291,6 @@ export interface IJBaseComponent<T extends JDomElement = JDomElement> extends IJ
     filters: IFilterManager;
     // 设置层级，指定数字或操作, next下一层，pre上一层，top顶层，bottom最底层
     setLevel(level: number|'next'|'pre'|'top'|'bottom'): void;
-    /** 复制组件 */
-    clone(): IJBaseComponent;
 }
 /**
  * 文字组件接口.

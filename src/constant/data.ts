@@ -206,6 +206,11 @@ export interface IJElementData {
     visible?: boolean;
 
     zIndex?: number;
+
+    // 显示文本
+    text?: string;
+    // 元素的富文本内容
+    html?: string;
 }
 
 /**

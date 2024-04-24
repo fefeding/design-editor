@@ -84,6 +84,8 @@ export interface IJElementData {
     angle?: number;
     visible?: boolean;
     zIndex?: number;
+    text?: string;
+    html?: string;
 }
 /**
  * 元素的基础数据类

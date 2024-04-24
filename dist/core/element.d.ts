@@ -19,10 +19,14 @@ export default class JElement<T extends JDomElement = JDomElement> extends Event
     get option(): any;
     protected _type: string;
     get type(): string;
-    private _children;
+    protected _children: IJElement<JDomElement>[];
     get children(): IJElement<JDomElement>[];
     protected _dom: T;
     get dom(): T;
+    /**
+     * 当前组件new指向的class，可用于复制
+     */
+    protected componentType: any;
     /**
      * dom上的附加属性
      */
@@ -54,6 +58,12 @@ export default class JElement<T extends JDomElement = JDomElement> extends Event
     addChild(child: IJElement | Element, parent?: IJElement): IJElement<JDomElement>;
     remove(): void;
     removeChild(el: IJElement | Element): void;
+    getChild(id: string): IJElement | undefined;
+    /**
+     * 复制当前组件
+     * @returns 当前组件同类型副本
+     */
+    clone(): IJElement;
     toJSON(props?: any[], ig?: (p: IJElement) => boolean): IElementJSON;
     toString(): string;
     toHtml(): string;

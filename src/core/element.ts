@@ -14,6 +14,8 @@ export default class JElement<T extends JDomElement = JDomElement> extends Event
 
     constructor(option = {} as IElementOption) {
         super();
+        
+        this.componentType = new.target;
 
         this._id = this.id || option.id || util.uuid();
         this._type = this.type || option.type || '';
@@ -156,15 +158,20 @@ export default class JElement<T extends JDomElement = JDomElement> extends Event
         return this._type;
     }
     // 子元素
-    private _children = [] as Array<IJElement>;
-    get children() {
+    protected _children = [] as Array<IJElement>;
+    public get children() {
         return this._children;
     }
     // 控件最外层的容器
     protected _dom: T;
-    get dom() {
+    public get dom() {
         return this._dom;
     }
+
+    /**
+     * 当前组件new指向的class，可用于复制
+     */
+    protected componentType: any;
 
     /**
      * dom上的附加属性
@@ -189,7 +196,7 @@ export default class JElement<T extends JDomElement = JDomElement> extends Event
         return this.dom.className;
     }
     set className(v: string) {
-        if(this.dom.classList.contains(v)) this.dom.classList.add(v);
+        if(!this.dom.classList.contains(v)) this.dom.classList.add(v);
     }  
 
     get visible() {
@@ -281,7 +288,8 @@ export default class JElement<T extends JDomElement = JDomElement> extends Event
                 child.data.zIndex = this.childrenMaxLevel + 1;
             }
             parent.dom.appendChild(child.dom);
-            parent.children.push(child);
+            if(parent === this) this._children.push(child);
+            else parent.children.push(child);
 
             this.emit('childAdded', child);
         }
@@ -308,6 +316,30 @@ export default class JElement<T extends JDomElement = JDomElement> extends Event
         }
         // @ts-ignore
         delete el.parent;
+    }
+
+    // 通过ID获取子元素
+    getChild(id: string): IJElement|undefined {
+        for(const child of this.children) {
+            if(child.id === id) return child;
+            // 如果子元素也是一个element，则也轮循它的子元素。
+            if(child.children?.length) {
+                const el = child.getChild(id);
+                if(el) return el;
+            }
+        }
+    }
+
+    /**
+     * 复制当前组件
+     * @returns 当前组件同类型副本
+     */
+    clone(): IJElement {
+        const option = this.toJSON();
+        // @ts-ignore
+        delete option.id;
+        const el = new this.componentType(option);
+        return el;
     }
 
     // 转为json

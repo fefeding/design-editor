@@ -20,7 +20,6 @@ export default class JBaseComponent extends JElement {
             nodeType: 'div',
             className: 'j-design-editor-container',
         });
-        this.componentType = new.target;
         option.target = option.target || {};
         const targetOption = {
             ...(option.target || option),
@@ -57,6 +56,7 @@ export default class JBaseComponent extends JElement {
                 data: e
             });
         });
+        //this.style.refresh();
     }
     // 当前控件的核心元素
     target;
@@ -71,10 +71,6 @@ export default class JBaseComponent extends JElement {
      * 是否支持移动
      */
     moveable = true;
-    /**
-     * 当前组件new指向的class，可用于复制
-     */
-    componentType;
     // 选中
     _selected = false;
     get selected() {
@@ -187,7 +183,7 @@ export default class JBaseComponent extends JElement {
         if (!(child instanceof JBaseComponent)) {
             const el = this.target.addChild(child);
             if (child instanceof JElement) {
-                this.children.push(child);
+                this._children.push(child);
             }
             return child;
         }
@@ -273,16 +269,5 @@ export default class JBaseComponent extends JElement {
             obj.target = this.target.toJSON([], (p) => false);
         }
         return obj;
-    }
-    /**
-     * 复制当前组件
-     * @returns 当前组件同类型副本
-     */
-    clone() {
-        const option = this.toJSON();
-        // @ts-ignore
-        delete option.id;
-        const el = new this.componentType(option);
-        return el;
     }
 }

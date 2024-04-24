@@ -16,7 +16,7 @@ export default class JElementStyle extends JElementCssStyle {
     public styleSaveMap = [];
 
     // 把样式应用到元素或当前对象
-    apply(data: IJElementStyleDeclaration, target: CSSStyleDeclaration | JElementStyleDeclaration = this, maps: Array<string> = this.styleSaveMap) {
+    apply(data: IJElementStyleDeclaration, target: CSSStyleDeclaration | JElementStyleDeclaration = this, maps: Array<string> = []) {
         target = target || this;
         for(const name of this.names) {
             if(typeof name !== 'string') continue;

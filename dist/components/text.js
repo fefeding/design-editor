@@ -1,6 +1,7 @@
 import Base from '../core/baseComponent';
 import { JTextData } from '../constant/data';
 import util from 'j-design-util';
+import JHtmlElement from '../core/baseHtmlElement';
 /**
  * 文本组件类 JText，继承于基础组件 Base。
  * @public
@@ -37,19 +38,27 @@ export default class JText extends Base {
             type: option.type || 'text',
             dataType: option.dataType || JTextData
         });
+        // 多子元素
+        if (option.children?.length) {
+            this.isChildrenMode = true;
+        }
         // 'text' 属性变化映射到 innerText
         this.data.watch([
             'text', 'fontFamily', 'fontSize'
         ], {
             set: (item) => {
-                if (item.name === 'text')
-                    this.target.dom.innerText = item.value;
+                if (item.name === 'text') {
+                    if (!this.isChildrenMode) {
+                        this.target.dom.textContent = item.value;
+                    }
+                }
                 else
                     this.style[item.name] = item.value;
             },
             get: (name) => {
-                if (name === 'text')
-                    return this.target.dom.innerText;
+                if (name === 'text') {
+                    return this.text;
+                }
                 else
                     return this.style[name];
             }
@@ -74,10 +83,11 @@ export default class JText extends Base {
         this.target.on('blur', () => {
             this.closeEdit();
         });
-        JText.TextControlCache.set(this.id, this); // 缓存起来
+        //JText.TextControlCache.set(this.id, this);// 缓存起来
     }
+    isChildrenMode = false; // 是否是多子元素模式，如果是就会采用var节点处理文本
     // 所有 JText 实例的缓存
-    static TextControlCache = new Map();
+    //static TextControlCache = new Map<string, JText>();
     /**
      * 类型名称
      */
@@ -95,6 +105,41 @@ export default class JText extends Base {
             return; // 组件不支持编辑则不处理
         util.attr(this.target.dom, 'contenteditable', v.toString());
     }
+    // 当前显示的文本
+    get text() {
+        return this.target.dom.textContent;
+    }
+    /**
+     * 文本的子元素有点特殊，因为编辑过后，可能存在 text node，需要一并处理
+     */
+    get children() {
+        if (!this.isChildrenMode)
+            return this._children;
+        const children = [];
+        for (const node of this.target.dom.childNodes) {
+            if (node.nodeName === '#text') {
+                const el = new JHtmlElement({
+                    type: 'var',
+                    data: {
+                        text: node.textContent
+                    }
+                });
+                children.push(el);
+            }
+            else {
+                const id = util.attr(node, 'data-id');
+                if (id) {
+                    for (const c of this._children) {
+                        if (c.id === id) {
+                            children.push(c);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return children;
+    }
     /**
      * 进入文本编辑状态
      */
@@ -103,8 +148,9 @@ export default class JText extends Base {
             return;
         this.editor.elementController.visible = false;
         this.contenteditable = true; // 编辑态
-        util.setRange(this.target.dom, e); // 光标位置在最后
-        this.target.dom.focus(); // 进入控件
+        const dom = (e.target || this.target.dom);
+        util.setRange(dom, e); // 光标位置在最后
+        dom.focus && dom.focus(); // 进入控件
     }
     /**
      * 退出文本编辑状态
@@ -116,7 +162,7 @@ export default class JText extends Base {
      * 移除 JText 实例
      */
     dispose() {
-        JText.TextControlCache.delete(this.id);
+        //JText.TextControlCache.delete(this.id);
         super.dispose();
     }
 }

@@ -12,7 +12,7 @@ export default class JElementStyle extends JElementCssStyle {
     // 保存的白名单列表, 如果指定了，则不在白名单内的就不会tojson
     styleSaveMap = [];
     // 把样式应用到元素或当前对象
-    apply(data, target = this, maps = this.styleSaveMap) {
+    apply(data, target = this, maps = []) {
         target = target || this;
         for (const name of this.names) {
             if (typeof name !== 'string')

@@ -22,8 +22,6 @@ export default class JBaseComponent<T extends JDomElement = JDomElement> extends
             nodeType: 'div',
             className: 'j-design-editor-container',
         });
-        
-        this.componentType = new.target;
 
         option.target = option.target || {};
         const targetOption = {
@@ -64,6 +62,8 @@ export default class JBaseComponent<T extends JDomElement = JDomElement> extends
                 data: e
             });
         });
+
+        //this.style.refresh();
     }
 
     // 当前控件的核心元素
@@ -82,11 +82,6 @@ export default class JBaseComponent<T extends JDomElement = JDomElement> extends
      * 是否支持移动
      */
     moveable: boolean = true;
-
-    /**
-     * 当前组件new指向的class，可用于复制
-     */
-    protected componentType: any;
 
     // 选中
     private _selected = false;
@@ -196,7 +191,7 @@ export default class JBaseComponent<T extends JDomElement = JDomElement> extends
         if(!(child instanceof JBaseComponent)) {
             const el = this.target.addChild(child);
             if(child instanceof JElement) {
-                this.children.push(child);
+                this._children.push(child);
             }
             return child;
         }
@@ -291,17 +286,5 @@ export default class JBaseComponent<T extends JDomElement = JDomElement> extends
             obj.target = this.target.toJSON([], (p)=>false);
         }
         return obj;
-    }
-
-    /**
-     * 复制当前组件
-     * @returns 当前组件同类型副本
-     */
-    clone(): IJBaseComponent {
-        const option = this.toJSON();
-        // @ts-ignore
-        delete option.id;
-        const el = new this.componentType(option);
-        return el;
     }
 }

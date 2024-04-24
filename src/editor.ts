@@ -5,9 +5,10 @@ import JImage from './components/image';
 import JSvg from './components/svg';
 import JContainer from './components/container';
 import JElement from './core/element';
+import JHtmlElement from './core/baseHtmlElement';
 import JController from './core/controller';
 import { IJElement, IJEditor, IJControllerComponent, IJBaseComponent, IElementOption, IEditorOption, ITextOption, IImageOption } from './constant/types';
-import { editorDefaultCssContent } from './constant/styleMap';
+import { editorDefaultCssContent, editorDefaultStyle } from './constant/styleMap';
 import { SupportEventNames } from './core/event';
 
 
@@ -18,18 +19,20 @@ export default class JEditor extends JBase implements IJEditor {
 
     constructor(option={} as IEditorOption) {  
         option.style = option.style||{};
-        Object.assign(option.style, {
-            'boxShadow': '0 0 10px 10px #ccc',
-            'position': 'absolute',
-            'backgroundSize': '100% 100%',   
-            //transformOrigin: 'center top',         
-        });
+        Object.assign(option.style, editorDefaultStyle);
         // @ts-ignore 外层只响应Z轴旋转
         /*option.transformWatchProps = [
             'rotateZ', 'scaleX', 'scaleY'
         ];*/
         option.type = option.type || 'editor';
-        super(option);
+        super({
+            ...option,
+            data: {
+                ...option.data,
+                left: 0,
+                top: 0,
+            }
+        });
         if(typeof option.container === 'string') option.container = document.getElementById( option.container);
         this.view = new JElement<HTMLDivElement>({
             style: {
@@ -39,6 +42,7 @@ export default class JEditor extends JBase implements IJEditor {
                 'position': 'relative',
                 'width': '100%',
                 'height': '100%',
+                'caretColor': 'blue',
             }
         });
         // 字体管理实例
@@ -289,8 +293,14 @@ export default class JEditor extends JBase implements IJEditor {
     createShape(type: string | JElement, option:IElementOption|ITextOption|IImageOption={}) {
         const shape = typeof type === 'string'? this.shapes.get(type): type;
         if(!shape) {
-            console.warn(`${type}不存在的元素类型`);
-            return;
+            //console.warn(`${type}不存在的元素类型`);
+            const el = new JHtmlElement({
+                ...option,
+                editor: this,
+                // @ts-ignore
+                nodeType: type
+            });
+            return el;
         }
         // @ts-ignore
         const el = new shape({
@@ -306,7 +316,10 @@ export default class JEditor extends JBase implements IJEditor {
         this.clear();
         //if(typeof data === 'string') data = JSON.parse(data);
         if(data.style) {
-            this.style.apply(data.style);// 应用样式
+            this.style.apply({
+                ...data.style,
+                ...editorDefaultStyle
+            });// 应用样式
         }
         this.resize(data.width || data.data.width, data.height || data.data.height);
 

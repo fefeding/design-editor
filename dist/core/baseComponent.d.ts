@@ -17,10 +17,6 @@ export default class JBaseComponent<T extends JDomElement = JDomElement> extends
      * 是否支持移动
      */
     moveable: boolean;
-    /**
-     * 当前组件new指向的class，可用于复制
-     */
-    protected componentType: any;
     private _selected;
     get selected(): boolean;
     set selected(v: boolean);
@@ -33,9 +29,4 @@ export default class JBaseComponent<T extends JDomElement = JDomElement> extends
     getChild(id: string): IJElement | undefined;
     setDomStyle(name: string, value: string): void;
     toJSON(props?: any[]): import("../constant/types").IElementJSON;
-    /**
-     * 复制当前组件
-     * @returns 当前组件同类型副本
-     */
-    clone(): IJBaseComponent;
 }

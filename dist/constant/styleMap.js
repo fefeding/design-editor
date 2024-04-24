@@ -971,4 +971,22 @@ export const editorDefaultCssContent = `.j-design-editor-container {
     .j-design-editor-controller .item-rotate:hover {
         opacity: 1;
     }
+    .j-design-editor-container div[contenteditable="true"]:empty:before{
+        content: ' ';
+        -webkit-tap-highlight-color:transparent;
+        -webkit-user-modify:read-write;
+        outline:none;
+        border:none;
+    }
     `;
+// 编辑器默认样式，并且不可改
+export const editorDefaultStyle = {
+    'boxShadow': '0 0 10px 10px #ccc',
+    'position': 'absolute',
+    //'backgroundSize': '100% 100%',   
+    'left': '0',
+    'top': '0',
+    'right': '0',
+    'bottom': '0'
+    //transformOrigin: 'center top',         
+};
