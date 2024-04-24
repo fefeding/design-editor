@@ -6,5 +6,5 @@ export default class JContainer extends Base<HTMLDivElement> implements IJBaseCo
      * 类型名称
      */
     get typeName(): string;
-    get children(): import("../constant/types").IJElement<import("../constant/elementTypes").JDomElement>[];
+    get children(): import("../constant/types").IJElement<HTMLElement>[];
 }
