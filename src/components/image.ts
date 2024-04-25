@@ -14,7 +14,7 @@ export default class JImage extends Base<HTMLImageElement> implements IJImageCom
      */
     constructor(option={} as IImageOption) {
         if(!option.style) option.style = {};
-        if(!option.style.overflow) option.style.overflow = 'hidden';
+        option.style.overflow = 'hidden';
         super({
             ...option,
             nodeType: 'img',

@@ -147,7 +147,7 @@ export default class JElement<T extends JDomElement = JDomElement> extends Event
         this.attr('title', v);
     }
 
-    private _option;
+    protected _option;
     get option() {
         return this._option;
     }

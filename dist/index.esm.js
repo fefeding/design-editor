@@ -2578,13 +2578,13 @@ const editorDefaultCssContent = `.j-design-editor-container {
         box-shadow: 0 0 1px rgba(6,155,181,1);
     }
     .j-design-editor-container:hover {
-        box-shadow: 0 0 1px 1px rgba(0,0,0,0.2);
+        box-shadow: 0 0 2px 2px rgba(0,0,0,0.3);
     }
-    .j-design-editor-controller .item-skew {
-        box-shadow: 0 0 2px 2px #ccc;
-        opacity: 0.2;
+    .j-design-editor-controller .item-move,.j-design-editor-controller .item-scale {
+        box-shadow: 0 0 2px 2px #eee;
+        opacity: 0.3;
     }
-    .j-design-editor-controller .item-skew:hover {
+    .j-design-editor-controller .item-move:hover,.j-design-editor-controller .item-scale:hover {
         opacity: 0.9;
     }
     .j-design-editor-controller .item-rotate {
@@ -3965,8 +3965,7 @@ class JImage extends JBaseComponent {
     constructor(option = {}) {
         if (!option.style)
             option.style = {};
-        if (!option.style.overflow)
-            option.style.overflow = 'hidden';
+        option.style.overflow = 'hidden';
         super({
             ...option,
             nodeType: 'img',
@@ -4176,6 +4175,9 @@ class JControllerItem extends JElement {
     }
     dir = '';
     size = 0;
+    get option() {
+        return this._option;
+    }
     _isMoving = false;
     get isMoving() {
         return this._isMoving;
@@ -4206,6 +4208,7 @@ class JControllerItem extends JElement {
                 x: pos.x,
                 y: pos.y
             },
+            item: this,
             event
         });
         // 选中的是渲染层的坐标，转为控制层的
@@ -4227,10 +4230,12 @@ class JControllerItem extends JElement {
         this.isMoving = true;
         event.stopPropagation && event.stopPropagation();
         event.preventDefault && event.preventDefault();
+        this.emit('dragStart', event);
     }
     onDragEnd(event) {
         if (this.isMoving) {
             this.isMoving = false;
+            this.emit('dragEnd', event);
         }
     }
     // 计算指针
@@ -4238,6 +4243,10 @@ class JControllerItem extends JElement {
         try {
             if (!this.dir)
                 return;
+            if (this.dir === 'skew') {
+                this.style.cursor = 'move';
+                return;
+            }
             let cursor = await Cursors.get(this.dir, rotation, data);
             if (!cursor)
                 return;
@@ -4283,6 +4292,7 @@ class JControllerComponent extends JControllerItem {
             width: itemSize,
             height: itemSize * 2
         };
+        this.initMasks(); // 初始化mask
         this.createItem('l', {
             style: {
                 ...option.style.itemStyle,
@@ -4413,7 +4423,8 @@ class JControllerComponent extends JControllerItem {
                 translateX: '-50%',
             }
         });
-        this.skewItem = this.createItem('skew', {
+        // 图片操作杆
+        this.targetMoveItem = this.createItem('move', {
             size: 24,
             style: {
                 left: '50%',
@@ -4424,13 +4435,49 @@ class JControllerComponent extends JControllerItem {
                 border: '9px solid rgba(0,0,0,0.8)',
                 backgroundColor: '#fff',
                 'backgroundSize': '100%',
+                ...option.style.moveStyle,
                 //backgroundImage: option.itemIcons?.skew || ''
             },
             transform: {
                 translateX: '-50%',
                 translateY: '-50%'
             }
-        }); // 旋转块 
+        });
+        // 操作过程中不截断图片
+        let oldOverflow = '';
+        this.targetMoveItem.on('dragStart', (e) => {
+            oldOverflow = this.target.style.overflow;
+            this.target.style.overflow = 'visible';
+        }).on('dragEnd', (e) => {
+            if (oldOverflow)
+                this.target.style.overflow = oldOverflow || 'hidden';
+        });
+        // 图片缩放
+        this.targetScaleItem = this.createItem('scale', {
+            size: 15,
+            style: {
+                left: '50%',
+                top: '50%',
+                borderRadius: '50%',
+                cursor: `pointer`,
+                ...option.style.itemStyle,
+                border: '1px solid rgba(0,0,0,0.8)',
+                backgroundColor: '#fff',
+                'backgroundSize': '100%',
+                ...option.style.scaleStyle,
+            },
+        });
+        this.targetScaleItem.on('dragStart', (e) => {
+            oldOverflow = this.target.style.overflow;
+            this.target.style.overflow = 'visible';
+        }).on('dragEnd', (e) => {
+            if (oldOverflow)
+                this.target.style.overflow = oldOverflow || 'hidden';
+            // 归位
+            this.targetScaleItem.transform.translateX = 0;
+            this.targetScaleItem.transform.translateY = 0;
+            this.targetScaleItem.transform.apply();
+        });
         if (option.tipVisible !== false) {
             const tipOption = {
                 data: {
@@ -4481,8 +4528,11 @@ class JControllerComponent extends JControllerItem {
     // 鼠标指针
     cursorData;
     items = [];
+    // 遮挡层
+    masks = [];
     rotateItem;
-    skewItem;
+    targetMoveItem;
+    targetScaleItem;
     positionItem;
     sizeItem;
     target;
@@ -4513,6 +4563,10 @@ class JControllerComponent extends JControllerItem {
         item.resetCursor(this.transform.rotateZ, this.cursorData);
         return item;
     }
+    // 初始化或重置遮挡层
+    initMasks() {
+        return false;
+    }
     // 发生改变响应
     change(e) {
         if (!this.target)
@@ -4533,29 +4587,55 @@ class JControllerComponent extends JControllerItem {
         const center = this.center;
         const width = util.toNumber(this.data.width);
         const height = util.toNumber(this.data.height);
-        if (dir === 'rotate') {
-            // 编辑器坐标, 因为是在编辑器渲染区域操作，需要把坐标转到此区域再处理
-            const pos1 = this.editor.toEditorPosition(oldPosition);
-            const pos2 = this.editor.toEditorPosition(newPosition);
-            args.rotation = rotateChange(pos1, pos2, center);
-        }
-        else if (dir === 'skew') {
-            const rx = offX / width * Math.PI;
-            const ry = offY / height * Math.PI;
-            args.skew.x = ry;
-            args.skew.y = rx;
-        }
-        else if (dir === 'element') {
-            // 元素位置控制器
-            args.x = offX;
-            args.y = offY;
-        }
-        else {
-            // 根据操作参数，计算大小和偏移量
-            args = getChangeData(dir, {
-                x: offX,
-                y: offY
-            }, oldPosition, newPosition, center, this.transform.rotateZ);
+        switch (dir) {
+            case 'rotate': {
+                // 编辑器坐标, 因为是在编辑器渲染区域操作，需要把坐标转到此区域再处理
+                const pos1 = this.editor.toEditorPosition(oldPosition);
+                const pos2 = this.editor.toEditorPosition(newPosition);
+                args.rotation = rotateChange(pos1, pos2, center);
+                break;
+            }
+            case 'skew': {
+                const rx = offX / width * Math.PI;
+                const ry = offY / height * Math.PI;
+                args.skew.x = rx;
+                args.skew.y = ry;
+                break;
+            }
+            case 'element': {
+                // 元素位置控制器
+                args.x = offX;
+                args.y = offY;
+                break;
+            }
+            case 'move': {
+                const dx = util.toNumber(this.target.transform.translateX) + offX;
+                const dy = util.toNumber(this.target.transform.translateY) + offY;
+                this.target.transform.translateX = dx;
+                this.target.transform.translateY = dy;
+                this.target.transform.apply();
+                break;
+            }
+            case 'scale': {
+                if (e.item) {
+                    e.item.transform.translateX = util.toNumber(e.item.transform.translateX) + offX;
+                    e.item.transform.translateY = util.toNumber(e.item.transform.translateY) + offY;
+                    e.item.transform.apply();
+                }
+                if (offX !== 0) {
+                    const scaleX = offX / util.toNumber(this.data.width);
+                    this.target.transform.scaleX = this.target.transform.scaleY = (this.target.transform.scaleX || 0) + scaleX;
+                    this.target.transform.apply();
+                }
+                break;
+            }
+            default: {
+                // 根据操作参数，计算大小和偏移量
+                args = getChangeData(dir, {
+                    x: offX,
+                    y: offY
+                }, oldPosition, newPosition, center, this.transform.rotateZ);
+            }
         }
         // 位移 
         if (args.x || args.y) {
@@ -4583,7 +4663,7 @@ class JControllerComponent extends JControllerItem {
                 this.move(0, -offy/2);
             }*/
         }
-        // x,y旋转
+        // 目标元素移动
         if (args.skew.x || args.skew.y) {
             this.target.transform.rotateX += args.skew.x;
             this.target.transform.rotateY += args.skew.y;
@@ -4630,6 +4710,7 @@ class JControllerComponent extends JControllerItem {
         if (this.target.data.height !== height)
             this.target.data.height = height;
         this.setTip();
+        this.initMasks(); // 重新定位mask
     }
     // 移动
     move(dx, dy) {
@@ -4687,8 +4768,9 @@ class JControllerComponent extends JControllerItem {
         const itemVisible = target.editable;
         for (const item of this.items) {
             switch (item.dir) {
-                case 'skew': {
-                    item.visible = false; //itemVisible && !this.isEditor && this.target.typeName === 'image';
+                case 'scale':
+                case 'move': {
+                    item.visible = itemVisible && !this.isEditor && this.target.typeName === 'image';
                     break;
                 }
                 case 'rotate': {
@@ -4732,6 +4814,7 @@ class JControllerComponent extends JControllerItem {
         // 初始化图标
         this.resetCursor();
         this.setTip();
+        this.initMasks(); // 重新定位mask
     }
     // 显示提示信息
     setTip() {

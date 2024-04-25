@@ -5,6 +5,7 @@ export declare class JControllerItem extends JElement<HTMLDivElement> implements
     constructor(option: IControllerItemOption);
     dir: ItemType | string;
     size: number;
+    get option(): IControllerItemOption;
     protected _isMoving: boolean;
     get isMoving(): boolean;
     set isMoving(v: boolean);
@@ -22,8 +23,10 @@ export default class JControllerComponent extends JControllerItem implements IJC
     init(option: IControllerOption): void;
     cursorData: ControllerCursorData;
     items: JControllerItem[];
+    masks: HTMLElement[];
     rotateItem: JControllerItem;
-    skewItem: JControllerItem;
+    targetMoveItem: JControllerItem;
+    targetScaleItem: JControllerItem;
     positionItem: JControllerItem | undefined;
     sizeItem: JControllerItem | undefined;
     target: IJBaseComponent | undefined;
@@ -35,6 +38,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
         y: number;
     };
     createItem(id: string, option: IControllerItemOption): JControllerItem;
+    initMasks(): boolean;
     change(e: any): void;
     applyToTarget(): void;
     move(dx: any, dy: any): void;

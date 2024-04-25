@@ -1045,13 +1045,13 @@ export const editorDefaultCssContent =
         box-shadow: 0 0 1px rgba(6,155,181,1);
     }
     .j-design-editor-container:hover {
-        box-shadow: 0 0 1px 1px rgba(0,0,0,0.2);
+        box-shadow: 0 0 2px 2px rgba(0,0,0,0.3);
     }
-    .j-design-editor-controller .item-skew {
-        box-shadow: 0 0 2px 2px #ccc;
-        opacity: 0.2;
+    .j-design-editor-controller .item-move,.j-design-editor-controller .item-scale {
+        box-shadow: 0 0 2px 2px #eee;
+        opacity: 0.3;
     }
-    .j-design-editor-controller .item-skew:hover {
+    .j-design-editor-controller .item-move:hover,.j-design-editor-controller .item-scale:hover {
         opacity: 0.9;
     }
     .j-design-editor-controller .item-rotate {

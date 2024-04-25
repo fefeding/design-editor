@@ -12,8 +12,7 @@ export default class JImage extends Base {
     constructor(option = {}) {
         if (!option.style)
             option.style = {};
-        if (!option.style.overflow)
-            option.style.overflow = 'hidden';
+        option.style.overflow = 'hidden';
         super({
             ...option,
             nodeType: 'img',

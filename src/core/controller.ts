@@ -54,6 +54,10 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
     dir: ItemType|string = '';
     size: number = 0;
 
+    public get option(): IControllerItemOption {
+        return this._option as IControllerItemOption;
+    }
+
     protected _isMoving = false;
     get isMoving() {
         return this._isMoving;
@@ -87,6 +91,7 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
                 x: pos.x,
                 y: pos.y
             },
+            item: this,
             event
         });
         
@@ -114,11 +119,13 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
 
         event.stopPropagation && event.stopPropagation();
         event.preventDefault && event.preventDefault();
+        this.emit('dragStart', event);
     }
     
     onDragEnd(event: MouseEvent)  {
         if(this.isMoving) {
             this.isMoving = false;
+            this.emit('dragEnd', event);
         }
     }
 
@@ -126,6 +133,10 @@ export class JControllerItem extends JElement<HTMLDivElement> implements IJContr
     async resetCursor(rotation: number = 0, data: ControllerCursorData = {}) {
         try {
             if(!this.dir) return;
+            if(this.dir === 'skew') {
+                this.style.cursor = 'move';
+                return;
+            }
             let cursor = await controller.Cursors.get(this.dir as ItemType, rotation, data);
             if(!cursor) return;
             // 先简单处理
@@ -179,6 +190,9 @@ export default class JControllerComponent extends JControllerItem implements IJC
             width: itemSize,
             height: itemSize * 2
         };
+
+        this.initMasks();// 初始化mask
+
         this.createItem('l', {
             style: {
                 ...option.style.itemStyle,
@@ -310,7 +324,9 @@ export default class JControllerComponent extends JControllerItem implements IJC
                 translateX: '-50%',
             }
         });
-        this.skewItem = this.createItem('skew', {
+
+        // 图片操作杆
+        this.targetMoveItem = this.createItem('move', {
             size: 24,
             style: {
                 left: '50%',
@@ -321,13 +337,49 @@ export default class JControllerComponent extends JControllerItem implements IJC
                 border: '9px solid rgba(0,0,0,0.8)',
                 backgroundColor: '#fff',
                 'backgroundSize': '100%',
+                ...option.style.moveStyle,
                 //backgroundImage: option.itemIcons?.skew || ''
             },
             transform: {
                 translateX: '-50%',
                 translateY: '-50%'
             }
-        });// 旋转块 
+        });
+        
+        // 操作过程中不截断图片
+        let oldOverflow = '';
+        this.targetMoveItem.on('dragStart', (e) => {
+            oldOverflow = this.target.style.overflow;
+            this.target.style.overflow = 'visible';
+        }).on('dragEnd', (e) => {            
+            if(oldOverflow) this.target.style.overflow = oldOverflow||'hidden';
+        });
+
+        // 图片缩放
+        this.targetScaleItem = this.createItem('scale', {
+            size: 15,
+            style: {
+                left: '50%',
+                top: '50%',
+                borderRadius: '50%',
+                cursor: `pointer`,
+                ...option.style.itemStyle,
+                border: '1px solid rgba(0,0,0,0.8)',
+                backgroundColor: '#fff',
+                'backgroundSize': '100%',
+                ...option.style.scaleStyle,
+            },
+        });
+        this.targetScaleItem.on('dragStart', (e) => {
+            oldOverflow = this.target.style.overflow;
+            this.target.style.overflow = 'visible';
+        }).on('dragEnd', (e) => {            
+            if(oldOverflow) this.target.style.overflow = oldOverflow||'hidden';
+            // 归位
+            this.targetScaleItem.transform.translateX = 0;
+            this.targetScaleItem.transform.translateY = 0;
+            this.targetScaleItem.transform.apply();
+        });
 
         if(option.tipVisible !== false) {
             const tipOption = {
@@ -367,7 +419,6 @@ export default class JControllerComponent extends JControllerItem implements IJC
             });
         }
         
-        
         if(this.editor) {
             this.editor.on('mousedown', (e) => {
                 if(!this.isEditor || e.button === 2) return;// 不是编辑器，不处理
@@ -384,9 +435,12 @@ export default class JControllerComponent extends JControllerItem implements IJC
     cursorData: ControllerCursorData;
 
     items = [] as Array<JControllerItem>;
+    // 遮挡层
+    masks = [] as Array<HTMLElement>;
 
     rotateItem: JControllerItem;
-    skewItem: JControllerItem;
+    targetMoveItem: JControllerItem;
+    targetScaleItem: JControllerItem;
 
     positionItem: JControllerItem|undefined;
     sizeItem: JControllerItem|undefined;
@@ -427,6 +481,64 @@ export default class JControllerComponent extends JControllerItem implements IJC
         return item;
     }
 
+    // 初始化或重置遮挡层
+    initMasks() {
+        return false;
+        if(!this.masks.length) {
+            const maskStyle = {
+                'position': 'absolute',
+                'display': 'block',
+                'border': 'none',
+                'background': 'rgba(0,0,0,0.3)'
+            };
+            const leftDom = util.createElement('div');
+            util.css(leftDom, maskStyle);
+            this.addChild(leftDom);
+            this.masks.push(leftDom);
+
+            const topDom = util.createElement('div');
+            util.css(topDom, maskStyle);
+            this.addChild(topDom);
+            this.masks.push(topDom);
+
+            const rightDom = util.createElement('div');
+            util.css(rightDom, maskStyle);
+            this.addChild(rightDom);
+            this.masks.push(rightDom);
+
+            const bottomDom = util.createElement('div');
+            util.css(bottomDom, maskStyle);
+            this.addChild(bottomDom);
+            this.masks.push(bottomDom);
+        }
+        const left = util.toNumber(this.data.left);
+        const top = util.toNumber(this.data.top);
+        util.css(this.masks[0], {
+            top: util.toPX(0-top),
+            left: util.toPX(0-left),
+            width: util.toPX(Math.max(left, 0)),
+            height: util.toPX(this.editor.data.height),
+        });
+        util.css(this.masks[1], {
+            top: util.toPX(0-top),
+            left: 0,
+            width: '100%',
+            height: util.toPX(top),
+        });
+        util.css(this.masks[2], {
+            top: util.toPX(0-top),
+            left: '100%',
+            width: util.toPX(Math.max(util.toNumber(this.editor.data.width) - util.toNumber(this.data.left) - util.toNumber(this.data.width), 0)),
+            height: util.toPX(this.editor.data.height),
+        });
+        util.css(this.masks[3], {
+            top: util.toPX(this.data.height),
+            left: 0,
+            width: '100%',
+            height: util.toPX(Math.max(util.toNumber(this.editor.data.height) - util.toNumber(this.data.top) - util.toNumber(this.data.height), 0)),
+        });
+    }
+
     // 发生改变响应
     change(e) {
         if(!this.target) return;
@@ -448,30 +560,57 @@ export default class JControllerComponent extends JControllerItem implements IJC
         const width = util.toNumber(this.data.width);
         const height = util.toNumber(this.data.height);
 
-        if(dir === 'rotate') {
-            // 编辑器坐标, 因为是在编辑器渲染区域操作，需要把坐标转到此区域再处理
-            const pos1 = this.editor.toEditorPosition(oldPosition);
-            const pos2 = this.editor.toEditorPosition(newPosition);
-            args.rotation = controller.rotateChange(pos1, pos2, center);            
+        switch(dir) {
+            case 'rotate': {
+                // 编辑器坐标, 因为是在编辑器渲染区域操作，需要把坐标转到此区域再处理
+                const pos1 = this.editor.toEditorPosition(oldPosition);
+                const pos2 = this.editor.toEditorPosition(newPosition);
+                args.rotation = controller.rotateChange(pos1, pos2, center);   
+                break;         
+            }
+            case 'skew': {
+                const rx = offX / width * Math.PI;
+                const ry = offY / height * Math.PI;
+                args.skew.x = rx;
+                args.skew.y = ry;
+                break;
+            }
+            case 'element': {
+                // 元素位置控制器
+                args.x = offX;
+                args.y = offY;
+                break;
+            }
+            case 'move': {
+                const dx = util.toNumber(this.target.transform.translateX) + offX;
+                const dy = util.toNumber(this.target.transform.translateY) + offY;
+                this.target.transform.translateX = dx;
+                this.target.transform.translateY = dy;
+                this.target.transform.apply();
+                break;
+            }
+            case 'scale': {
+                if(e.item) {
+                    e.item.transform.translateX = util.toNumber(e.item.transform.translateX) + offX;
+                    e.item.transform.translateY = util.toNumber(e.item.transform.translateY) + offY;
+                    e.item.transform.apply();
+                }
+                if(offX !== 0) {
+                    const scaleX = offX / util.toNumber(this.data.width);
+                    this.target.transform.scaleX = this.target.transform.scaleY = (this.target.transform.scaleX||0) + scaleX;
+                    this.target.transform.apply();
+                }
+                break;
+            }
+            default: {
+                // 根据操作参数，计算大小和偏移量
+                args = controller.getChangeData(dir, {
+                    x: offX,
+                    y: offY
+                }, oldPosition, newPosition, center, this.transform.rotateZ);
+            }
         }
-        else if(dir === 'skew') {
-            const rx = offX / width * Math.PI;
-            const ry = offY / height * Math.PI;
-            args.skew.x = ry;
-            args.skew.y = rx;
-        }
-        else if(dir === 'element') {
-            // 元素位置控制器
-            args.x = offX;
-            args.y = offY;
-        }
-        else {
-            // 根据操作参数，计算大小和偏移量
-            args = controller.getChangeData(dir, {
-                x: offX,
-                y: offY
-            }, oldPosition, newPosition, center, this.transform.rotateZ);
-        }
+
         // 位移 
         if(args.x || args.y) {
             // 只有没锁定才可以移动
@@ -497,7 +636,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
                 this.move(0, -offy/2);
             }*/
         }
-        // x,y旋转
+        // 目标元素移动
         if(args.skew.x || args.skew.y) {
             this.target.transform.rotateX += args.skew.x;
             this.target.transform.rotateY += args.skew.y;
@@ -548,6 +687,8 @@ export default class JControllerComponent extends JControllerItem implements IJC
         if(this.target.data.height !== height) this.target.data.height = height;
 
         this.setTip();
+
+        this.initMasks();// 重新定位mask
     }
 
     // 移动
@@ -612,8 +753,9 @@ export default class JControllerComponent extends JControllerItem implements IJC
         const itemVisible = target.editable;
         for(const item of this.items) {
             switch(item.dir) {
-                case 'skew': {                    
-                    item.visible = false;//itemVisible && !this.isEditor && this.target.typeName === 'image';
+                case 'scale': 
+                case 'move': {                    
+                    item.visible = itemVisible && !this.isEditor && this.target.typeName === 'image';
                     break;
                 }
                 case 'rotate': {
@@ -660,6 +802,8 @@ export default class JControllerComponent extends JControllerItem implements IJC
         // 初始化图标
         this.resetCursor();
         this.setTip();
+
+        this.initMasks();// 重新定位mask
     }
     // 显示提示信息
     setTip() {

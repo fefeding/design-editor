@@ -15,7 +15,7 @@ export default class JElement<T extends JDomElement = JDomElement> extends Event
     get id(): string;
     get name(): string;
     set name(v: string);
-    private _option;
+    protected _option: any;
     get option(): any;
     protected _type: string;
     get type(): string;

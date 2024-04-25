@@ -74,6 +74,9 @@ export interface IControllerStyle extends IJElementStyleDeclaration {
     rotateStyle?: IJElementStyleDeclaration;
     markingLineStyle?: IJElementStyleDeclaration;
     tipStyle?: IJElementStyleDeclaration;
+    skewStyle?: IJElementStyleDeclaration;
+    moveStyle?: IJElementStyleDeclaration;
+    scaleStyle?: IJElementStyleDeclaration;
 }
 export interface IControllerOption extends IControllerItemOption {
     style?: IControllerStyle;
@@ -298,7 +301,7 @@ export interface IJControllerComponent extends IJControllerItem {
     /**控制旋转的控制器项 */
     rotateItem: IJControllerItem;
     /**控制偏移的控制器项 */
-    skewItem: IJControllerItem;
+    targetMoveItem: IJControllerItem;
     /**控制器关联的目标元素 */
     target: IJElement | undefined;
     /**控制器的内边距大小 */
