@@ -43,7 +43,7 @@
     "gulp-typescript": "^6.0.0-alpha.1",
     "happy-dom": "^13.3.5",
     "html-to-image": "^1.11.11",
-    "j-figma2html": "^1.0.35",
+    "j-figma2html": "^1.0.36",
     "request": "^2.88.2",
     "rollup": "^4.9.6",
     "rollup-plugin-typescript2": "^0.36.0",

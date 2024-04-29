@@ -3144,6 +3144,7 @@ class JElement extends JEventEmitter {
         // @ts-ignore
         if (option.className)
             this.className = option.className;
+        this.transform.apply(); // 重置一下transform
         this.bindEvent(); // 事件绑定
     }
     // 初始化一些基础属性
@@ -3516,7 +3517,6 @@ class JBaseComponent extends JElement {
                 data: e
             });
         });
-        //this.style.refresh();
     }
     // 当前控件的核心元素
     target;

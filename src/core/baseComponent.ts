@@ -62,8 +62,6 @@ export default class JBaseComponent<T extends JDomElement = JDomElement> extends
                 data: e
             });
         });
-
-        //this.style.refresh();
     }
 
     // 当前控件的核心元素

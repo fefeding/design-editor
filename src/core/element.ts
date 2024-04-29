@@ -60,6 +60,8 @@ export default class JElement<T extends JDomElement = JDomElement> extends Event
         this.initData(option);
         // @ts-ignore
         if(option.className) this.className = option.className;
+
+        this.transform.apply();// 重置一下transform
         
         this.bindEvent();// 事件绑定
     }
@@ -112,6 +114,7 @@ export default class JElement<T extends JDomElement = JDomElement> extends Event
         if(option.data) {
             this.data.from(option.data);
         }
+
         if(option.attributes) {
             Object.assign(this.attributes, option.attributes);
             if(this.attributes) {

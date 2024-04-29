@@ -1277,20 +1277,27 @@ class BaseConverter {
                         break;
                     }
                 }
-                /*
-                                if(dom && fill.imageTransform) {
-                                    if(!dom.transform) dom.transform = {};
-                                    const [[a, c, e], [b, d, f]] = fill.imageTransform;
-                                    // 计算旋转角度和正弦值
-                                    const rotation = Math.atan2(b, a);
-                                    const scaleX = Math.sqrt(a * a + b * b);
-                                    const scaleY = Math.sqrt(c * c + d * d);
-                                    dom.transform.translateX = e*100 + '%';
-                                    dom.transform.translateY = f*100 + '%';
-                                    dom.transform.rotateZ = rotation;
-                                    dom.transform.scaleX = scaleX;
-                                    dom.transform.scaleY = scaleY;
-                                }*/
+                if (dom && fill.imageTransform && fill.scaleMode === PaintSolidScaleMode.STRETCH) {
+                    if (!dom.transform)
+                        dom.transform = {};
+                    /**
+                     * 1. 第一个数字表示图片的水平缩放比例。
+                        2. 第二个数字表示图片的水平倾斜比例。
+                        3. 第三个数字表示图片的垂直倾斜比例。
+                        4. 第四个数字表示图片的垂直缩放比例。
+                        5. 第五个数字表示图片的水平移动量。
+                        6. 第六个数字表示图片的垂直移动量。
+                     */
+                    const [[a, c, e], [b, d, f]] = fill.imageTransform;
+                    // 计算旋转角度和正弦值
+                    dom.transform.translateX = (-e * 100) + '%'; // * node.absoluteBoundingBox.width;                    
+                    dom.transform.translateY = (-f * 100) + '%'; //* node.absoluteBoundingBox.width;
+                    //dom.transform.scaleX = a;
+                    //dom.transform.scaleY = d;
+                    dom.transform.skewX = b;
+                    dom.transform.skewY = c;
+                    dom.preserveRatio = true;
+                }
             }
         }
         return dom;
@@ -2411,6 +2418,41 @@ async function renderSvgElement(node, option) {
 }
 async function renderElement(node, option, dom) {
     dom = dom || util.createElement(node.type);
+    if (node.transform) {
+        let transform = '';
+        if (node.transform.rotateX) {
+            transform += ` rotateX(${node.transform.rotateX})`;
+        }
+        if (node.transform.rotateY) {
+            transform += ` rotateY(${node.transform.rotateY})`;
+        }
+        if (node.transform.rotateZ) {
+            transform += ` rotateZ(${node.transform.rotateZ})`;
+        }
+        if (node.transform.scaleX) {
+            transform += ` scaleX(${node.transform.scaleX})`;
+        }
+        if (node.transform.scaleY) {
+            transform += ` scaleY(${node.transform.scaleY})`;
+        }
+        if (node.transform.scaleZ) {
+            transform += ` scaleZ(${node.transform.scaleZ})`;
+        }
+        if (node.transform.translateX) {
+            transform += ` translateX(${util.isNumber(node.transform.translateX) ? util.toPX(node.transform.translateX) : node.transform.translateX})`;
+        }
+        if (node.transform.translateY) {
+            transform += ` translateY(${util.isNumber(node.transform.translateY) ? util.toPX(node.transform.translateY) : node.transform.translateY})`;
+        }
+        if (node.transform.translateZ) {
+            transform += ` translateZ(${util.isNumber(node.transform.translateZ) ? util.toPX(node.transform.translateZ) : node.transform.translateZ})`;
+        }
+        if (transform) {
+            util.css(dom, {
+                transform
+            });
+        }
+    }
     // 是图片的话，在它上面套一层div
     if (node.type === 'img') {
         let img = dom;
