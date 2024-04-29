@@ -1110,6 +1110,7 @@ class BaseConverter {
         // 裁剪超出区域
         if (node.clipsContent === true || (parentNode && parentNode.clipsContent === true))
             dom.style.overflow = 'hidden';
+        // 是否保持宽高比
         dom.preserveRatio = node.preserveRatio;
         // padding
         if (dom.type !== 'svg') {
@@ -1661,7 +1662,7 @@ class TEXTConverter extends BaseConverter {
             dom.data.width = dom.bounds.width;
         }
         await this.convertCharacterStyleOverrides(node, res, option, isSingleLine); // 处理分字样式
-        dom.style.width = util.toPX(dom.data.width);
+        dom.style.width = util.toPX(++dom.data.width);
         return res;
     }
     // 解析字体多样式
@@ -2273,6 +2274,8 @@ async function convert(node, parentNode, page, option, container) {
     }
     if (node.visible === false)
         return null;
+    // 已识别成图片的，不再处理成svg
+    const recType = rectType(node);
     const dom = ConverterMaps.BASE.createDomNode('div', {
         id: node.id,
         name: node.name,
@@ -2287,7 +2290,7 @@ async function convert(node, parentNode, page, option, container) {
         figmaData: node,
     });
     // 普通元素，不可当作容器
-    dom.isElement = ['VECTOR', 'STAR', 'LINE', 'ELLIPSE', 'REGULAR_POLYGON', 'SLICE', 'RECTANGLE'].includes(node.type); // || (parentNode && parentNode.clipsContent);
+    dom.isElement = ['VECTOR', 'STAR', 'LINE', 'ELLIPSE', 'REGULAR_POLYGON', 'SLICE', 'RECTANGLE'].includes(node.type) && recType !== 'img' && recType !== 'svg' && recType !== 'div'; // || (parentNode && parentNode.clipsContent);
     const isContainer = ['GROUP', 'FRAME', 'CANVAS', 'BOOLEAN', 'BOOLEAN_OPERATION'].includes(node.type);
     const svgElements = ['VECTOR', 'STAR', 'LINE', 'ELLIPSE', 'REGULAR_POLYGON', 'RECTANGLE'];
     // 容器可能是SVG
@@ -2314,8 +2317,6 @@ async function convert(node, parentNode, page, option, container) {
         container = dom;
     }
     let converter = ConverterMaps[node.type] || ConverterMaps.BASE;
-    // 已识别成图片的，不再处理成svg
-    const recType = rectType(node);
     if (recType && recType !== 'svg') {
         dom.type = recType;
         converter = ConverterMaps.BASE;
@@ -2409,18 +2410,36 @@ async function renderSvgElement(node, option) {
     return el;
 }
 async function renderElement(node, option, dom) {
-    dom = dom || document.createElement(node.type);
+    dom = dom || util.createElement(node.type);
+    // 是图片的话，在它上面套一层div
+    if (node.type === 'img') {
+        let img = dom;
+        if (node.url)
+            img.src = node.url;
+        util.css(img, {
+            width: '100%',
+            height: '100%'
+        });
+        dom = util.createElement('div');
+        // 如果保持宽高比，则直隐去超出部分
+        if (node.preserveRatio) {
+            // 保持宽高比
+            util.css(img, {
+                height: 'auto'
+            });
+            util.css(dom, {
+                overflow: 'hidden'
+            });
+        }
+        dom.appendChild(img);
+    }
     if (node.style) {
         Object.assign(dom.style, node.style);
-        if (node.preserveRatio && node.type === 'img')
-            dom.style.height = 'auto';
+        //if(node.preserveRatio && node.type === 'img') dom.style.height = 'auto';
     }
     if (node.text) {
         dom.textContent = node.text;
     }
-    // @ts-ignore
-    if (node.type === 'img' && node.url)
-        dom.src = node.url;
     if (node.visible === false)
         dom.style.display = 'none';
     if (node.attributes) {
