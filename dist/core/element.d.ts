@@ -64,6 +64,10 @@ export default class JElement<T extends JDomElement = JDomElement> extends Event
      * @returns 当前组件同类型副本
      */
     clone(): IJElement;
+    /**
+     * 清空
+     */
+    clear(): void;
     toJSON(props?: any[], ig?: (p: IJElement) => boolean): IElementJSON;
     toString(): string;
     toHtml(): string;

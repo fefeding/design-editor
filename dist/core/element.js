@@ -201,7 +201,7 @@ export default class JElement extends EventEmiter {
     get childrenMaxLevel() {
         let level = 0;
         for (const c of this.children) {
-            level = Math.max(c.data.zIndex, level);
+            level = Math.max(c.data?.zIndex, level);
         }
         return level;
     }
@@ -283,11 +283,12 @@ export default class JElement extends EventEmiter {
         if (el.selected)
             el.selected = false;
         for (let i = this.children.length - 1; i > -1; i--) {
-            if (this.children[i] === el)
+            if (this.children[i] === el) {
                 this.children.splice(i, 1);
+                // @ts-ignore
+                delete el.parent;
+            }
         }
-        // @ts-ignore
-        delete el.parent;
     }
     // 通过ID获取子元素
     getChild(id) {
@@ -312,6 +313,15 @@ export default class JElement extends EventEmiter {
         delete option.id;
         const el = new this.componentType(option);
         return el;
+    }
+    /**
+     * 清空
+     */
+    clear() {
+        for (let i = this.children.length - 1; i >= 0; i--) {
+            const el = this.children[i];
+            this.removeChild(el);
+        }
     }
     // 转为json
     toJSON(props = [], ig = (p) => true) {

@@ -211,6 +211,7 @@ export default class JBaseComponent extends JElement {
             return;
         }
         this.target.removeChild(el);
+        super.removeChild(el);
         if (el instanceof JElement) {
             el.off(SupportEventNames);
             el.off(ElementWatchEventNames);

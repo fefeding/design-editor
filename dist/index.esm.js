@@ -3325,7 +3325,7 @@ class JElement extends JEventEmitter {
     get childrenMaxLevel() {
         let level = 0;
         for (const c of this.children) {
-            level = Math.max(c.data.zIndex, level);
+            level = Math.max(c.data?.zIndex, level);
         }
         return level;
     }
@@ -3407,11 +3407,12 @@ class JElement extends JEventEmitter {
         if (el.selected)
             el.selected = false;
         for (let i = this.children.length - 1; i > -1; i--) {
-            if (this.children[i] === el)
+            if (this.children[i] === el) {
                 this.children.splice(i, 1);
+                // @ts-ignore
+                delete el.parent;
+            }
         }
-        // @ts-ignore
-        delete el.parent;
     }
     // 通过ID获取子元素
     getChild(id) {
@@ -3436,6 +3437,15 @@ class JElement extends JEventEmitter {
         delete option.id;
         const el = new this.componentType(option);
         return el;
+    }
+    /**
+     * 清空
+     */
+    clear() {
+        for (let i = this.children.length - 1; i >= 0; i--) {
+            const el = this.children[i];
+            this.removeChild(el);
+        }
     }
     // 转为json
     toJSON(props = [], ig = (p) => true) {
@@ -3699,6 +3709,7 @@ class JBaseComponent extends JElement {
             return;
         }
         this.target.removeChild(el);
+        super.removeChild(el);
         if (el instanceof JElement) {
             el.off(SupportEventNames);
             el.off(ElementWatchEventNames);
@@ -3862,7 +3873,23 @@ class JText extends JBaseComponent {
             set: (item) => {
                 if (item.name === 'text') {
                     if (!this.isChildrenMode) {
-                        this.target.dom.textContent = item.value;
+                        if (item.value?.includes('\n')) {
+                            this.isChildrenMode = true;
+                        }
+                        else {
+                            this.target.dom.textContent = item.value;
+                            return;
+                        }
+                    }
+                    if (this.isChildrenMode) {
+                        this.clear();
+                        this.target.dom.innerHTML = '';
+                    }
+                    if (item.value?.includes('\n')) {
+                        this.target.dom.innerHTML = item.value.replace(/\n/g, '<br />');
+                    }
+                    else {
+                        this.target.dom.innerHTML = item.value;
                     }
                 }
                 else
@@ -3936,6 +3963,13 @@ class JText extends JBaseComponent {
                     data: {
                         text: node.textContent
                     }
+                });
+                children.push(el);
+            }
+            else if (node.nodeName === 'BR') {
+                const el = new JBaseHtmlElement({
+                    type: 'br',
+                    data: {}
                 });
                 children.push(el);
             }
@@ -4915,7 +4949,7 @@ class JEditor extends JBaseComponent {
             'image': JImage,
             'img': JImage,
             'text': JText,
-            'span': JText,
+            //'span': JText, 
             'svg': JSvg,
             'container': JContainer,
             'div': JContainer,
@@ -5095,10 +5129,11 @@ class JEditor extends JBaseComponent {
             'backgroundColor': '#fff',
             'backgroundImage': ''
         });
-        for (let i = this.children.length - 1; i >= 0; i--) {
+        /*for(let i=this.children.length-1;i>=0; i--) {
             const el = this.children[i];
             this.removeChild(el);
-        }
+        }*/
+        super.clear();
         this.elementController && (this.elementController.data.visible = false);
     }
     // 缩放

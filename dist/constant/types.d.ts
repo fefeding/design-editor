@@ -180,7 +180,7 @@ export interface IJElement<T extends JDomElement = JDomElement> extends EventEmi
     get type(): string;
     name: string;
     option: IElementOption;
-    get children(): IJElement<JDomElement>[];
+    get children(): Array<IJElement<JDomElement>>;
     get dom(): T;
     parent: IJElement | undefined;
     editor: IJEditor;
@@ -209,6 +209,7 @@ export interface IJElement<T extends JDomElement = JDomElement> extends EventEmi
     getChild(id: string): IJElement | undefined;
     /** 复制组件 */
     clone(): IJElement;
+    clear(): void;
     toJSON(props?: any[], ig?: (p: IJElement) => boolean): IElementJSON;
     toString(): string;
     toHtml(): string;

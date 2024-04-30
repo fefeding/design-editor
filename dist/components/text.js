@@ -49,7 +49,23 @@ export default class JText extends Base {
             set: (item) => {
                 if (item.name === 'text') {
                     if (!this.isChildrenMode) {
-                        this.target.dom.textContent = item.value;
+                        if (item.value?.includes('\n')) {
+                            this.isChildrenMode = true;
+                        }
+                        else {
+                            this.target.dom.textContent = item.value;
+                            return;
+                        }
+                    }
+                    if (this.isChildrenMode) {
+                        this.clear();
+                        this.target.dom.innerHTML = '';
+                    }
+                    if (item.value?.includes('\n')) {
+                        this.target.dom.innerHTML = item.value.replace(/\n/g, '<br />');
+                    }
+                    else {
+                        this.target.dom.innerHTML = item.value;
                     }
                 }
                 else
@@ -123,6 +139,13 @@ export default class JText extends Base {
                     data: {
                         text: node.textContent
                     }
+                });
+                children.push(el);
+            }
+            else if (node.nodeName === 'BR') {
+                const el = new JHtmlElement({
+                    type: 'br',
+                    data: {}
                 });
                 children.push(el);
             }

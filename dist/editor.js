@@ -54,7 +54,7 @@ export default class JEditor extends JBase {
             'image': JImage,
             'img': JImage,
             'text': JText,
-            'span': JText,
+            //'span': JText, 
             'svg': JSvg,
             'container': JContainer,
             'div': JContainer,
@@ -234,10 +234,11 @@ export default class JEditor extends JBase {
             'backgroundColor': '#fff',
             'backgroundImage': ''
         });
-        for (let i = this.children.length - 1; i >= 0; i--) {
+        /*for(let i=this.children.length-1;i>=0; i--) {
             const el = this.children[i];
             this.removeChild(el);
-        }
+        }*/
+        super.clear();
         this.elementController && (this.elementController.data.visible = false);
     }
     // 缩放

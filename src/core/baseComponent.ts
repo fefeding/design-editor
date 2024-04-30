@@ -224,6 +224,8 @@ export default class JBaseComponent<T extends JDomElement = JDomElement> extends
         }
 
         this.target.removeChild(el);
+        
+        super.removeChild(el);
 
         if(el instanceof JElement) {
             el.off(SupportEventNames);

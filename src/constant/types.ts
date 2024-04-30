@@ -233,7 +233,7 @@ export interface IJElement<T extends JDomElement = JDomElement> extends EventEmi
     // 选项
     option: IElementOption;
 
-    get children(): IJElement<JDomElement>[];
+    get children(): Array<IJElement<JDomElement>>;
     get dom(): T;
     parent: IJElement | undefined;
     // 当前编辑器
@@ -267,6 +267,8 @@ export interface IJElement<T extends JDomElement = JDomElement> extends EventEmi
     getChild(id: string): IJElement|undefined;
     /** 复制组件 */
     clone(): IJElement;
+    // 清空
+    clear(): void;
 
     toJSON(props?: any[], ig?: (p: IJElement) => boolean): IElementJSON;
     toString(): string;
