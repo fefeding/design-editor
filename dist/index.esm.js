@@ -686,954 +686,6 @@ function getDefaultExportFromCjs (x) {
 	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
 }
 
-var eventemitter3$1 = {exports: {}};
-
-(function (module) {
-
-	var has = Object.prototype.hasOwnProperty
-	  , prefix = '~';
-
-	/**
-	 * Constructor to create a storage for our `EE` objects.
-	 * An `Events` instance is a plain object whose properties are event names.
-	 *
-	 * @constructor
-	 * @private
-	 */
-	function Events() {}
-
-	//
-	// We try to not inherit from `Object.prototype`. In some engines creating an
-	// instance in this way is faster than calling `Object.create(null)` directly.
-	// If `Object.create(null)` is not supported we prefix the event names with a
-	// character to make sure that the built-in object properties are not
-	// overridden or used as an attack vector.
-	//
-	if (Object.create) {
-	  Events.prototype = Object.create(null);
-
-	  //
-	  // This hack is needed because the `__proto__` property is still inherited in
-	  // some old browsers like Android 4, iPhone 5.1, Opera 11 and Safari 5.
-	  //
-	  if (!new Events().__proto__) prefix = false;
-	}
-
-	/**
-	 * Representation of a single event listener.
-	 *
-	 * @param {Function} fn The listener function.
-	 * @param {*} context The context to invoke the listener with.
-	 * @param {Boolean} [once=false] Specify if the listener is a one-time listener.
-	 * @constructor
-	 * @private
-	 */
-	function EE(fn, context, once) {
-	  this.fn = fn;
-	  this.context = context;
-	  this.once = once || false;
-	}
-
-	/**
-	 * Add a listener for a given event.
-	 *
-	 * @param {EventEmitter} emitter Reference to the `EventEmitter` instance.
-	 * @param {(String|Symbol)} event The event name.
-	 * @param {Function} fn The listener function.
-	 * @param {*} context The context to invoke the listener with.
-	 * @param {Boolean} once Specify if the listener is a one-time listener.
-	 * @returns {EventEmitter}
-	 * @private
-	 */
-	function addListener(emitter, event, fn, context, once) {
-	  if (typeof fn !== 'function') {
-	    throw new TypeError('The listener must be a function');
-	  }
-
-	  var listener = new EE(fn, context || emitter, once)
-	    , evt = prefix ? prefix + event : event;
-
-	  if (!emitter._events[evt]) emitter._events[evt] = listener, emitter._eventsCount++;
-	  else if (!emitter._events[evt].fn) emitter._events[evt].push(listener);
-	  else emitter._events[evt] = [emitter._events[evt], listener];
-
-	  return emitter;
-	}
-
-	/**
-	 * Clear event by name.
-	 *
-	 * @param {EventEmitter} emitter Reference to the `EventEmitter` instance.
-	 * @param {(String|Symbol)} evt The Event name.
-	 * @private
-	 */
-	function clearEvent(emitter, evt) {
-	  if (--emitter._eventsCount === 0) emitter._events = new Events();
-	  else delete emitter._events[evt];
-	}
-
-	/**
-	 * Minimal `EventEmitter` interface that is molded against the Node.js
-	 * `EventEmitter` interface.
-	 *
-	 * @constructor
-	 * @public
-	 */
-	function EventEmitter() {
-	  this._events = new Events();
-	  this._eventsCount = 0;
-	}
-
-	/**
-	 * Return an array listing the events for which the emitter has registered
-	 * listeners.
-	 *
-	 * @returns {Array}
-	 * @public
-	 */
-	EventEmitter.prototype.eventNames = function eventNames() {
-	  var names = []
-	    , events
-	    , name;
-
-	  if (this._eventsCount === 0) return names;
-
-	  for (name in (events = this._events)) {
-	    if (has.call(events, name)) names.push(prefix ? name.slice(1) : name);
-	  }
-
-	  if (Object.getOwnPropertySymbols) {
-	    return names.concat(Object.getOwnPropertySymbols(events));
-	  }
-
-	  return names;
-	};
-
-	/**
-	 * Return the listeners registered for a given event.
-	 *
-	 * @param {(String|Symbol)} event The event name.
-	 * @returns {Array} The registered listeners.
-	 * @public
-	 */
-	EventEmitter.prototype.listeners = function listeners(event) {
-	  var evt = prefix ? prefix + event : event
-	    , handlers = this._events[evt];
-
-	  if (!handlers) return [];
-	  if (handlers.fn) return [handlers.fn];
-
-	  for (var i = 0, l = handlers.length, ee = new Array(l); i < l; i++) {
-	    ee[i] = handlers[i].fn;
-	  }
-
-	  return ee;
-	};
-
-	/**
-	 * Return the number of listeners listening to a given event.
-	 *
-	 * @param {(String|Symbol)} event The event name.
-	 * @returns {Number} The number of listeners.
-	 * @public
-	 */
-	EventEmitter.prototype.listenerCount = function listenerCount(event) {
-	  var evt = prefix ? prefix + event : event
-	    , listeners = this._events[evt];
-
-	  if (!listeners) return 0;
-	  if (listeners.fn) return 1;
-	  return listeners.length;
-	};
-
-	/**
-	 * Calls each of the listeners registered for a given event.
-	 *
-	 * @param {(String|Symbol)} event The event name.
-	 * @returns {Boolean} `true` if the event had listeners, else `false`.
-	 * @public
-	 */
-	EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
-	  var evt = prefix ? prefix + event : event;
-
-	  if (!this._events[evt]) return false;
-
-	  var listeners = this._events[evt]
-	    , len = arguments.length
-	    , args
-	    , i;
-
-	  if (listeners.fn) {
-	    if (listeners.once) this.removeListener(event, listeners.fn, undefined, true);
-
-	    switch (len) {
-	      case 1: return listeners.fn.call(listeners.context), true;
-	      case 2: return listeners.fn.call(listeners.context, a1), true;
-	      case 3: return listeners.fn.call(listeners.context, a1, a2), true;
-	      case 4: return listeners.fn.call(listeners.context, a1, a2, a3), true;
-	      case 5: return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
-	      case 6: return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
-	    }
-
-	    for (i = 1, args = new Array(len -1); i < len; i++) {
-	      args[i - 1] = arguments[i];
-	    }
-
-	    listeners.fn.apply(listeners.context, args);
-	  } else {
-	    var length = listeners.length
-	      , j;
-
-	    for (i = 0; i < length; i++) {
-	      if (listeners[i].once) this.removeListener(event, listeners[i].fn, undefined, true);
-
-	      switch (len) {
-	        case 1: listeners[i].fn.call(listeners[i].context); break;
-	        case 2: listeners[i].fn.call(listeners[i].context, a1); break;
-	        case 3: listeners[i].fn.call(listeners[i].context, a1, a2); break;
-	        case 4: listeners[i].fn.call(listeners[i].context, a1, a2, a3); break;
-	        default:
-	          if (!args) for (j = 1, args = new Array(len -1); j < len; j++) {
-	            args[j - 1] = arguments[j];
-	          }
-
-	          listeners[i].fn.apply(listeners[i].context, args);
-	      }
-	    }
-	  }
-
-	  return true;
-	};
-
-	/**
-	 * Add a listener for a given event.
-	 *
-	 * @param {(String|Symbol)} event The event name.
-	 * @param {Function} fn The listener function.
-	 * @param {*} [context=this] The context to invoke the listener with.
-	 * @returns {EventEmitter} `this`.
-	 * @public
-	 */
-	EventEmitter.prototype.on = function on(event, fn, context) {
-	  return addListener(this, event, fn, context, false);
-	};
-
-	/**
-	 * Add a one-time listener for a given event.
-	 *
-	 * @param {(String|Symbol)} event The event name.
-	 * @param {Function} fn The listener function.
-	 * @param {*} [context=this] The context to invoke the listener with.
-	 * @returns {EventEmitter} `this`.
-	 * @public
-	 */
-	EventEmitter.prototype.once = function once(event, fn, context) {
-	  return addListener(this, event, fn, context, true);
-	};
-
-	/**
-	 * Remove the listeners of a given event.
-	 *
-	 * @param {(String|Symbol)} event The event name.
-	 * @param {Function} fn Only remove the listeners that match this function.
-	 * @param {*} context Only remove the listeners that have this context.
-	 * @param {Boolean} once Only remove one-time listeners.
-	 * @returns {EventEmitter} `this`.
-	 * @public
-	 */
-	EventEmitter.prototype.removeListener = function removeListener(event, fn, context, once) {
-	  var evt = prefix ? prefix + event : event;
-
-	  if (!this._events[evt]) return this;
-	  if (!fn) {
-	    clearEvent(this, evt);
-	    return this;
-	  }
-
-	  var listeners = this._events[evt];
-
-	  if (listeners.fn) {
-	    if (
-	      listeners.fn === fn &&
-	      (!once || listeners.once) &&
-	      (!context || listeners.context === context)
-	    ) {
-	      clearEvent(this, evt);
-	    }
-	  } else {
-	    for (var i = 0, events = [], length = listeners.length; i < length; i++) {
-	      if (
-	        listeners[i].fn !== fn ||
-	        (once && !listeners[i].once) ||
-	        (context && listeners[i].context !== context)
-	      ) {
-	        events.push(listeners[i]);
-	      }
-	    }
-
-	    //
-	    // Reset the array, or remove it completely if we have no more listeners.
-	    //
-	    if (events.length) this._events[evt] = events.length === 1 ? events[0] : events;
-	    else clearEvent(this, evt);
-	  }
-
-	  return this;
-	};
-
-	/**
-	 * Remove all listeners, or those of the specified event.
-	 *
-	 * @param {(String|Symbol)} [event] The event name.
-	 * @returns {EventEmitter} `this`.
-	 * @public
-	 */
-	EventEmitter.prototype.removeAllListeners = function removeAllListeners(event) {
-	  var evt;
-
-	  if (event) {
-	    evt = prefix ? prefix + event : event;
-	    if (this._events[evt]) clearEvent(this, evt);
-	  } else {
-	    this._events = new Events();
-	    this._eventsCount = 0;
-	  }
-
-	  return this;
-	};
-
-	//
-	// Alias methods names because people roll like that.
-	//
-	EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
-	EventEmitter.prototype.addListener = EventEmitter.prototype.on;
-
-	//
-	// Expose the prefix.
-	//
-	EventEmitter.prefixed = prefix;
-
-	//
-	// Allow `EventEmitter` to be imported as module namespace.
-	//
-	EventEmitter.EventEmitter = EventEmitter;
-
-	//
-	// Expose the module.
-	//
-	{
-	  module.exports = EventEmitter;
-	} 
-} (eventemitter3$1));
-
-var eventemitter3Exports$1 = eventemitter3$1.exports;
-var EventEmitter$1 = /*@__PURE__*/getDefaultExportFromCjs(eventemitter3Exports$1);
-
-/**
- * EventEmitter 类，继承自 'eventemitter3' 模块的 EventEmiter 类。
- * 用于进行事件的发布与订阅。
- * @public
- */
-let JEventEmitter$1 = class JEventEmitter extends EventEmitter$1 {
-    /**
-     * 私有方法，用于规范化事件名
-     * @param name - 可以是字符串、符号或字符串数组
-     * @returns 返回符号或字符串数组
-     */
-    normalizeEventNames(name) {
-        if (!name) {
-            return [];
-        }
-        if (typeof name === 'string') {
-            return name.split(' ');
-        }
-        return Array.isArray(name) ? name : [name];
-    }
-    /**
-     * 为给定的事件添加一个监听器
-     * @param event - 事件名，可以是字符串、符号或字符串数组
-     * @param fn - 监听函数，参数列表为可变参数
-     * @param context - 可选，上下文对象
-     * @returns 返回 EventEmitter 实例
-     */
-    on(event, fn, context) {
-        const events = this.normalizeEventNames(event);
-        for (const name of events) {
-            name && super.on(name, fn, context);
-        }
-        return this;
-    }
-    /**
-     * 移除给定的事件的一个监听器
-     * @param event - 事件名，可以是字符串、符号或字符串数组
-     * @param fn - 可选，监听函数，参数列表为可变参数
-     * @param context - 可选，上下文对象
-     * @param once - 可选，是否只执行一次
-     * @returns 返回 EventEmitter 实例
-     */
-    off(event, fn, context, once) {
-        const events = this.normalizeEventNames(event);
-        for (const name of events) {
-            name && super.off(name, fn, context);
-        }
-        return this;
-    }
-};
-
-class JFontData {
-    constructor(family, url, font) {
-        this.family = family;
-        this.url = url;
-        this.font = font;
-    }
-    family;
-    url;
-    // 中文名
-    label;
-    font;
-    get status() {
-        if (this.font)
-            return this.font.status;
-        return 'unloaded';
-    }
-    async load(url = this.url) {
-        this.url = url || this.url;
-        if (!this.font)
-            this.font = new FontFace(this.family, `url("${this.url}")`);
-        const f = await this.font.load();
-        document.fonts.add(f); // 生效
-        return this;
-    }
-    toHtml() {
-        return `@font-face {font-family: "${this.family}"; src: url("${this.url}")}`;
-    }
-}
-class JFonts extends JEventEmitter$1 {
-    constructor(fonts) {
-        super();
-        // 初始化默认支持的字体
-        if (Array.isArray(fonts)) {
-            this.registry(fonts);
-        }
-        else if (fonts) {
-            for (const name in fonts) {
-                if (fonts[name] && typeof fonts[name] === 'object')
-                    this.registry(fonts[name]);
-            }
-        }
-        this.init();
-    }
-    fontConfigs = new Map();
-    fonts = new Map();
-    init() {
-        if (document.fonts) {
-            const fonts = document.fonts.values();
-            let font = fonts.next();
-            while (font && font.done && font.value) {
-                if (font.value) {
-                    const f = new JFontData(font.value.family);
-                    f.font = font.value;
-                    this.fonts.set(f.family, f);
-                }
-                font = fonts.next();
-            }
-        }
-        // 系统默认的一些字体支持
-        this.fonts.set('arial', new JFontData('Arial', '', new FontFace('Arial', '')));
-    }
-    /**
-     * 注入字体配置
-     * @param font 字体
-     */
-    registry(font) {
-        // 初始化默认支持的字体
-        if (Array.isArray(font)) {
-            for (const f of font) {
-                this.registry(f);
-            }
-        }
-        else if (font) {
-            this.fontConfigs.set(font.family.toLocaleLowerCase(), font);
-        }
-    }
-    // 加载字体
-    async load(name, url) {
-        let font = this.get(name);
-        if (font) {
-            if (font.url && (font.status === 'unloaded' || font.status === 'error'))
-                return font.load();
-            return font;
-        }
-        if (!url) {
-            const config = this.fontConfigs.get(name.toLocaleLowerCase());
-            // 没有配置支持的字体，则报错
-            if (!config) {
-                //console.warn(`没有支持的 ${name} 字体配置`);
-                return null;
-            }
-            url = config.url;
-        }
-        font = new JFontData(name, url);
-        this.fonts.set(name.toLocaleLowerCase(), font);
-        const f = await font.load();
-        this.emit('load', f); // 加载字本事件
-        return f;
-    }
-    // 获取已加载的字体
-    get(name) {
-        if (this.fonts) {
-            const lowerName = name.toLocaleLowerCase();
-            if (this.fonts.has(lowerName))
-                return this.fonts.get(lowerName);
-            else {
-                const exist = util.checkFont(name); // 如果系统已经支持，则加到配置中
-                if (exist) {
-                    const font = new JFontData(lowerName, '', new FontFace(name, ''));
-                    this.registry(font);
-                    return font;
-                }
-            }
-        }
-        return null;
-    }
-    // 检查加载的字体是否存在，存在则返回字体对象
-    check(name) {
-        const font = this.get(name);
-        return !!font;
-    }
-}
-
-/**
- * 滤镜数据
- */
-class FilterData {
-    /**
-     * 名称
-     */
-    name;
-    /**
-     * 中文名
-     */
-    displayName;
-    /**
-     * 配置值
-     */
-    option;
-}
-class BaseFilterOption {
-    constructor(option) {
-        if (option) {
-            if (typeof option === 'string' || typeof option === 'number') {
-                this.value = option;
-            }
-            else {
-                this.value = option.value;
-            }
-        }
-    }
-    value;
-    toString() {
-        return this.value.toString();
-    }
-    toJSON() {
-        return {
-            value: this.value
-        };
-    }
-    clone() {
-        const obj = new BaseFilterOption();
-        // @ts-ignore
-        if (this.value && this.value.clone)
-            obj.value = this.value.clone();
-        else
-            obj.value = this.value;
-        return obj;
-    }
-}
-class ShadowFilterOptionValue {
-    constructor(data) {
-        if (data) {
-            this.x = data.x;
-            this.y = data.y;
-            this.blur = data.blur;
-            this.color = data.color;
-        }
-    }
-    x;
-    y;
-    blur;
-    color;
-    toJSON() {
-        return {
-            x: this.x,
-            y: this.y,
-            blur: this.blur || '',
-            color: this.color || ''
-        };
-    }
-    toString() {
-        return `${this.x} ${this.y} ${this.blur || 0} ${this.color || '#000'}`;
-    }
-    clone() {
-        return new ShadowFilterOptionValue(this);
-    }
-}
-class ShadowFilterOption extends BaseFilterOption {
-    constructor(option) {
-        super();
-        if (option) {
-            // @ts-ignore
-            if (option instanceof ShadowFilterOption || option.value)
-                this.value = new ShadowFilterOptionValue(option.value);
-            else
-                this.value = new ShadowFilterOptionValue(option);
-        }
-    }
-    toString() {
-        return this.value.toString();
-    }
-}
-
-class Filter {
-    constructor(option) {
-        if (option) {
-            if (option instanceof FilterData) {
-                this.name = option.name;
-                this.displayName = option.displayName;
-                option = option.option;
-            }
-            if (option instanceof BaseFilterOption) {
-                this.option = option;
-            }
-            else if (typeof option === 'object') {
-                this.option = new BaseFilterOption(option);
-            }
-        }
-    }
-    name;
-    displayName;
-    /**
-    * 配置值
-    */
-    option;
-    /**
-     * 创建同类型的滤镜
-     * @param option 滤镜参数
-     * @returns
-     */
-    create(option = this.option, name = this.name, displayName = this.displayName, filterType = Filter) {
-        const data = new FilterData();
-        data.name = name;
-        data.displayName = displayName;
-        // @ts-ignore
-        data.option = option.clone ? option.clone() : option;
-        const obj = new filterType(data);
-        return obj;
-    }
-    // 转成json
-    toJSON() {
-        return {
-            name: this.name || '',
-            displayName: this.displayName || '',
-            option: this.option.toJSON()
-        };
-    }
-    toString() {
-        if (!this.name)
-            return '';
-        return `${this.name}(${this.option.toString()})`;
-    }
-}
-/**
- * 反色滤镜
- */
-class InvertFilter extends Filter {
-    constructor(option) {
-        option = Object.assign({ value: 1 }, option);
-        super(option);
-    }
-    name = 'invert';
-    displayName = '反色';
-}
-/**
- * 模糊滤镜 value: 4px
- */
-class BlurFilter extends Filter {
-    constructor(option) {
-        option = Object.assign({ value: '4px' }, option);
-        super(option);
-    }
-    name = 'blur';
-    displayName = '模糊';
-}
-/**
- * 亮度滤镜 value: 0-100
- */
-class BrightnessFilter extends Filter {
-    constructor(option) {
-        option = Object.assign({ value: 2 }, option);
-        super(option);
-    }
-    name = 'brightness';
-    displayName = '亮度';
-}
-/**
- * 灰度滤镜 value: 0-1
- */
-class GrayscaleFilter extends Filter {
-    constructor(option) {
-        option = Object.assign({ value: 1 }, option);
-        super(option);
-    }
-    name = 'grayscale';
-    displayName = '灰度';
-}
-/**
- * 复古滤镜 value: 0-1
- */
-class SepiaFilter extends Filter {
-    constructor(option) {
-        option = Object.assign({ value: 1 }, option);
-        super(option);
-    }
-    name = 'sepia';
-    displayName = '复古';
-}
-/**
- * 旋转滤镜 value: 0-360deg 角度 或 弧度 0-2*Math.PI rad
- */
-class HueRotateFilter extends Filter {
-    constructor(option) {
-        option = Object.assign({ value: '240deg' }, option);
-        super(option);
-    }
-    name = 'hue-rotate';
-    displayName = '旋转';
-}
-/**
- * 透明度 value: 0-1
- */
-class OpacityFilter extends Filter {
-    constructor(option) {
-        option = Object.assign({ value: 0.8 }, option);
-        super(option);
-    }
-    name = 'opacity';
-    displayName = '透明度';
-}
-/**
- * 阴影滤镜
- */
-class DropShadowFilter extends Filter {
-    constructor(option) {
-        if (!option)
-            option = new ShadowFilterOption();
-        option.value = new ShadowFilterOptionValue(option.value || {
-            x: '0',
-            y: '0',
-            blur: '4px',
-            color: '#000'
-        });
-        super(option);
-    }
-    name = 'drop-shadow';
-    displayName = '阴影';
-    /**
-      * 创建同类型的滤镜
-      * @param option 滤镜参数
-      * @returns
-      */
-    create(option = this.option, name = this.name, displayName = this.displayName) {
-        const data = new ShadowFilterOption(option);
-        const obj = new DropShadowFilter(data);
-        obj.name = name;
-        obj.displayName = displayName;
-        return obj;
-    }
-}
-/**
- * 对比度滤镜  value: 2
- */
-class ContrastFilter extends Filter {
-    constructor(option) {
-        option = Object.assign({ value: 2 }, option);
-        super(option);
-    }
-    name = 'contrast';
-    displayName = '对比度';
-}
-/**
- * 饱和度滤镜  value: 3
- */
-class SaturateFilter extends Filter {
-    constructor(option) {
-        option = Object.assign({ value: 3 }, option);
-        super(option);
-    }
-    name = 'saturate';
-    displayName = '饱和度';
-}
-const filters = {
-    /**
-     * 反色滤镜
-     */
-    invert: new InvertFilter(),
-    /**
-     * 亮度
-     */
-    blur: new BlurFilter(),
-    /**
-     * 亮度
-     */
-    brightness: new BrightnessFilter(),
-    /**
-     * 灰度
-     */
-    grayscale: new GrayscaleFilter(),
-    /**
-     * 复古
-     */
-    sepia: new SepiaFilter(),
-    /**
-     * 旋转滤镜
-     */
-    hueRotate: new HueRotateFilter(),
-    /**
-     * 阴影
-     */
-    dropShadow: new DropShadowFilter(),
-    /**
-     * 透明度
-     */
-    opacity: new OpacityFilter(),
-    /**
-     * 对比度
-     */
-    contrast: new ContrastFilter(),
-    /**
-     * 饱和度
-     */
-    saturate: new SaturateFilter(),
-};
-
-class CSSFilters {
-    constructor(target, filters) {
-        if (target)
-            this.target = target;
-        if (filters && filters.length) {
-            this.add(filters);
-        }
-    }
-    // 所有支持的滤镜
-    filters = new Array();
-    /**
-     * 绑定的dom否元素对象
-     */
-    target;
-    /**
-     * 当前滤镜个数
-     */
-    get count() {
-        return this.filters.length;
-    }
-    /**
-     * 根据滤镜名获取滤镜对象
-     * @param name
-     * @returns
-     */
-    get(name) {
-        for (const f of this.filters) {
-            if (f.name === name)
-                return f;
-        }
-    }
-    clear() {
-        this.filters.splice(0, this.filters.length);
-    }
-    /**
-     * 添加滤镜
-     * @param filter
-     */
-    add(filter, option) {
-        if (Array.isArray(filter)) {
-            for (const f of filter) {
-                this.add(f, option);
-            }
-            return;
-        }
-        else if (typeof filter === 'string') {
-            const filterObj = filters[filter];
-            if (!filterObj) {
-                console.error(`${filter}不存在`);
-                return;
-            }
-            filter = filterObj.create(option || filterObj.option);
-            return this.add(filter);
-        }
-        if (filter.name) {
-            const existsFilter = this.get(filter.name);
-            if (existsFilter) {
-                console.error(`${filter.displayName || filter.name}已经存在滤镜集合中，不能重复`);
-                return existsFilter;
-            }
-        }
-        if (filter instanceof Filter) {
-            this.filters.push(filter);
-            this.apply();
-            return filter;
-        }
-        else if (filter.name) {
-            return this.add(filter.name, filter.option);
-        }
-    }
-    /**
-     * 移除滤镜
-     * @param filter
-     */
-    remove(filter) {
-        if (Array.isArray(filter)) {
-            for (const f of filter)
-                this.remove(f);
-        }
-        else {
-            for (let i = this.filters.length - 1; i >= 0; i--) {
-                if ((typeof filter === 'string' && this.filters[i].name === filter) || this.filters[i] === filter) {
-                    this.filters.splice(i, 1);
-                }
-            }
-        }
-        this.apply();
-    }
-    toJSON() {
-        const res = [];
-        if (this.count) {
-            for (const f of this.filters) {
-                res.push(f.toJSON());
-            }
-        }
-        return res;
-    }
-    toString() {
-        const res = [];
-        for (const f of this.filters) {
-            const r = f.toString();
-            if (r)
-                res.push(r);
-        }
-        if (res.length)
-            return res.join(' ');
-        return '';
-    }
-    /**
-     * 生效
-     * @param target
-     */
-    apply(target = this.target) {
-        if (target && target.style)
-            target.style.filter = this.toString();
-    }
-}
-
 var eventemitter3 = {exports: {}};
 
 (function (module) {
@@ -2025,6 +1077,574 @@ class JEventEmitter extends EventEmitter {
             name && super.off(name, fn, context);
         }
         return this;
+    }
+}
+
+class JFontData {
+    constructor(family, url, font) {
+        this.family = family;
+        this.url = url;
+        this.font = font;
+    }
+    family;
+    url;
+    // 中文名
+    label;
+    font;
+    get status() {
+        if (this.font)
+            return this.font.status;
+        return 'unloaded';
+    }
+    async load(url = this.url) {
+        this.url = url || this.url;
+        if (!this.font)
+            this.font = new FontFace(this.family, `url("${this.url}")`);
+        const f = await this.font.load();
+        document.fonts.add(f); // 生效
+        return this;
+    }
+    toHtml() {
+        return `@font-face {font-family: "${this.family}"; src: url("${this.url}")}`;
+    }
+}
+class JFonts extends JEventEmitter {
+    constructor(fonts) {
+        super();
+        // 初始化默认支持的字体
+        if (Array.isArray(fonts)) {
+            this.registry(fonts);
+        }
+        else if (fonts) {
+            for (const name in fonts) {
+                if (fonts[name] && typeof fonts[name] === 'object')
+                    this.registry(fonts[name]);
+            }
+        }
+        this.init();
+    }
+    fontConfigs = new Map();
+    fonts = new Map();
+    init() {
+        if (document.fonts) {
+            const fonts = document.fonts.values();
+            let font = fonts.next();
+            while (font && font.done && font.value) {
+                if (font.value) {
+                    const f = new JFontData(font.value.family);
+                    f.font = font.value;
+                    this.fonts.set(f.family, f);
+                }
+                font = fonts.next();
+            }
+        }
+        // 系统默认的一些字体支持
+        this.fonts.set('arial', new JFontData('Arial', '', new FontFace('Arial', '')));
+    }
+    /**
+     * 注入字体配置
+     * @param font 字体
+     */
+    registry(font) {
+        // 初始化默认支持的字体
+        if (Array.isArray(font)) {
+            for (const f of font) {
+                this.registry(f);
+            }
+        }
+        else if (font) {
+            this.fontConfigs.set(font.family.toLocaleLowerCase(), font);
+        }
+    }
+    // 加载字体
+    async load(name, url) {
+        let font = this.get(name);
+        if (font) {
+            if (font.url && (font.status === 'unloaded' || font.status === 'error'))
+                return font.load();
+            return font;
+        }
+        if (!url) {
+            const config = this.fontConfigs.get(name.toLocaleLowerCase());
+            // 没有配置支持的字体，则报错
+            if (!config) {
+                //console.warn(`没有支持的 ${name} 字体配置`);
+                return null;
+            }
+            url = config.url;
+        }
+        font = new JFontData(name, url);
+        this.fonts.set(name.toLocaleLowerCase(), font);
+        const f = await font.load();
+        this.emit('load', f); // 加载字本事件
+        return f;
+    }
+    // 获取已加载的字体
+    get(name) {
+        if (this.fonts) {
+            const lowerName = name.toLocaleLowerCase();
+            if (this.fonts.has(lowerName))
+                return this.fonts.get(lowerName);
+            else {
+                const exist = util.checkFont(name); // 如果系统已经支持，则加到配置中
+                if (exist) {
+                    const font = new JFontData(lowerName, '', new FontFace(name, ''));
+                    this.registry(font);
+                    return font;
+                }
+            }
+        }
+        return null;
+    }
+    // 检查加载的字体是否存在，存在则返回字体对象
+    check(name) {
+        const font = this.get(name);
+        return !!font;
+    }
+}
+
+/**
+ * 滤镜数据
+ */
+class FilterData {
+    /**
+     * 名称
+     */
+    name;
+    /**
+     * 中文名
+     */
+    displayName;
+    /**
+     * 配置值
+     */
+    option;
+}
+class BaseFilterOption {
+    constructor(option) {
+        if (option) {
+            if (typeof option === 'string' || typeof option === 'number') {
+                this.value = option;
+            }
+            else {
+                this.value = option.value;
+            }
+        }
+    }
+    value;
+    toString() {
+        return this.value.toString();
+    }
+    toJSON() {
+        return {
+            value: this.value
+        };
+    }
+    clone() {
+        const obj = new BaseFilterOption();
+        // @ts-ignore
+        if (this.value && this.value.clone)
+            obj.value = this.value.clone();
+        else
+            obj.value = this.value;
+        return obj;
+    }
+}
+class ShadowFilterOptionValue {
+    constructor(data) {
+        if (data) {
+            this.x = data.x;
+            this.y = data.y;
+            this.blur = data.blur;
+            this.color = data.color;
+        }
+    }
+    x;
+    y;
+    blur;
+    color;
+    toJSON() {
+        return {
+            x: this.x,
+            y: this.y,
+            blur: this.blur || '',
+            color: this.color || ''
+        };
+    }
+    toString() {
+        return `${this.x} ${this.y} ${this.blur || 0} ${this.color || '#000'}`;
+    }
+    clone() {
+        return new ShadowFilterOptionValue(this);
+    }
+}
+class ShadowFilterOption extends BaseFilterOption {
+    constructor(option) {
+        super();
+        if (option) {
+            // @ts-ignore
+            if (option instanceof ShadowFilterOption || option.value)
+                this.value = new ShadowFilterOptionValue(option.value);
+            else
+                this.value = new ShadowFilterOptionValue(option);
+        }
+    }
+    toString() {
+        return this.value.toString();
+    }
+}
+
+class Filter {
+    constructor(option) {
+        if (option) {
+            if (option instanceof FilterData) {
+                this.name = option.name;
+                this.displayName = option.displayName;
+                option = option.option;
+            }
+            if (option instanceof BaseFilterOption) {
+                this.option = option;
+            }
+            else if (typeof option === 'object') {
+                this.option = new BaseFilterOption(option);
+            }
+        }
+    }
+    name;
+    displayName;
+    /**
+    * 配置值
+    */
+    option;
+    /**
+     * 创建同类型的滤镜
+     * @param option 滤镜参数
+     * @returns
+     */
+    create(option = this.option, name = this.name, displayName = this.displayName, filterType = Filter) {
+        const data = new FilterData();
+        data.name = name;
+        data.displayName = displayName;
+        // @ts-ignore
+        data.option = option.clone ? option.clone() : option;
+        const obj = new filterType(data);
+        return obj;
+    }
+    // 转成json
+    toJSON() {
+        return {
+            name: this.name || '',
+            displayName: this.displayName || '',
+            option: this.option.toJSON()
+        };
+    }
+    toString() {
+        if (!this.name)
+            return '';
+        return `${this.name}(${this.option.toString()})`;
+    }
+}
+/**
+ * 反色滤镜
+ */
+class InvertFilter extends Filter {
+    constructor(option) {
+        option = Object.assign({ value: 1 }, option);
+        super(option);
+    }
+    name = 'invert';
+    displayName = '反色';
+}
+/**
+ * 模糊滤镜 value: 4px
+ */
+class BlurFilter extends Filter {
+    constructor(option) {
+        option = Object.assign({ value: '4px' }, option);
+        super(option);
+    }
+    name = 'blur';
+    displayName = '模糊';
+}
+/**
+ * 亮度滤镜 value: 0-1
+ */
+class BrightnessFilter extends Filter {
+    constructor(option) {
+        option = Object.assign({ value: 2 }, option);
+        super(option);
+    }
+    name = 'brightness';
+    displayName = '亮度';
+}
+/**
+ * 灰度滤镜 value: 0-1
+ */
+class GrayscaleFilter extends Filter {
+    constructor(option) {
+        option = Object.assign({ value: 1 }, option);
+        super(option);
+    }
+    name = 'grayscale';
+    displayName = '灰度';
+}
+/**
+ * 复古滤镜 value: 0-1
+ */
+class SepiaFilter extends Filter {
+    constructor(option) {
+        option = Object.assign({ value: 1 }, option);
+        super(option);
+    }
+    name = 'sepia';
+    displayName = '复古';
+}
+/**
+ * 旋转滤镜 value: 0-360deg 角度 或 弧度 0-2*Math.PI rad
+ */
+class HueRotateFilter extends Filter {
+    constructor(option) {
+        option = Object.assign({ value: '240deg' }, option);
+        super(option);
+    }
+    name = 'hue-rotate';
+    displayName = '旋转';
+}
+/**
+ * 透明度 value: 0-1
+ */
+class OpacityFilter extends Filter {
+    constructor(option) {
+        option = Object.assign({ value: 0.8 }, option);
+        super(option);
+    }
+    name = 'opacity';
+    displayName = '透明度';
+}
+/**
+ * 阴影滤镜
+ */
+class DropShadowFilter extends Filter {
+    constructor(option) {
+        if (!option)
+            option = new ShadowFilterOption();
+        option.value = new ShadowFilterOptionValue(option.value || {
+            x: '0',
+            y: '0',
+            blur: '4px',
+            color: '#000'
+        });
+        super(option);
+    }
+    name = 'drop-shadow';
+    displayName = '阴影';
+    /**
+      * 创建同类型的滤镜
+      * @param option 滤镜参数
+      * @returns
+      */
+    create(option = this.option, name = this.name, displayName = this.displayName) {
+        const data = new ShadowFilterOption(option);
+        const obj = new DropShadowFilter(data);
+        obj.name = name;
+        obj.displayName = displayName;
+        return obj;
+    }
+}
+/**
+ * 对比度滤镜  value: 2
+ */
+class ContrastFilter extends Filter {
+    constructor(option) {
+        option = Object.assign({ value: 2 }, option);
+        super(option);
+    }
+    name = 'contrast';
+    displayName = '对比度';
+}
+/**
+ * 饱和度 0-无穷 ,一般取0-1
+ */
+class SaturateFilter extends Filter {
+    constructor(option) {
+        option = Object.assign({ value: 3 }, option);
+        super(option);
+    }
+    name = 'saturate';
+    displayName = '饱和度';
+}
+const filters = {
+    /**
+     * 反色滤镜
+     */
+    invert: new InvertFilter(),
+    /**
+     * 模糊滤镜 value: 4px
+     */
+    blur: new BlurFilter(),
+    /**
+     * 亮度滤镜 value: 0-1
+     */
+    brightness: new BrightnessFilter(),
+    /**
+     * 灰度滤镜 value: 0-1
+     */
+    grayscale: new GrayscaleFilter(),
+    /**
+     * 复古滤镜 value: 0-1
+     */
+    sepia: new SepiaFilter(),
+    /**
+     * 旋转滤镜
+     */
+    hueRotate: new HueRotateFilter(),
+    /**
+     * 阴影
+     */
+    dropShadow: new DropShadowFilter(),
+    /**
+     * 透明度
+     */
+    opacity: new OpacityFilter(),
+    /**
+     * 对比度
+     */
+    contrast: new ContrastFilter(),
+    /**
+     * 饱和度 0-无穷 ,一般取0-1
+     */
+    saturate: new SaturateFilter(),
+};
+// 获取fiter实例对象
+function get(name) {
+    if (!name)
+        return null;
+    if (filters[name])
+        return filters[name];
+    for (const key in filters) {
+        const filter = filters[key];
+        if (filter instanceof Filter && filter.name === name) {
+            return filter;
+        }
+    }
+    return null;
+}
+
+class CSSFilters {
+    constructor(target, filters) {
+        if (target)
+            this.target = target;
+        if (filters && filters.length) {
+            this.add(filters);
+        }
+    }
+    // 所有支持的滤镜
+    filters = new Array();
+    /**
+     * 绑定的dom否元素对象
+     */
+    target;
+    /**
+     * 当前滤镜个数
+     */
+    get count() {
+        return this.filters.length;
+    }
+    /**
+     * 根据滤镜名获取滤镜对象
+     * @param name
+     * @returns
+     */
+    get(name) {
+        for (const f of this.filters) {
+            if (f.name === name)
+                return f;
+        }
+    }
+    clear() {
+        this.filters.splice(0, this.filters.length);
+    }
+    /**
+     * 添加滤镜
+     * @param filter
+     */
+    add(filter, option) {
+        if (Array.isArray(filter)) {
+            for (const f of filter) {
+                this.add(f, option);
+            }
+            return;
+        }
+        else if (typeof filter === 'string') {
+            const filterObj = get(filter);
+            if (!filterObj) {
+                console.error(`${filter}不存在`);
+                return;
+            }
+            filter = filterObj.create(option || filterObj.option);
+            return this.add(filter);
+        }
+        if (filter.name) {
+            const existsFilter = this.get(filter.name);
+            if (existsFilter) {
+                console.error(`${filter.displayName || filter.name}已经存在滤镜集合中，不能重复`);
+                return existsFilter;
+            }
+        }
+        if (filter instanceof Filter) {
+            this.filters.push(filter);
+            this.apply();
+            return filter;
+        }
+        else if (filter.name) {
+            return this.add(filter.name, filter.option);
+        }
+    }
+    /**
+     * 移除滤镜
+     * @param filter
+     */
+    remove(filter) {
+        if (Array.isArray(filter)) {
+            for (const f of filter)
+                this.remove(f);
+        }
+        else {
+            for (let i = this.filters.length - 1; i >= 0; i--) {
+                if ((typeof filter === 'string' && this.filters[i].name === filter) || this.filters[i] === filter) {
+                    this.filters.splice(i, 1);
+                }
+            }
+        }
+        this.apply();
+    }
+    toJSON() {
+        const res = [];
+        if (this.count) {
+            for (const f of this.filters) {
+                res.push(f.toJSON());
+            }
+        }
+        return res;
+    }
+    toString() {
+        const res = [];
+        for (const f of this.filters) {
+            const r = f.toString();
+            if (r)
+                res.push(r);
+        }
+        if (res.length)
+            return res.join(' ');
+        return '';
+    }
+    /**
+     * 生效
+     * @param target
+     */
+    apply(target = this.target) {
+        if (target && target.style)
+            target.style.filter = this.toString();
     }
 }
 
