@@ -47,6 +47,7 @@ export default class JElement extends EventEmiter {
         // @ts-ignore
         if (option.className)
             this.className = option.className;
+        this.transform.apply(); // 重置一下transform
         this.bindEvent(); // 事件绑定
     }
     // 初始化一些基础属性

@@ -125,6 +125,8 @@
         // 如果不是页面，只是一个组件，则完善数据结构
         if(item.type == 'img' || item.type === 'span' || item.type === 'svg') {
             const child = item;
+            child.data.left = 0;
+            child.data.top = 0;
             item = {
                 children: [
                     child

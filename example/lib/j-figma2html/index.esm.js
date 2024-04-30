@@ -106,6 +106,19 @@ var util = {
         return Math.ceil(v * multiple);
     },
     /**
+     * 把数值转换成指定区间的值 ，  比如-1到1之间的值转换成 0-1之间的值： toNumberRange(-1, -1,1,0,1);
+     * @param v 原数值
+     * @param sMin 原数值下限
+     * @param sMax 原数值上限
+     * @param dMin 目标区间下限
+     * @param dMax 目标区间上限
+     */
+    toNumberRange(v, sMin, sMax, dMin, dMax) {
+        const p = (v - sMin) / (sMax - sMin);
+        const r = p * (dMax - dMin) + dMin;
+        return r;
+    },
+    /**
      * 把rgba颜色转为rgba()串型式
      * multiple倍数，如果是小数，则需要*255转到标准值
      */
@@ -803,6 +816,437 @@ var eventemitter3 = {exports: {}};
 	} 
 } (eventemitter3));
 
+/**
+ * 滤镜数据
+ */
+class FilterData {
+    /**
+     * 名称
+     */
+    name;
+    /**
+     * 中文名
+     */
+    displayName;
+    /**
+     * 配置值
+     */
+    option;
+}
+class BaseFilterOption {
+    constructor(option) {
+        if (option) {
+            if (typeof option === 'string' || typeof option === 'number') {
+                this.value = option;
+            }
+            else {
+                this.value = option.value;
+            }
+        }
+    }
+    value;
+    toString() {
+        return this.value.toString();
+    }
+    toJSON() {
+        return {
+            value: this.value
+        };
+    }
+    clone() {
+        const obj = new BaseFilterOption();
+        // @ts-ignore
+        if (this.value && this.value.clone)
+            obj.value = this.value.clone();
+        else
+            obj.value = this.value;
+        return obj;
+    }
+}
+class ShadowFilterOptionValue {
+    constructor(data) {
+        if (data) {
+            this.x = data.x;
+            this.y = data.y;
+            this.blur = data.blur;
+            this.color = data.color;
+        }
+    }
+    x;
+    y;
+    blur;
+    color;
+    toJSON() {
+        return {
+            x: this.x,
+            y: this.y,
+            blur: this.blur || '',
+            color: this.color || ''
+        };
+    }
+    toString() {
+        return `${this.x} ${this.y} ${this.blur || 0} ${this.color || '#000'}`;
+    }
+    clone() {
+        return new ShadowFilterOptionValue(this);
+    }
+}
+class ShadowFilterOption extends BaseFilterOption {
+    constructor(option) {
+        super();
+        if (option) {
+            // @ts-ignore
+            if (option instanceof ShadowFilterOption || option.value)
+                this.value = new ShadowFilterOptionValue(option.value);
+            else
+                this.value = new ShadowFilterOptionValue(option);
+        }
+    }
+    toString() {
+        return this.value.toString();
+    }
+}
+
+class Filter {
+    constructor(option) {
+        if (option) {
+            if (option instanceof FilterData) {
+                this.name = option.name;
+                this.displayName = option.displayName;
+                option = option.option;
+            }
+            if (option instanceof BaseFilterOption) {
+                this.option = option;
+            }
+            else if (typeof option === 'object') {
+                this.option = new BaseFilterOption(option);
+            }
+        }
+    }
+    name;
+    displayName;
+    /**
+    * 配置值
+    */
+    option;
+    /**
+     * 创建同类型的滤镜
+     * @param option 滤镜参数
+     * @returns
+     */
+    create(option = this.option, name = this.name, displayName = this.displayName, filterType = Filter) {
+        const data = new FilterData();
+        data.name = name;
+        data.displayName = displayName;
+        // @ts-ignore
+        data.option = option.clone ? option.clone() : option;
+        const obj = new filterType(data);
+        return obj;
+    }
+    // 转成json
+    toJSON() {
+        return {
+            name: this.name || '',
+            displayName: this.displayName || '',
+            option: this.option.toJSON()
+        };
+    }
+    toString() {
+        if (!this.name)
+            return '';
+        return `${this.name}(${this.option.toString()})`;
+    }
+}
+/**
+ * 反色滤镜
+ */
+class InvertFilter extends Filter {
+    constructor(option) {
+        option = Object.assign({ value: 1 }, option);
+        super(option);
+    }
+    name = 'invert';
+    displayName = '反色';
+}
+/**
+ * 模糊滤镜 value: 4px
+ */
+class BlurFilter extends Filter {
+    constructor(option) {
+        option = Object.assign({ value: '4px' }, option);
+        super(option);
+    }
+    name = 'blur';
+    displayName = '模糊';
+}
+/**
+ * 亮度滤镜 value: 0-100
+ */
+class BrightnessFilter extends Filter {
+    constructor(option) {
+        option = Object.assign({ value: 2 }, option);
+        super(option);
+    }
+    name = 'brightness';
+    displayName = '亮度';
+}
+/**
+ * 灰度滤镜 value: 0-1
+ */
+class GrayscaleFilter extends Filter {
+    constructor(option) {
+        option = Object.assign({ value: 1 }, option);
+        super(option);
+    }
+    name = 'grayscale';
+    displayName = '灰度';
+}
+/**
+ * 复古滤镜 value: 0-1
+ */
+class SepiaFilter extends Filter {
+    constructor(option) {
+        option = Object.assign({ value: 1 }, option);
+        super(option);
+    }
+    name = 'sepia';
+    displayName = '复古';
+}
+/**
+ * 旋转滤镜 value: 0-360deg 角度 或 弧度 0-2*Math.PI rad
+ */
+class HueRotateFilter extends Filter {
+    constructor(option) {
+        option = Object.assign({ value: '240deg' }, option);
+        super(option);
+    }
+    name = 'hue-rotate';
+    displayName = '旋转';
+}
+/**
+ * 透明度 value: 0-1
+ */
+class OpacityFilter extends Filter {
+    constructor(option) {
+        option = Object.assign({ value: 0.8 }, option);
+        super(option);
+    }
+    name = 'opacity';
+    displayName = '透明度';
+}
+/**
+ * 阴影滤镜
+ */
+class DropShadowFilter extends Filter {
+    constructor(option) {
+        if (!option)
+            option = new ShadowFilterOption();
+        option.value = new ShadowFilterOptionValue(option.value || {
+            x: '0',
+            y: '0',
+            blur: '4px',
+            color: '#000'
+        });
+        super(option);
+    }
+    name = 'drop-shadow';
+    displayName = '阴影';
+    /**
+      * 创建同类型的滤镜
+      * @param option 滤镜参数
+      * @returns
+      */
+    create(option = this.option, name = this.name, displayName = this.displayName) {
+        const data = new ShadowFilterOption(option);
+        const obj = new DropShadowFilter(data);
+        obj.name = name;
+        obj.displayName = displayName;
+        return obj;
+    }
+}
+/**
+ * 对比度滤镜  value: 2
+ */
+class ContrastFilter extends Filter {
+    constructor(option) {
+        option = Object.assign({ value: 2 }, option);
+        super(option);
+    }
+    name = 'contrast';
+    displayName = '对比度';
+}
+/**
+ * 饱和度滤镜  value: 3
+ */
+class SaturateFilter extends Filter {
+    constructor(option) {
+        option = Object.assign({ value: 3 }, option);
+        super(option);
+    }
+    name = 'saturate';
+    displayName = '饱和度';
+}
+const filters = {
+    /**
+     * 反色滤镜
+     */
+    invert: new InvertFilter(),
+    /**
+     * 亮度
+     */
+    blur: new BlurFilter(),
+    /**
+     * 亮度
+     */
+    brightness: new BrightnessFilter(),
+    /**
+     * 灰度
+     */
+    grayscale: new GrayscaleFilter(),
+    /**
+     * 复古
+     */
+    sepia: new SepiaFilter(),
+    /**
+     * 旋转滤镜
+     */
+    hueRotate: new HueRotateFilter(),
+    /**
+     * 阴影
+     */
+    dropShadow: new DropShadowFilter(),
+    /**
+     * 透明度
+     */
+    opacity: new OpacityFilter(),
+    /**
+     * 对比度
+     */
+    contrast: new ContrastFilter(),
+    /**
+     * 饱和度
+     */
+    saturate: new SaturateFilter(),
+};
+
+class CSSFilters {
+    constructor(target, filters) {
+        if (target)
+            this.target = target;
+        if (filters && filters.length) {
+            this.add(filters);
+        }
+    }
+    // 所有支持的滤镜
+    filters = new Array();
+    /**
+     * 绑定的dom否元素对象
+     */
+    target;
+    /**
+     * 当前滤镜个数
+     */
+    get count() {
+        return this.filters.length;
+    }
+    /**
+     * 根据滤镜名获取滤镜对象
+     * @param name
+     * @returns
+     */
+    get(name) {
+        for (const f of this.filters) {
+            if (f.name === name)
+                return f;
+        }
+    }
+    clear() {
+        this.filters.splice(0, this.filters.length);
+    }
+    /**
+     * 添加滤镜
+     * @param filter
+     */
+    add(filter, option) {
+        if (Array.isArray(filter)) {
+            for (const f of filter) {
+                this.add(f, option);
+            }
+            return;
+        }
+        else if (typeof filter === 'string') {
+            const filterObj = filters[filter];
+            if (!filterObj) {
+                console.error(`${filter}不存在`);
+                return;
+            }
+            filter = filterObj.create(option || filterObj.option);
+            return this.add(filter);
+        }
+        if (filter.name) {
+            const existsFilter = this.get(filter.name);
+            if (existsFilter) {
+                console.error(`${filter.displayName || filter.name}已经存在滤镜集合中，不能重复`);
+                return existsFilter;
+            }
+        }
+        if (filter instanceof Filter) {
+            this.filters.push(filter);
+            this.apply();
+            return filter;
+        }
+        else if (filter.name) {
+            return this.add(filter.name, filter.option);
+        }
+    }
+    /**
+     * 移除滤镜
+     * @param filter
+     */
+    remove(filter) {
+        if (Array.isArray(filter)) {
+            for (const f of filter)
+                this.remove(f);
+        }
+        else {
+            for (let i = this.filters.length - 1; i >= 0; i--) {
+                if ((typeof filter === 'string' && this.filters[i].name === filter) || this.filters[i] === filter) {
+                    this.filters.splice(i, 1);
+                }
+            }
+        }
+        this.apply();
+    }
+    toJSON() {
+        const res = [];
+        if (this.count) {
+            for (const f of this.filters) {
+                res.push(f.toJSON());
+            }
+        }
+        return res;
+    }
+    toString() {
+        const res = [];
+        for (const f of this.filters) {
+            const r = f.toString();
+            if (r)
+                res.push(r);
+        }
+        if (res.length)
+            return res.join(' ');
+        return '';
+    }
+    /**
+     * 生效
+     * @param target
+     */
+    apply(target = this.target) {
+        if (target && target.style)
+            target.style.filter = this.toString();
+    }
+}
+
 /** A string enum with value, describing the end caps of vector paths. */
 var StrokeCap;
 (function (StrokeCap) {
@@ -1151,6 +1595,7 @@ class BaseConverter {
                 boxSizing: 'border-box',
                 ...option?.style,
             },
+            filters: new Array,
             type: type,
         };
         return dom;
@@ -1186,19 +1631,30 @@ class BaseConverter {
     // 转换滤镜
     async convertEffects(node, dom, option, container) {
         if (!node.isMaskOutline && node.effects) {
-            dom.style.filter = dom.style.filter || '';
+            //dom.style.filter = dom.style.filter || '';
             for (const effect of node.effects) {
                 if (effect.visible === false)
                     continue;
                 switch (effect.type) {
                     case EffectType.DROP_SHADOW:
                     case EffectType.INNER_SHADOW: {
-                        dom.style.filter += ` drop-shadow(${util.toPX(effect.offset.x)} ${util.toPX(effect.offset.y)} ${util.toPX(effect.radius)} ${util.colorToString(effect.color, 255)})`;
+                        //dom.style.filter += ` drop-shadow(${util.toPX(effect.offset.x)} ${util.toPX(effect.offset.y)} ${util.toPX(effect.radius)} ${util.colorToString(effect.color, 255)})`;
+                        dom.filters.push(new DropShadowFilter({
+                            value: {
+                                x: util.toPX(effect.offset.x),
+                                y: util.toPX(effect.offset.y),
+                                blur: util.toPX(effect.radius),
+                                color: util.colorToString(effect.color, 255)
+                            }
+                        }));
                         break;
                     }
                     case EffectType.LAYER_BLUR:
                     case EffectType.BACKGROUND_BLUR: {
-                        dom.style.filter += ` blur(${util.toPX(effect.radius)})`;
+                        //dom.style.filter += ` blur(${util.toPX(effect.radius)})`;
+                        dom.filters.push(new BlurFilter({
+                            value: util.toPX(effect.radius)
+                        }));
                         break;
                     }
                 }
@@ -1297,6 +1753,68 @@ class BaseConverter {
                     dom.transform.skewX = b;
                     dom.transform.skewY = c;
                     dom.preserveRatio = true;
+                }
+                // 如果有滤镜，则给指定
+                if (fill.filters) {
+                    /* exposure?: number; // 曝光度 (exposure): 控制图像的明亮程度或暗度。
+                    contrast?: number; // 对比
+                    saturation?: number; // 饱和度
+                    temperature?: number; // 色温
+                    tint?: number; // 色调
+                    highlights?: number; // 调整图像中高光部分的亮度和对比度。
+                    shadows?: number; // 阴影
+                    */
+                    if (fill.filters.contrast) {
+                        const v = util.toNumberRange(fill.filters.contrast, -1, 1, 0.5, 1);
+                        dom.filters.push(new ContrastFilter({
+                            value: v
+                        }));
+                    }
+                    if (fill.filters.exposure) {
+                        const v = util.toNumberRange(fill.filters.exposure, -1, 1, 0.3, 2);
+                        dom.filters.push(new BrightnessFilter({
+                            value: v
+                        }));
+                    }
+                    if (fill.filters.saturation) {
+                        const v = util.toNumberRange(fill.filters.saturation, -1, 1, 0, 2);
+                        dom.filters.push(new SaturateFilter({
+                            value: v
+                        }));
+                    }
+                    if (fill.filters.temperature) {
+                        const v = fill.filters.temperature; //util.toNumberRange(fill.filters.temperature, -1, 1, -Math.PI, Math.PI);
+                        dom.filters.push(new HueRotateFilter({
+                            value: util.toRad(v)
+                        }));
+                    }
+                    if (fill.filters.tint) {
+                        const v = util.toNumberRange(fill.filters.tint, -1, 1, 5, 7);
+                        dom.filters.push(new HueRotateFilter({
+                            value: util.toDeg(util.radToDeg(v))
+                        }));
+                    }
+                    if (fill.filters.highlights) {
+                        const v = util.toNumberRange(fill.filters.highlights, -1, 1, 0.6, 1.1);
+                        dom.filters.push(new BrightnessFilter({
+                            value: v
+                        }));
+                    }
+                    if (fill.filters.shadows) {
+                        const v = Math.abs(fill.filters.shadows);
+                        let color = `rgba(255,255,255,${v})`;
+                        if (fill.filters.shadows < 0) {
+                            color = `rgba(0,0,0,${v})`;
+                        }
+                        dom.filters.push(new DropShadowFilter({
+                            value: {
+                                x: '0',
+                                y: '0',
+                                blur: '2px',
+                                color
+                            }
+                        }));
+                    }
                 }
             }
         }
@@ -1687,7 +2205,7 @@ class TEXTConverter extends BaseConverter {
                     continue;
                 // 如果是连续的同样的样式文字，则组合
                 if (!lastDom || lastStyleOverrides !== s) {
-                    lastDom = this.createDomNode('var');
+                    lastDom = this.createDomNode('span');
                     lastDom.text = '';
                     lastDom.style.position = 'relative'; // 连续字符不能用绝对定位
                     const style = node.styleOverrideTable[s];
@@ -1702,19 +2220,21 @@ class TEXTConverter extends BaseConverter {
             }
             // 还有未处理完的，则加到后面
             if (text.length > index) {
-                const fDom = this.createDomNode('var');
+                const fDom = this.createDomNode('span');
                 fDom.text = text.substring(index);
                 dom.children.push(fDom);
             }
-            // 单行需要计算宽度
-            if (isSingleLine) {
-                for (const c of dom.children) {
-                    const w = this.testTextWidth(c);
+            for (const c of dom.children) {
+                // 单行需要计算宽度
+                if (isSingleLine) {
+                    const w = this.testTextWidth(c, dom);
                     width += w;
                 }
+                // 处理完样式后，需要删除可以继承父的样式
+                this.checkParentAndChildStyle(dom, c);
             }
             dom.data.text = dom.text = '';
-            //dom.type = 'div';
+            dom.type = 'div';
         }
         // 这种方式文本宽度需要重新计算
         dom.data.width = Math.max(width, util.toNumber(dom.data.width));
@@ -1780,10 +2300,20 @@ class TEXTConverter extends BaseConverter {
         }
         return dom;
     }
+    // 检查父子相同的字体样式，如果子元素没有的样式，继承自父的
+    checkParentAndChildStyle(parent, child) {
+        if (!parent.style || !child.style)
+            return;
+        const checkStyles = ['color', 'fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'font', 'letterSpacing', 'lineHeight', 'textAlign', 'verticalAlign'];
+        for (const n of checkStyles) {
+            if (parent.style[n] && !child.style[n])
+                child.style[n] = parent.style[n];
+        }
+    }
     // 测试字宽度
-    testTextWidth(dom) {
+    testTextWidth(dom, parent) {
         const span = document.createElement('span');
-        Object.assign(span.style, dom.style);
+        Object.assign(span.style, parent?.style || {}, dom.style);
         span.style.width = 'auto';
         span.style.position = 'absolute';
         span.innerText = dom.text;
@@ -2481,6 +3011,10 @@ async function renderElement(node, option, dom) {
     }
     if (node.text) {
         dom.textContent = node.text;
+    }
+    if (node.filters) {
+        const filters = new CSSFilters(dom, node.filters);
+        filters.apply(); // 应用于style
     }
     if (node.visible === false)
         dom.style.display = 'none';

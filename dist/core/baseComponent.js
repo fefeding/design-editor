@@ -56,7 +56,6 @@ export default class JBaseComponent extends JElement {
                 data: e
             });
         });
-        //this.style.refresh();
     }
     // 当前控件的核心元素
     target;
