@@ -19,6 +19,5 @@ export default class JImage extends Base<HTMLImageElement> implements IJImageCom
      * 类型名称
      */
     get typeName(): string;
-    setDomStyle(name: string, value: string): void;
     toJSON(props?: any[]): import("../constant/types").IElementJSON;
 }

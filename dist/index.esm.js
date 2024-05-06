@@ -4087,13 +4087,14 @@ class JImage extends JBaseComponent {
         return 'image';
     }
     // 设置css到dom
-    setDomStyle(name, value) {
+    /*setDomStyle(name: string, value: string) {
         // transform应用于图片元素上面
-        if (name === 'transform') {
+        if(name === 'transform') {
             return this.target && this.target.setDomStyle(name, value);
-        }
+         }
+         
         return super.setDomStyle(name, value);
-    }
+     }*/
     toJSON(props = []) {
         return super.toJSON([
             'filters',
