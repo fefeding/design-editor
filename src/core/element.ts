@@ -361,6 +361,7 @@ export default class JElement<T extends JDomElement = JDomElement> extends Event
     toJSON(props=[], ig=(p: IJElement)=>true): IElementJSON {
         const fields = ['name', 'type', 'data', 'attributes', 'style', 'transform', 'id', 'filters',  ...props];
         const obj = {
+            data: {},
             children: []
         };
        

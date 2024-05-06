@@ -1197,13 +1197,13 @@ class CSSFilters {
             filter = filterObj.create(option || filterObj.option);
             return this.add(filter);
         }
-        if (filter.name) {
+        /*if(filter.name) {
             const existsFilter = this.get(filter.name);
-            if (existsFilter) {
+            if(existsFilter) {
                 console.error(`${filter.displayName || filter.name}已经存在滤镜集合中，不能重复`);
                 return existsFilter;
             }
-        }
+        }*/
         if (filter instanceof Filter) {
             this.filters.push(filter);
             this.apply();
@@ -1733,20 +1733,21 @@ class BaseConverter {
                 }
                 switch (fill.scaleMode) {
                     case PaintSolidScaleMode.FILL: {
-                        dom.style.backgroundSize = 'cover';
+                        dom.data.imageSizeMode = dom.style.backgroundSize = 'cover';
                         break;
                     }
                     case PaintSolidScaleMode.FIT: {
-                        dom.style.backgroundSize = 'contain';
+                        dom.data.imageSizeMode = dom.style.backgroundSize = 'contain';
                         break;
                     }
                     case PaintSolidScaleMode.STRETCH: {
                         dom.style.backgroundSize = '100% 100%';
+                        dom.data.imageSizeMode = 'stretch';
                         break;
                     }
                     // 平铺
                     case PaintSolidScaleMode.TILE: {
-                        dom.style.backgroundRepeat = 'repeat';
+                        dom.data.imageSizeMode = dom.style.backgroundRepeat = 'repeat';
                         break;
                     }
                 }
@@ -3038,6 +3039,20 @@ async function renderElement(node, option, dom) {
                 overflow: 'hidden'
             });
         }
+        // 当背景图片使用 cover 时，图片会被缩放以填充整个容器，同时保持图片纵横比例，以确保整个容器都被覆盖，可能造成图片的一部分被裁剪掉
+        /*if(node.style.backgroundSize == 'cover') {
+            const px =
+            // 保持宽高比
+            util.css(img, {
+                height: 'auto'
+            });
+            util.css(dom, {
+                overflow: 'hidden'
+            });
+        }
+        else if(node.style.backgroundSize == 'contain') {
+
+        }*/
         dom.appendChild(img);
     }
     if (node.style) {

@@ -327,6 +327,7 @@ export default class JElement extends EventEmiter {
     toJSON(props = [], ig = (p) => true) {
         const fields = ['name', 'type', 'data', 'attributes', 'style', 'transform', 'id', 'filters', ...props];
         const obj = {
+            data: {},
             children: []
         };
         for (const k of fields) {

@@ -1584,13 +1584,13 @@ class CSSFilters {
             filter = filterObj.create(option || filterObj.option);
             return this.add(filter);
         }
-        if (filter.name) {
+        /*if(filter.name) {
             const existsFilter = this.get(filter.name);
-            if (existsFilter) {
+            if(existsFilter) {
                 console.error(`${filter.displayName || filter.name}已经存在滤镜集合中，不能重复`);
                 return existsFilter;
             }
-        }
+        }*/
         if (filter instanceof Filter) {
             this.filters.push(filter);
             this.apply();
@@ -3104,6 +3104,10 @@ class JElementData extends JData {
     angle;
     visible;
     zIndex;
+    // 显示文本
+    text;
+    // 元素的富文本内容
+    html;
 }
 /**
  * 图片元素的数据类，继承自元素的基础数据类 JElementData
@@ -3125,7 +3129,6 @@ class JSvgData extends JImageData {
  * @public
  */
 class JTextData extends JElementData {
-    text;
 }
 
 /**
@@ -3451,6 +3454,7 @@ class JElement extends JEventEmitter {
     toJSON(props = [], ig = (p) => true) {
         const fields = ['name', 'type', 'data', 'attributes', 'style', 'transform', 'id', 'filters', ...props];
         const obj = {
+            data: {},
             children: []
         };
         for (const k of fields) {
@@ -3862,9 +3866,10 @@ class JText extends JBaseComponent {
             type: option.type || 'text',
             dataType: option.dataType || JTextData
         });
-        // 多子元素
+        // 多子元素, 这种模式下不需要data.text属性
         if (option.children?.length) {
             this.isChildrenMode = true;
+            delete this.data?.text;
         }
         // 'text' 属性变化映射到 innerText
         this.data.watch([
@@ -3906,7 +3911,7 @@ class JText extends JBaseComponent {
         // 如果在选项中提供，设置 'text' 属性
         // @ts-ignore
         const text = option.text;
-        if (text)
+        if (text && !this.isChildrenMode)
             this.data.text = text;
         // 添加双击事件监听器，进入编辑状态
         this.on('dblclick', (e) => {
@@ -3978,6 +3983,7 @@ class JText extends JBaseComponent {
                 if (id) {
                     for (const c of this._children) {
                         if (c.id === id) {
+                            c.data.text = node.textContent;
                             children.push(c);
                             break;
                         }
@@ -3998,6 +4004,13 @@ class JText extends JBaseComponent {
         const dom = (e.target || this.target.dom);
         util.setRange(dom, e); // 光标位置在最后
         dom.focus && dom.focus(); // 进入控件
+    }
+    toJSON(props = []) {
+        const obj = super.toJSON(props);
+        // 如果文本包含在子元素中，就不需要赋值 data
+        if (this.isChildrenMode)
+            delete obj.data?.text;
+        return obj;
     }
     /**
      * 退出文本编辑状态

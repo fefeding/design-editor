@@ -238,6 +238,11 @@ export class JElementData extends JData<JElementData> implements IJElementData {
     visible: boolean;
 
     zIndex: number;
+
+    // 显示文本
+    text?: string;
+    // 元素的富文本内容
+    html?: string;
 }
 
 /**
@@ -287,7 +292,7 @@ export interface IJTexteData extends IJElementData {
  * @public
  */
 export class JTextData extends JElementData implements IJTexteData {
-    text: string;
+    declare text: string;
 }
 
 /**

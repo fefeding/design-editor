@@ -167,6 +167,7 @@ export interface IJEvent {
     off(name: string, fun: EventListenerOrEventListenerObject, opt?: boolean | AddEventListenerOptions): this;
 }
 export interface IElementJSON {
+    data: any;
     children: Array<IElementJSON>;
     target?: IElementJSON;
 }

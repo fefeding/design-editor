@@ -215,6 +215,7 @@ export interface IJEvent {
 }
 
 export interface IElementJSON {
+    data: any;
     children: Array<IElementJSON>;
     target?: IElementJSON
 }

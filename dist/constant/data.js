@@ -143,6 +143,10 @@ export class JElementData extends JData {
     angle;
     visible;
     zIndex;
+    // 显示文本
+    text;
+    // 元素的富文本内容
+    html;
 }
 /**
  * 图片元素的数据类，继承自元素的基础数据类 JElementData
@@ -164,5 +168,4 @@ export class JSvgData extends JImageData {
  * @public
  */
 export class JTextData extends JElementData {
-    text;
 }

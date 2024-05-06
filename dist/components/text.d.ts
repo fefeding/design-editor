@@ -44,6 +44,7 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
      * 进入文本编辑状态
      */
     edit(e?: MouseEvent): void;
+    toJSON(props?: any[]): import("../constant/types").IElementJSON;
     /**
      * 退出文本编辑状态
      */

@@ -45,9 +45,10 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
             dataType: option.dataType || JTextData
         });
 
-        // 多子元素
+        // 多子元素, 这种模式下不需要data.text属性
         if(option.children?.length) {
             this.isChildrenMode = true;
+            delete this.data?.text;
         }
 
         // 'text' 属性变化映射到 innerText
@@ -90,7 +91,7 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
         // 如果在选项中提供，设置 'text' 属性
         // @ts-ignore
         const text = option.text;
-        if(text) this.data.text = text;
+        if(text && !this.isChildrenMode) this.data.text = text;
 
         // 添加双击事件监听器，进入编辑状态
         this.on('dblclick', (e: MouseEvent) => {
@@ -175,6 +176,7 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
                 if(id) {
                     for(const c of this._children) {
                         if(c.id === id) {
+                            c.data.text = node.textContent;
                             children.push(c);
                             break;
                         }
@@ -199,6 +201,13 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
         util.setRange(dom, e);// 光标位置在最后
 
         dom.focus && dom.focus();// 进入控件
+    }
+
+    toJSON(props = []) {
+        const obj = super.toJSON(props);
+        // 如果文本包含在子元素中，就不需要赋值 data
+        if(this.isChildrenMode) delete obj.data?.text;
+        return obj;
     }
     
     /** 

@@ -101,6 +101,8 @@ export declare class JElementData extends JData<JElementData> implements IJEleme
     angle: number;
     visible: boolean;
     zIndex: number;
+    text?: string;
+    html?: string;
 }
 /**
  * 图片元素的数据接口，包含了源地址等额外属性
