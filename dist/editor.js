@@ -294,11 +294,16 @@ export default class JEditor extends JBase {
         }
         this.resize(data.width || data.data.width, data.height || data.data.height);
         this.name = data.name || '';
-        for (const c of data.children) {
-            if (!c.type)
-                continue;
-            const item = this.createShape(c.type, c);
-            item && this.addChild(item);
+        if (data.children) {
+            data.children.sort((p1, p2) => {
+                return (p1.data?.zIndex - p2.data?.zIndex) || 0;
+            });
+            for (const c of data.children) {
+                if (!c.type)
+                    continue;
+                const item = this.createShape(c.type, c);
+                item && this.addChild(item);
+            }
         }
     }
     /**

@@ -209,6 +209,9 @@ export default class JBaseComponent<T extends JDomElement = JDomElement> extends
         }
 
         if(child.option?.children?.length) {
+            child.option.children.sort((p1, p2) => {
+                return (p1.data?.zIndex - p2.data?.zIndex)||0;
+            });
             for(const opt of child.option.children) {
                 const c = child.editor.createShape(opt.type, opt);
                 c && child.addChild(c);
