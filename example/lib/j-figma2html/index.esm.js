@@ -1534,8 +1534,7 @@ class BaseConverter {
                 dom.data.rotation = node.rotation;
                 dom.transform.rotateZ = node.rotation;
                 dom.style.transform = `rotate(${util.toRad(node.rotation)})`;
-                // 考虑是否用 absoluteRenderBounds
-                // 因为拿到的是新长形宽高，需要求出原始升方形宽高
+                // 因为拿到的是新长形宽高，需要求出原始长方形宽高
                 const size = this.calculateOriginalRectangleDimensions(dom.data.rotation, box.width, box.height);
                 box.width = size.width;
                 box.height = size.height;
@@ -1546,6 +1545,8 @@ class BaseConverter {
                 //box.x = pos.x;
                 //box.y = pos.y;
             }
+            if (dom.type === 'text' && box.height < node.style?.lineHeightPx)
+                box.height = node.style.lineHeightPx;
             dom.bounds.width = box.width;
             dom.bounds.height = box.height;
             // 优先相对于页面坐标, isElement是相于它的父级的
@@ -2173,15 +2174,13 @@ class BaseConverter {
     }
     // 计算原始长方形宽高
     calculateOriginalRectangleDimensions(radian, newWidth, newHeight) {
-        // 旋转后的长方形的宽和高
-        var rotatedWidth = newWidth;
-        var rotatedHeight = newHeight;
+        // 旋转后的长方形的宽和高 newWidth newHeight
         const cos = Math.cos(radian);
         const sin = Math.sin(radian);
-        // 计算原始长方形的宽和高
-        var originalWidth = rotatedWidth * cos + rotatedHeight * sin;
-        var originalHeight = rotatedHeight * cos + rotatedWidth * sin;
-        return { width: originalWidth, height: originalHeight };
+        // 解方程求原始长方形的宽度和高度
+        const w = (newWidth * Math.abs(cos) - newHeight * Math.abs(sin)) / (cos ** 2 - sin ** 2);
+        const h = (newHeight * Math.abs(cos) - newWidth * Math.abs(sin)) / (cos ** 2 - sin ** 2);
+        return { width: w, height: h };
     }
 }
 

@@ -325,14 +325,14 @@ export default class JControllerComponent extends JControllerItem {
         });
         // 图片缩放
         this.targetScaleItem = this.createItem('scale', {
-            size: 15,
+            size: 20,
             style: {
                 left: '50%',
                 top: '50%',
                 borderRadius: '50%',
                 cursor: `pointer`,
                 ...option.style.itemStyle,
-                border: '1px solid rgba(0,0,0,0.8)',
+                border: '2px solid rgba(0,0,0,0.8)',
                 backgroundColor: '#fff',
                 'backgroundSize': '100%',
                 ...option.style.scaleStyle,
@@ -538,15 +538,21 @@ export default class JControllerComponent extends JControllerItem {
                 break;
             }
             case 'scale': {
-                if (e.item) {
-                    e.item.transform.translateX = util.toNumber(e.item.transform.translateX) + offX;
-                    e.item.transform.translateY = util.toNumber(e.item.transform.translateY) + offY;
-                    e.item.transform.apply();
-                }
                 if (offX !== 0) {
                     const scaleX = offX / util.toNumber(this.data.width);
                     this.target.transform.scaleX = this.target.transform.scaleY = (this.target.transform.scaleX || 0) + scaleX;
                     this.target.transform.apply();
+                }
+                if (e.item) {
+                    // 如果发生旋转，则坐标要先换算成未旋转的情况再做偏移计算
+                    if (this.transform.rotateZ) {
+                        const [p1, p2] = util.rotatePoints([oldPosition, newPosition], center, -this.transform.rotateZ);
+                        offX = p2.x - p1.x;
+                        offY = p2.y - p1.y;
+                    }
+                    e.item.transform.translateX = util.toNumber(e.item.transform.translateX) + offX;
+                    e.item.transform.translateY = util.toNumber(e.item.transform.translateY) + offY;
+                    e.item.transform.apply();
                 }
                 break;
             }

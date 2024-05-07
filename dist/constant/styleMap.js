@@ -960,7 +960,7 @@ export const editorDefaultCssContent = `.j-design-editor-container {
     }
     .j-design-editor-controller .item-move,.j-design-editor-controller .item-scale {
         box-shadow: 0 0 2px 2px #eee;
-        opacity: 0.3;
+        opacity: 0.5;
     }
     .j-design-editor-controller .item-move:hover,.j-design-editor-controller .item-scale:hover {
         opacity: 0.9;
