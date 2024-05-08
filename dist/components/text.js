@@ -25,7 +25,7 @@ export default class JText extends Base {
         option.style = {
             fontFamily: 'Arial',
             textAlign: 'left',
-            fontSize: 22,
+            fontSize: 14,
             fontWeight: 'normal',
             fontStyle: 'normal',
             //wordBreak: "keep-all",

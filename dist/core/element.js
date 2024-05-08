@@ -174,8 +174,13 @@ export default class JElement extends EventEmiter {
         return this.dom.className;
     }
     set className(v) {
-        if (!this.dom.classList.contains(v))
-            this.dom.classList.add(v);
+        if (!v)
+            return;
+        const cs = v.split(' ');
+        for (const c of cs) {
+            if (c && !this.dom.classList.contains(c))
+                this.dom.classList.add(c);
+        }
     }
     get visible() {
         return this.data.visible;

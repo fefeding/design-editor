@@ -8,15 +8,12 @@ import { topZIndex } from '../constant/styleMap';
 export class JControllerItem extends JElement<HTMLDivElement> implements IJControllerItem {
     constructor(option: IControllerItemOption) {
 
-        option.style = {
-            border: '1px solid rgba(6,155,181,1)',
-            backgroundColor: '#fff',
+        option.style = {           
             pointerEvents: 'auto',
             ...option.style,
-            position: 'absolute'
         };
         if(option.dir && !option.className) {
-            option.className = 'item-' + option.dir;
+            option.className = 'item item-' + option.dir;
         }
         super(option);
 
@@ -154,12 +151,10 @@ export default class JControllerComponent extends JControllerItem implements IJC
     constructor(option: IControllerOption) {
         
         option.style = {
-            cursor: 'move',
-            backgroundColor: 'transparent',
-            itemStyle: {
-                border: '1px solid #ccc',
+            itemStyle: {                
             },
             ...option.style,
+            backgroundColor: 'transparent',
             pointerEvents: 'none',
         };
         option.dir = 'element';

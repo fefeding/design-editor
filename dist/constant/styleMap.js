@@ -968,9 +968,24 @@ export const editorDefaultCssContent = `.j-design-editor-container {
     .j-design-editor-container:hover {
         box-shadow: 0 0 2px 2px rgba(0,0,0,0.3);
     }
-    .j-design-editor-controller {        
-        
+    .j-design-editor-container .j-design-editor-component-target {
+        display: block;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;   
     }
+    .j-design-editor-controller {     
+        cursor: move;    
+        border: 1px solid rgba(6,155,181,1);
+        background-color: transparent;
+        position: absolute;
+    }
+    .j-design-editor-controller .item{     
+        border: 1px solid #ccc;
+        background-color: #fff;
+        position: absolute;
+    }
+    
     .j-design-editor-controller .item-move,.j-design-editor-controller .item-scale {
         box-shadow: 0 0 2px 2px #eee;
         opacity: 0.5;

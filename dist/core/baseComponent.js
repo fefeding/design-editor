@@ -26,12 +26,8 @@ export default class JBaseComponent extends JElement {
             visible: true,
             data: {},
             transformWatchProps: null,
-            style: {
-                display: 'block',
-                cursor: 'pointer',
-                width: '100%',
-                height: '100%',
-            }
+            className: 'j-design-editor-component-target',
+            style: {}
         };
         // 是否可以移动
         if (typeof option.moveable === 'boolean')

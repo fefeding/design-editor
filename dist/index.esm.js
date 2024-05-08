@@ -2617,9 +2617,24 @@ const editorDefaultCssContent = `.j-design-editor-container {
     .j-design-editor-container:hover {
         box-shadow: 0 0 2px 2px rgba(0,0,0,0.3);
     }
-    .j-design-editor-controller {        
-        
+    .j-design-editor-container .j-design-editor-component-target {
+        display: block;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;   
     }
+    .j-design-editor-controller {     
+        cursor: move;    
+        border: 1px solid rgba(6,155,181,1);
+        background-color: transparent;
+        position: absolute;
+    }
+    .j-design-editor-controller .item{     
+        border: 1px solid #ccc;
+        background-color: #fff;
+        position: absolute;
+    }
+    
     .j-design-editor-controller .item-move,.j-design-editor-controller .item-scale {
         box-shadow: 0 0 2px 2px #eee;
         opacity: 0.5;
@@ -3314,8 +3329,13 @@ class JElement extends JEventEmitter {
         return this.dom.className;
     }
     set className(v) {
-        if (!this.dom.classList.contains(v))
-            this.dom.classList.add(v);
+        if (!v)
+            return;
+        const cs = v.split(' ');
+        for (const c of cs) {
+            if (c && !this.dom.classList.contains(c))
+                this.dom.classList.add(c);
+        }
     }
     get visible() {
         return this.data.visible;
@@ -3541,12 +3561,8 @@ class JBaseComponent extends JElement {
             visible: true,
             data: {},
             transformWatchProps: null,
-            style: {
-                display: 'block',
-                cursor: 'pointer',
-                width: '100%',
-                height: '100%',
-            }
+            className: 'j-design-editor-component-target',
+            style: {}
         };
         // 是否可以移动
         if (typeof option.moveable === 'boolean')
@@ -3869,7 +3885,7 @@ class JText extends JBaseComponent {
         option.style = {
             fontFamily: 'Arial',
             textAlign: 'left',
-            fontSize: 22,
+            fontSize: 14,
             fontWeight: 'normal',
             fontStyle: 'normal',
             //wordBreak: "keep-all",
@@ -4225,14 +4241,11 @@ class JContainer extends JBaseComponent {
 class JControllerItem extends JElement {
     constructor(option) {
         option.style = {
-            border: '1px solid rgba(6,155,181,1)',
-            backgroundColor: '#fff',
             pointerEvents: 'auto',
             ...option.style,
-            position: 'absolute'
         };
         if (option.dir && !option.className) {
-            option.className = 'item-' + option.dir;
+            option.className = 'item item-' + option.dir;
         }
         super(option);
         this.dir = option.dir || '';
@@ -4353,12 +4366,9 @@ class JControllerItem extends JElement {
 class JControllerComponent extends JControllerItem {
     constructor(option) {
         option.style = {
-            cursor: 'move',
-            backgroundColor: 'transparent',
-            itemStyle: {
-                border: '1px solid #ccc',
-            },
+            itemStyle: {},
             ...option.style,
+            backgroundColor: 'transparent',
             pointerEvents: 'none',
         };
         option.dir = 'element';
