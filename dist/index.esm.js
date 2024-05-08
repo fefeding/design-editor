@@ -2597,7 +2597,7 @@ const ContainerDefaultStyle = {
  */
 const editorDefaultCssContent = `.j-design-editor-container {
         border: none;
-        font:14px,-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';
+        font: normal normal normal 14px/normal Arial,sans-serif;
         background-color: transparent;
         color: #000;
         box-sizing: content-box;
