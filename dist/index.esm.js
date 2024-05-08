@@ -2597,15 +2597,28 @@ const ContainerDefaultStyle = {
  */
 const editorDefaultCssContent = `.j-design-editor-container {
         border: none;
+        font:14px,-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';
+        background-color: transparent;
+        color: #000;
         box-sizing: content-box;
-    }.j-design-editor-container * {
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+    .j-design-editor-container * {
         box-sizing: content-box;
+        margin: 0;
+        padding: 0;
+        outline: none;     
+        transition: color 0.3s ease;
     }
     .j-design-editor-container.selected {
         box-shadow: 0 0 1px rgba(6,155,181,1);
     }
     .j-design-editor-container:hover {
         box-shadow: 0 0 2px 2px rgba(0,0,0,0.3);
+    }
+    .j-design-editor-controller {        
+        
     }
     .j-design-editor-controller .item-move,.j-design-editor-controller .item-scale {
         box-shadow: 0 0 2px 2px #eee;
@@ -4687,18 +4700,20 @@ class JControllerComponent extends JControllerItem {
                 break;
             }
             case 'move': {
-                const dx = util.toNumber(this.target.transform.translateX) + offX;
-                const dy = util.toNumber(this.target.transform.translateY) + offY;
-                this.target.transform.translateX = dx;
-                this.target.transform.translateY = dy;
-                this.target.transform.apply();
+                const target = this.target?.target || this.target;
+                const dx = util.toNumber(target.transform.translateX) + offX;
+                const dy = util.toNumber(target.transform.translateY) + offY;
+                target.transform.translateX = dx;
+                target.transform.translateY = dy;
+                target.transform.apply();
                 break;
             }
             case 'scale': {
+                const target = this.target?.target || this.target;
                 if (offX !== 0) {
                     const scaleX = offX / util.toNumber(this.data.width);
-                    this.target.transform.scaleX = this.target.transform.scaleY = (this.target.transform.scaleX || 0) + scaleX;
-                    this.target.transform.apply();
+                    target.transform.scaleX = target.transform.scaleY = (target.transform.scaleX || 0) + scaleX;
+                    target.transform.apply();
                 }
                 if (e.item) {
                     // 如果发生旋转，则坐标要先换算成未旋转的情况再做偏移计算

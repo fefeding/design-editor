@@ -582,18 +582,20 @@ export default class JControllerComponent extends JControllerItem implements IJC
                 break;
             }
             case 'move': {
-                const dx = util.toNumber(this.target.transform.translateX) + offX;
-                const dy = util.toNumber(this.target.transform.translateY) + offY;
-                this.target.transform.translateX = dx;
-                this.target.transform.translateY = dy;
-                this.target.transform.apply();
+                const target = this.target?.target || this.target;
+                const dx = util.toNumber(target.transform.translateX) + offX;
+                const dy = util.toNumber(target.transform.translateY) + offY;
+                target.transform.translateX = dx;
+                target.transform.translateY = dy;
+                target.transform.apply();
                 break;
             }
-            case 'scale': {                
+            case 'scale': {        
+                const target = this.target?.target || this.target;        
                 if(offX !== 0) {
                     const scaleX = offX / util.toNumber(this.data.width);
-                    this.target.transform.scaleX = this.target.transform.scaleY = (this.target.transform.scaleX||0) + scaleX;
-                    this.target.transform.apply();
+                    target.transform.scaleX = target.transform.scaleY = (target.transform.scaleX||0) + scaleX;
+                    target.transform.apply();
                 }
                 if(e.item) {
                     // 如果发生旋转，则坐标要先换算成未旋转的情况再做偏移计算
