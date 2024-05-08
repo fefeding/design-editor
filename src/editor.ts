@@ -82,8 +82,13 @@ export default class JEditor extends JBase implements IJEditor {
             editor: this,
         });
         
-        const styleNode = document.createElement('style');
-        if(this.editable) styleNode.innerHTML = editorDefaultCssContent;
+        const styleNode = document.createElement('style');        
+        if(!this.editable) {
+            styleNode.innerHTML = editorDefaultCssContent.replace(/:hover/ig, ':hover-disabled');
+        }
+        else {
+            styleNode.innerHTML = editorDefaultCssContent;
+        }
         this.dom.appendChild(styleNode);
 
         // 字体加载成功，同时加入到dom结构中
@@ -367,8 +372,7 @@ export default class JEditor extends JBase implements IJEditor {
                 }
             };
             editor = this.create(option, data);
-        }
-        
+        }        
 
         const dom = editor.dom;
         dom.style.position = 'relative';

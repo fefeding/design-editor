@@ -5006,8 +5006,12 @@ class JEditor extends JBaseComponent {
             editor: this,
         });
         const styleNode = document.createElement('style');
-        if (this.editable)
+        if (!this.editable) {
+            styleNode.innerHTML = editorDefaultCssContent.replace(/:hover/ig, ':hover-disabled');
+        }
+        else {
             styleNode.innerHTML = editorDefaultCssContent;
+        }
         this.dom.appendChild(styleNode);
         // 字体加载成功，同时加入到dom结构中
         this.fonts.on('load', (font) => {

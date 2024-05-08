@@ -142,8 +142,12 @@ var JEditor = /** @class */ (function (_super) {
         // 生成控制器
         this.elementController = new JController(__assign(__assign({}, option.controllerOption), { visible: false, editor: this }));
         var styleNode = document.createElement('style');
-        if (this.editable)
+        if (!this.editable) {
+            styleNode.innerHTML = editorDefaultCssContent.replace(/:hover/ig, ':hover-disabled');
+        }
+        else {
             styleNode.innerHTML = editorDefaultCssContent;
+        }
         this.dom.appendChild(styleNode);
         // 字体加载成功，同时加入到dom结构中
         this.fonts.on('load', function (font) {
