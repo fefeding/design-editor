@@ -47,6 +47,11 @@ export default class JText extends Base {
         if (option.children?.length && !this.data?.text) {
             this.isChildrenMode = true;
         }
+        else {
+            // 非子元素模式，直接删掉子元素配置
+            delete option.children;
+            delete this.option?.children;
+        }
         // 'text' 属性变化映射到 innerText
         this.data.watch([
             'text', 'fontFamily', 'fontSize'
