@@ -931,14 +931,18 @@ var JText = /** @class */ (function (_super) {
     function JText(option) {
         if (option === void 0) { option = {}; }
         var _this = this;
-        var _a, _b;
+        var _a, _b, _c;
         option.style = __assign({ fontFamily: 'Arial', textAlign: 'left', fontSize: 14, fontWeight: 'normal', fontStyle: 'normal' }, option.style);
         _this = _super.call(this, __assign(__assign({}, option), { nodeType: 'div', type: option.type || 'text', dataType: option.dataType || JTextData })) || this;
         _this.isChildrenMode = false; // 是否是多子元素模式，如果是就会采用var节点处理文本
-        // 多子元素, 这种模式下不需要data.text属性
-        if ((_a = option.children) === null || _a === void 0 ? void 0 : _a.length) {
+        // 如果在选项中提供，设置 'text' 属性
+        // @ts-ignore
+        var text = option.text;
+        if (text && !((_a = _this.data) === null || _a === void 0 ? void 0 : _a.text) && !_this.isChildrenMode)
+            _this.data.text = text;
+        // 多子元素
+        if (((_b = option.children) === null || _b === void 0 ? void 0 : _b.length) && !((_c = _this.data) === null || _c === void 0 ? void 0 : _c.text)) {
             _this.isChildrenMode = true;
-            (_b = _this.data) === null || _b === void 0 ? true : delete _b.text;
         }
         // 'text' 属性变化映射到 innerText
         _this.data.watch([
@@ -978,11 +982,6 @@ var JText = /** @class */ (function (_super) {
                     return _this.style[name];
             }
         });
-        // 如果在选项中提供，设置 'text' 属性
-        // @ts-ignore
-        var text = option.text;
-        if (text && !_this.isChildrenMode)
-            _this.data.text = text;
         // 添加双击事件监听器，进入编辑状态
         _this.on('dblclick', function (e) {
             _this.edit(e);
@@ -1137,1172 +1136,6 @@ var JText = /** @class */ (function (_super) {
     return JText;
 }(Base));
 export default JText;
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __values = (this && this.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
-};
-import EventEmiter from 'j-eventemitter';
-/**
- * JData 类：提供了一种方式来处理和管理数据
- * @public
- */
-var JData = /** @class */ (function (_super) {
-    __extends(JData, _super);
-    function JData(data) {
-        if (data === void 0) { data = {}; }
-        var _this = _super.call(this) || this;
-        /** 用于存放数据的对象 */
-        _this.data = {};
-        /** 存放数据变化的监听器 */
-        _this.watcher = new Map();
-        _this.from(data);
-        return _this;
-    }
-    // 监控某个属性变化
-    JData.prototype.watch = function (name, watcher) {
-        var e_1, _a;
-        if (Array.isArray(name)) {
-            try {
-                for (var name_1 = __values(name), name_1_1 = name_1.next(); !name_1_1.done; name_1_1 = name_1.next()) {
-                    var n = name_1_1.value;
-                    if (!n)
-                        continue;
-                    this.watch(n, watcher);
-                }
-            }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
-            finally {
-                try {
-                    if (name_1_1 && !name_1_1.done && (_a = name_1.return)) _a.call(name_1);
-                }
-                finally { if (e_1) throw e_1.error; }
-            }
-            return this;
-        }
-        var watches = [];
-        if (this.watcher.has(name))
-            watches = this.watcher.get(name);
-        else {
-            this.watcher.set(name, watches);
-        }
-        watches.push(watcher);
-        this.data[name] && this.propertyChange(name); // 触发一次
-        return this;
-    };
-    // 属性改变
-    JData.prototype.propertyChange = function (name, value) {
-        var e_2, _a;
-        if (typeof value !== 'undefined')
-            this.data[name] = value;
-        else {
-            value = this.data[name];
-        }
-        var watches = this.watcher.get(name);
-        if (watches && watches.length) {
-            try {
-                for (var watches_1 = __values(watches), watches_1_1 = watches_1.next(); !watches_1_1.done; watches_1_1 = watches_1.next()) {
-                    var w = watches_1_1.value;
-                    w && w.set && w.set({
-                        name: name,
-                        value: value
-                    });
-                }
-            }
-            catch (e_2_1) { e_2 = { error: e_2_1 }; }
-            finally {
-                try {
-                    if (watches_1_1 && !watches_1_1.done && (_a = watches_1.return)) _a.call(watches_1);
-                }
-                finally { if (e_2) throw e_2.error; }
-            }
-        }
-        this.emit('change', {
-            name: name,
-            value: value
-        });
-    };
-    // 读取属性
-    JData.prototype.getProperty = function (name) {
-        var e_3, _a;
-        var watches = this.watcher.get(name);
-        if (watches && watches.length) {
-            try {
-                for (var watches_2 = __values(watches), watches_2_1 = watches_2.next(); !watches_2_1.done; watches_2_1 = watches_2.next()) {
-                    var w = watches_2_1.value;
-                    var v = w && w.get && w.get(name);
-                    if (typeof v !== 'undefined')
-                        return v;
-                }
-            }
-            catch (e_3_1) { e_3 = { error: e_3_1 }; }
-            finally {
-                try {
-                    if (watches_2_1 && !watches_2_1.done && (_a = watches_2.return)) _a.call(watches_2);
-                }
-                finally { if (e_3) throw e_3.error; }
-            }
-        }
-        return this.data[name];
-    };
-    /**
-     * 从对象中导入数据到当前实例
-     * @param data - 需导入的数据对象
-     * @returns 返回当前 JData 实例
-     */
-    JData.prototype.from = function (data) {
-        if (this.data)
-            Object.assign(this, data);
-        return this;
-    };
-    // 遍历
-    JData.prototype.map = function (fun) {
-        var e_4, _a;
-        var props = Object.getOwnPropertyNames(this.data);
-        var res = [];
-        try {
-            for (var props_1 = __values(props), props_1_1 = props_1.next(); !props_1_1.done; props_1_1 = props_1.next()) {
-                var name_2 = props_1_1.value;
-                if (typeof this[name_2] === 'undefined' || typeof this[name_2] === 'function')
-                    continue;
-                var ret = fun && fun(name_2, this[name_2]);
-                if (ret !== false) {
-                    res.push({
-                        name: name_2,
-                        value: this[name_2]
-                    });
-                }
-            }
-        }
-        catch (e_4_1) { e_4 = { error: e_4_1 }; }
-        finally {
-            try {
-                if (props_1_1 && !props_1_1.done && (_a = props_1.return)) _a.call(props_1);
-            }
-            finally { if (e_4) throw e_4.error; }
-        }
-        return res;
-    };
-    /**
-     * 导出数据为 JSON 对象
-     * @returns 返回 JSON 对象
-     */
-    JData.prototype.toJSON = function () {
-        var obj = {};
-        this.map(function (name, value) {
-            obj[name] = value;
-        });
-        return obj;
-    };
-    // 生成数据Data
-    JData.createProxy = function (data) {
-        // 代理处理
-        var proxy = new Proxy(data, {
-            get: function (target, p, receiver) {
-                var v = target[p];
-                if (typeof v === 'undefined' && typeof p === 'string') {
-                    return target.getProperty(p);
-                }
-                return v;
-            },
-            set: function (target, p, value, receiver) {
-                if (typeof p === 'string')
-                    target.propertyChange(p, value);
-                else
-                    target[p] = value;
-                return true;
-            }
-        });
-        return proxy;
-    };
-    return JData;
-}(EventEmiter));
-export default JData;
-/**
- * 元素的基础数据类
- * @public
- */
-var JElementData = /** @class */ (function (_super) {
-    __extends(JElementData, _super);
-    function JElementData(data) {
-        if (data === void 0) { data = {}; }
-        return _super.call(this, data) || this;
-    }
-    return JElementData;
-}(JData));
-export { JElementData };
-/**
- * 图片元素的数据类，继承自元素的基础数据类 JElementData
- * @public
- */
-var JImageData = /** @class */ (function (_super) {
-    __extends(JImageData, _super);
-    function JImageData() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return JImageData;
-}(JElementData));
-export { JImageData };
-/**
- * svg
- * @public
- */
-var JSvgData = /** @class */ (function (_super) {
-    __extends(JSvgData, _super);
-    function JSvgData() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return JSvgData;
-}(JImageData));
-export { JSvgData };
-/**
- * 文本元素的数据类，继承自元素的基础数据类 JElementData
- * @public
- */
-var JTextData = /** @class */ (function (_super) {
-    __extends(JTextData, _super);
-    function JTextData() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return JTextData;
-}(JElementData));
-export { JTextData };
-
-export {};
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var Filter = /** @class */ (function () {
-    function Filter(option) {
-        if (option) {
-            this.name = option.name;
-            this.displayName = option.displayName;
-            this.value = option.value;
-        }
-    }
-    Filter.prototype.toString = function () {
-        if (!this.name || !this.value)
-            return '';
-        return "".concat(this.name, "(").concat(this.value, ")");
-    };
-    Filter.prototype.toJSON = function () {
-        return {
-            name: this.name,
-            displayName: this.displayName || '',
-            value: this.value
-        };
-    };
-    return Filter;
-}());
-export { Filter };
-/**
- * 高斯模糊
- */
-var BlurFilter = /** @class */ (function (_super) {
-    __extends(BlurFilter, _super);
-    function BlurFilter(option) {
-        option = Object.assign({
-            name: 'BlurFilter',
-            displayName: '模糊',
-            value: '10%'
-        }, option);
-        return _super.call(this, option) || this;
-    }
-    return BlurFilter;
-}(Filter));
-export { BlurFilter };
-var filters = {
-    BlurFilter: BlurFilter
-};
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __values = (this && this.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
-};
-import EventEmiter from 'j-eventemitter';
-export var topZIndex = 10000;
-/**
- * 支持的样式属性列表
- * @public
- */
-var JElementStyleDeclaration = /** @class */ (function (_super) {
-    __extends(JElementStyleDeclaration, _super);
-    function JElementStyleDeclaration() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return JElementStyleDeclaration;
-}(EventEmiter));
-export { JElementStyleDeclaration };
-/**
- * 样式属性集合
- * @public
- */
-var JElementStyleProperty = /** @class */ (function () {
-    function JElementStyleProperty() {
-        this.accentColor = '';
-        this.alignContent = '';
-        this.alignItems = '';
-        this.alignSelf = '';
-        this.alignmentBaseline = '';
-        this.all = '';
-        this.animation = '';
-        this.animationComposition = '';
-        this.animationDelay = '';
-        this.animationDirection = '';
-        this.animationDuration = '';
-        this.animationFillMode = '';
-        this.animationIterationCount = '';
-        this.animationName = '';
-        this.animationPlayState = '';
-        this.animationTimingFunction = '';
-        this.appearance = '';
-        this.aspectRatio = '';
-        this.backdropFilter = '';
-        this.backfaceVisibility = '';
-        this.background = '';
-        this.backgroundAttachment = '';
-        this.backgroundBlendMode = '';
-        this.backgroundClip = '';
-        this.backgroundColor = '';
-        this.backgroundImage = '';
-        this.backgroundOrigin = '';
-        this.backgroundPosition = '';
-        this.backgroundPositionX = '';
-        this.backgroundPositionY = '';
-        this.backgroundRepeat = '';
-        this.backgroundSize = '';
-        this.baselineShift = '';
-        this.blockSize = '';
-        this.border = '';
-        this.borderBlock = '';
-        this.borderBlockColor = '';
-        this.borderBlockEnd = '';
-        this.borderBlockEndColor = '';
-        this.borderBlockEndStyle = '';
-        this.borderBlockEndWidth = '';
-        this.borderBlockStart = '';
-        this.borderBlockStartColor = '';
-        this.borderBlockStartStyle = '';
-        this.borderBlockStartWidth = '';
-        this.borderBlockStyle = '';
-        this.borderBlockWidth = '';
-        this.borderBottom = '';
-        this.borderBottomColor = '';
-        this.borderBottomLeftRadius = '';
-        this.borderBottomRightRadius = '';
-        this.borderBottomStyle = '';
-        this.borderBottomWidth = '';
-        this.borderCollapse = '';
-        this.borderColor = '';
-        this.borderEndEndRadius = '';
-        this.borderEndStartRadius = '';
-        this.borderImage = '';
-        this.borderImageOutset = '';
-        this.borderImageRepeat = '';
-        this.borderImageSlice = '';
-        this.borderImageSource = '';
-        this.borderImageWidth = '';
-        this.borderInline = '';
-        this.borderInlineColor = '';
-        this.borderInlineEnd = '';
-        this.borderInlineEndColor = '';
-        this.borderInlineEndStyle = '';
-        this.borderInlineEndWidth = '';
-        this.borderInlineStart = '';
-        this.borderInlineStartColor = '';
-        this.borderInlineStartStyle = '';
-        this.borderInlineStartWidth = '';
-        this.borderInlineStyle = '';
-        this.borderInlineWidth = '';
-        this.borderLeft = '';
-        this.borderLeftColor = '';
-        this.borderLeftStyle = '';
-        this.borderLeftWidth = '';
-        this.borderRadius = '';
-        this.borderRight = '';
-        this.borderRightColor = '';
-        this.borderRightStyle = '';
-        this.borderRightWidth = '';
-        this.borderSpacing = '';
-        this.borderStartEndRadius = '';
-        this.borderStartStartRadius = '';
-        this.borderStyle = '';
-        this.borderTop = '';
-        this.borderTopColor = '';
-        this.borderTopLeftRadius = '';
-        this.borderTopRightRadius = '';
-        this.borderTopStyle = '';
-        this.borderTopWidth = '';
-        this.borderWidth = '';
-        this.bottom = '';
-        this.boxShadow = '';
-        this.boxSizing = '';
-        this.breakAfter = '';
-        this.breakBefore = '';
-        this.breakInside = '';
-        this.captionSide = '';
-        this.caretColor = '';
-        this.clear = '';
-        this.clip = '';
-        this.clipPath = '';
-        this.clipRule = '';
-        this.color = '';
-        this.colorInterpolation = '';
-        this.colorInterpolationFilters = '';
-        this.colorScheme = '';
-        this.columnCount = '';
-        this.columnFill = '';
-        this.columnGap = '';
-        this.columnRule = '';
-        this.columnRuleColor = '';
-        this.columnRuleStyle = '';
-        this.columnRuleWidth = '';
-        this.columnSpan = '';
-        this.columnWidth = '';
-        this.columns = '';
-        this.contain = '';
-        this.containIntrinsicBlockSize = '';
-        this.containIntrinsicHeight = '';
-        this.containIntrinsicInlineSize = '';
-        this.containIntrinsicSize = '';
-        this.containIntrinsicWidth = '';
-        this.container = '';
-        this.containerName = '';
-        this.containerType = '';
-        this.content = '';
-        this.counterIncrement = '';
-        this.counterReset = '';
-        this.counterSet = '';
-        this.cssFloat = '';
-        this.cssText = '';
-        this.cursor = '';
-        this.direction = '';
-        this.display = '';
-        this.dominantBaseline = '';
-        this.emptyCells = '';
-        this.fill = '';
-        this.fillOpacity = '';
-        this.fillRule = '';
-        this.filter = '';
-        this.flex = '';
-        this.flexBasis = '';
-        this.flexDirection = '';
-        this.flexFlow = '';
-        this.flexGrow = '';
-        this.flexShrink = '';
-        this.flexWrap = '';
-        this.float = '';
-        this.floodColor = '';
-        this.floodOpacity = '';
-        this.font = '';
-        this.fontFamily = '';
-        this.fontFeatureSettings = '';
-        this.fontKerning = '';
-        this.fontOpticalSizing = '';
-        this.fontPalette = '';
-        this.fontSize = '';
-        this.fontSizeAdjust = '';
-        this.fontStretch = '';
-        this.fontStyle = '';
-        this.fontSynthesis = '';
-        this.fontSynthesisSmallCaps = '';
-        this.fontSynthesisStyle = '';
-        this.fontSynthesisWeight = '';
-        this.fontVariant = '';
-        this.fontVariantAlternates = '';
-        this.fontVariantCaps = '';
-        this.fontVariantEastAsian = '';
-        this.fontVariantLigatures = '';
-        this.fontVariantNumeric = '';
-        this.fontVariantPosition = '';
-        this.fontVariationSettings = '';
-        this.fontWeight = '';
-        this.forcedColorAdjust = '';
-        this.gap = '';
-        this.grid = '';
-        this.gridArea = '';
-        this.gridAutoColumns = '';
-        this.gridAutoFlow = '';
-        this.gridAutoRows = '';
-        this.gridColumn = '';
-        this.gridColumnEnd = '';
-        this.gridColumnGap = '';
-        this.gridColumnStart = '';
-        this.gridGap = '';
-        this.gridRow = '';
-        this.gridRowEnd = '';
-        this.gridRowGap = '';
-        this.gridRowStart = '';
-        this.gridTemplate = '';
-        this.gridTemplateAreas = '';
-        this.gridTemplateColumns = '';
-        this.gridTemplateRows = '';
-        this.height = '';
-        this.hyphenateCharacter = '';
-        this.hyphens = '';
-        this.imageOrientation = '';
-        this.imageRendering = '';
-        this.inlineSize = '';
-        this.inset = '';
-        this.insetBlock = '';
-        this.insetBlockEnd = '';
-        this.insetBlockStart = '';
-        this.insetInline = '';
-        this.insetInlineEnd = '';
-        this.insetInlineStart = '';
-        this.isolation = '';
-        this.justifyContent = '';
-        this.justifyItems = '';
-        this.justifySelf = '';
-        this.left = '';
-        this.letterSpacing = '';
-        this.lightingColor = '';
-        this.lineBreak = '';
-        this.lineHeight = '';
-        this.listStyle = '';
-        this.listStyleImage = '';
-        this.listStylePosition = '';
-        this.listStyleType = '';
-        this.margin = '';
-        this.marginBlock = '';
-        this.marginBlockEnd = '';
-        this.marginBlockStart = '';
-        this.marginBottom = '';
-        this.marginInline = '';
-        this.marginInlineEnd = '';
-        this.marginInlineStart = '';
-        this.marginLeft = '';
-        this.marginRight = '';
-        this.marginTop = '';
-        this.marker = '';
-        this.markerEnd = '';
-        this.markerMid = '';
-        this.markerStart = '';
-        this.mask = '';
-        this.maskClip = '';
-        this.maskComposite = '';
-        this.maskImage = '';
-        this.maskMode = '';
-        this.maskOrigin = '';
-        this.maskPosition = '';
-        this.maskRepeat = '';
-        this.maskSize = '';
-        this.maskType = '';
-        this.mathStyle = '';
-        this.maxBlockSize = '';
-        this.maxHeight = '';
-        this.maxInlineSize = '';
-        this.maxWidth = '';
-        this.minBlockSize = '';
-        this.minHeight = '';
-        this.minInlineSize = '';
-        this.minWidth = '';
-        this.mixBlendMode = '';
-        this.objectFit = '';
-        this.objectPosition = '';
-        this.offset = '';
-        this.offsetDistance = '';
-        this.offsetPath = '';
-        this.offsetRotate = '';
-        this.opacity = '';
-        this.order = '';
-        this.orphans = '';
-        this.outline = '';
-        this.outlineColor = '';
-        this.outlineOffset = '';
-        this.outlineStyle = '';
-        this.outlineWidth = '';
-        this.overflow = '';
-        this.overflowAnchor = '';
-        this.overflowClipMargin = '';
-        this.overflowWrap = '';
-        this.overflowX = '';
-        this.overflowY = '';
-        this.overscrollBehavior = '';
-        this.overscrollBehaviorBlock = '';
-        this.overscrollBehaviorInline = '';
-        this.overscrollBehaviorX = '';
-        this.overscrollBehaviorY = '';
-        this.padding = '';
-        this.paddingBlock = '';
-        this.paddingBlockEnd = '';
-        this.paddingBlockStart = '';
-        this.paddingBottom = '';
-        this.paddingInline = '';
-        this.paddingInlineEnd = '';
-        this.paddingInlineStart = '';
-        this.paddingLeft = '';
-        this.paddingRight = '';
-        this.paddingTop = '';
-        this.page = '';
-        this.pageBreakAfter = '';
-        this.pageBreakBefore = '';
-        this.pageBreakInside = '';
-        this.paintOrder = '';
-        this.perspective = '';
-        this.perspectiveOrigin = '';
-        this.placeContent = '';
-        this.placeItems = '';
-        this.placeSelf = '';
-        this.pointerEvents = '';
-        this.position = '';
-        this.printColorAdjust = '';
-        this.quotes = '';
-        this.resize = '';
-        this.right = '';
-        this.rotate = '';
-        this.rowGap = '';
-        this.rubyPosition = '';
-        this.scale = '';
-        this.scrollBehavior = '';
-        this.scrollMargin = '';
-        this.scrollMarginBlock = '';
-        this.scrollMarginBlockEnd = '';
-        this.scrollMarginBlockStart = '';
-        this.scrollMarginBottom = '';
-        this.scrollMarginInline = '';
-        this.scrollMarginInlineEnd = '';
-        this.scrollMarginInlineStart = '';
-        this.scrollMarginLeft = '';
-        this.scrollMarginRight = '';
-        this.scrollMarginTop = '';
-        this.scrollPadding = '';
-        this.scrollPaddingBlock = '';
-        this.scrollPaddingBlockEnd = '';
-        this.scrollPaddingBlockStart = '';
-        this.scrollPaddingBottom = '';
-        this.scrollPaddingInline = '';
-        this.scrollPaddingInlineEnd = '';
-        this.scrollPaddingInlineStart = '';
-        this.scrollPaddingLeft = '';
-        this.scrollPaddingRight = '';
-        this.scrollPaddingTop = '';
-        this.scrollSnapAlign = '';
-        this.scrollSnapStop = '';
-        this.scrollSnapType = '';
-        this.scrollbarGutter = '';
-        this.shapeImageThreshold = '';
-        this.shapeMargin = '';
-        this.shapeOutside = '';
-        this.shapeRendering = '';
-        this.stopColor = '';
-        this.stopOpacity = '';
-        this.stroke = '';
-        this.strokeDasharray = '';
-        this.strokeDashoffset = '';
-        this.strokeLinecap = '';
-        this.strokeLinejoin = '';
-        this.strokeMiterlimit = '';
-        this.strokeOpacity = '';
-        this.strokeWidth = '';
-        this.tabSize = '';
-        this.tableLayout = '';
-        this.textAlign = '';
-        this.textAlignLast = '';
-        this.textAnchor = '';
-        this.textCombineUpright = '';
-        this.textDecoration = '';
-        this.textDecorationColor = '';
-        this.textDecorationLine = '';
-        this.textDecorationSkipInk = '';
-        this.textDecorationStyle = '';
-        this.textDecorationThickness = '';
-        this.textEmphasis = '';
-        this.textEmphasisColor = '';
-        this.textEmphasisPosition = '';
-        this.textEmphasisStyle = '';
-        this.textIndent = '';
-        this.textOrientation = '';
-        this.textOverflow = '';
-        this.textRendering = '';
-        this.textShadow = '';
-        this.textTransform = '';
-        this.textUnderlineOffset = '';
-        this.textUnderlinePosition = '';
-        this.top = '';
-        this.touchAction = '';
-        this.transform = '';
-        this.transformBox = '';
-        this.transformOrigin = '';
-        this.transformStyle = '';
-        this.transition = '';
-        this.transitionDelay = '';
-        this.transitionDuration = '';
-        this.transitionProperty = '';
-        this.transitionTimingFunction = '';
-        this.translate = '';
-        this.unicodeBidi = '';
-        this.userSelect = '';
-        this.verticalAlign = '';
-        this.visibility = '';
-        this.webkitAlignContent = '';
-        this.webkitAlignItems = '';
-        this.webkitAlignSelf = '';
-        this.webkitAnimation = '';
-        this.webkitAnimationDelay = '';
-        this.webkitAnimationDirection = '';
-        this.webkitAnimationDuration = '';
-        this.webkitAnimationFillMode = '';
-        this.webkitAnimationIterationCount = '';
-        this.webkitAnimationName = '';
-        this.webkitAnimationPlayState = '';
-        this.webkitAnimationTimingFunction = '';
-        this.webkitAppearance = '';
-        this.webkitBackfaceVisibility = '';
-        this.webkitBackgroundClip = '';
-        this.webkitBackgroundOrigin = '';
-        this.webkitBackgroundSize = '';
-        this.webkitBorderBottomLeftRadius = '';
-        this.webkitBorderBottomRightRadius = '';
-        this.webkitBorderRadius = '';
-        this.webkitBorderTopLeftRadius = '';
-        this.webkitBorderTopRightRadius = '';
-        this.webkitBoxAlign = '';
-        this.webkitBoxFlex = '';
-        this.webkitBoxOrdinalGroup = '';
-        this.webkitBoxOrient = '';
-        this.webkitBoxPack = '';
-        this.webkitBoxShadow = '';
-        this.webkitBoxSizing = '';
-        this.webkitFilter = '';
-        this.webkitFlex = '';
-        this.webkitFlexBasis = '';
-        this.webkitFlexDirection = '';
-        this.webkitFlexFlow = '';
-        this.webkitFlexGrow = '';
-        this.webkitFlexShrink = '';
-        this.webkitFlexWrap = '';
-        this.webkitJustifyContent = '';
-        this.webkitLineClamp = '';
-        this.webkitMask = '';
-        this.webkitMaskBoxImage = '';
-        this.webkitMaskBoxImageOutset = '';
-        this.webkitMaskBoxImageRepeat = '';
-        this.webkitMaskBoxImageSlice = '';
-        this.webkitMaskBoxImageSource = '';
-        this.webkitMaskBoxImageWidth = '';
-        this.webkitMaskClip = '';
-        this.webkitMaskComposite = '';
-        this.webkitMaskImage = '';
-        this.webkitMaskOrigin = '';
-        this.webkitMaskPosition = '';
-        this.webkitMaskRepeat = '';
-        this.webkitMaskSize = '';
-        this.webkitOrder = '';
-        this.webkitPerspective = '';
-        this.webkitPerspectiveOrigin = '';
-        this.webkitTextFillColor = '';
-        this.webkitTextSizeAdjust = '';
-        this.webkitTextStroke = '';
-        this.webkitTextStrokeColor = '';
-        this.webkitTextStrokeWidth = '';
-        this.webkitTransform = '';
-        this.webkitTransformOrigin = '';
-        this.webkitTransformStyle = '';
-        this.webkitTransition = '';
-        this.webkitTransitionDelay = '';
-        this.webkitTransitionDuration = '';
-        this.webkitTransitionProperty = '';
-        this.webkitTransitionTimingFunction = '';
-        this.webkitUserSelect = '';
-        this.whiteSpace = '';
-        this.widows = '';
-        this.width = '';
-        this.willChange = '';
-        this.wordBreak = '';
-        this.wordSpacing = '';
-        this.wordWrap = '';
-        this.writingMode = '';
-        this.zIndex = 0;
-    }
-    return JElementStyleProperty;
-}());
-export { JElementStyleProperty };
-/**
- * @public
- */
-var JElementCssStyle = /** @class */ (function (_super) {
-    __extends(JElementCssStyle, _super);
-    function JElementCssStyle() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    Object.defineProperty(JElementCssStyle.prototype, "names", {
-        // 所有样式名称
-        get: function () {
-            var e_1, _a;
-            if (!JElementCssStyle.styleNamesMap.length) {
-                var map = new JElementStyleProperty();
-                var keys = Object.getOwnPropertyNames(map);
-                try {
-                    for (var keys_1 = __values(keys), keys_1_1 = keys_1.next(); !keys_1_1.done; keys_1_1 = keys_1.next()) {
-                        var k = keys_1_1.value;
-                        var t = typeof map[k];
-                        if (t === 'string' || t === 'number')
-                            JElementCssStyle.styleNamesMap.push(k);
-                    }
-                }
-                catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                finally {
-                    try {
-                        if (keys_1_1 && !keys_1_1.done && (_a = keys_1.return)) _a.call(keys_1);
-                    }
-                    finally { if (e_1) throw e_1.error; }
-                }
-            }
-            return JElementCssStyle.styleNamesMap;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    JElementCssStyle.styleNamesMap = [];
-    return JElementCssStyle;
-}(JElementStyleDeclaration));
-export default JElementCssStyle;
-// 最外层容器默认样式
-export var ContainerDefaultStyle = {
-    position: 'absolute',
-    left: '0',
-    top: '0',
-    width: 'auto',
-    height: 'auto',
-    right: 'auto',
-    bottom: 'auto',
-    //padding: '0',
-    transformOrigin: 'center center',
-    transform: 'none',
-    //"paddingTop": '0',
-    //"paddingLeft": '0',
-    //"paddingRight": '0',
-    //"paddingBottom": '0',
-    //margin: '0',
-    //"marginTop": '0',
-    //"marginLeft": '0',
-    //"marginRight": '0',
-    //"marginBottom": '0',
-    zIndex: '0',
-    display: 'inline-block',
-    overflow: 'visible',
-    'filter': 'none',
-};
-/**
- * 默认编辑器样式
- */
-export var editorDefaultCssContent = ".j-design-editor-container {\n        border: none;\n        font: normal normal normal 14px/normal Arial,sans-serif;\n        background-color: transparent;\n        color: #000;\n        box-sizing: content-box;\n        word-break: break-word;\n        overflow-wrap: break-word;\n    }\n    .j-design-editor-container * {\n        box-sizing: content-box;\n        margin: 0;\n        padding: 0;\n        outline: none;     \n        transition: color 0.3s ease;\n    }\n    .j-design-editor-container.selected {\n        box-shadow: 0 0 1px rgba(6,155,181,1);\n    }\n    .j-design-editor-container:hover {\n        box-shadow: 0 0 2px 2px rgba(0,0,0,0.3);\n    }\n    .j-design-editor-container .j-design-editor-component-target {\n        display: block;\n        cursor: pointer;\n        width: 100%;\n        height: 100%;   \n    }\n    .j-design-editor-controller {     \n        cursor: move;    \n        border: 1px solid rgba(6,155,181,1);\n        background-color: transparent;\n        position: absolute;\n    }\n    .j-design-editor-controller .item{     \n        border: 1px solid #ccc;\n        background-color: #fff;\n        position: absolute;\n    }\n    \n    .j-design-editor-controller .item-move,.j-design-editor-controller .item-scale {\n        box-shadow: 0 0 2px 2px #eee;\n        opacity: 0.5;\n    }\n    .j-design-editor-controller .item-move:hover,.j-design-editor-controller .item-scale:hover {\n        opacity: 0.9;\n    }\n    .j-design-editor-controller .item-rotate {\n        opacity: 0.5;\n    }\n    .j-design-editor-controller .item-rotate:hover {\n        opacity: 1;\n    }\n    .j-design-editor-container div[contenteditable=\"true\"]:empty:before{\n        content: ' ';\n        -webkit-tap-highlight-color:transparent;\n        -webkit-user-modify:read-write;\n        outline:none;\n        border:none;\n    }\n    ";
-// 编辑器默认样式，并且不可改
-export var editorDefaultStyle = {
-    'boxShadow': '0 0 10px 10px #ccc',
-    'position': 'absolute',
-    //'backgroundSize': '100% 100%',   
-    'left': '0',
-    'top': '0',
-    'right': '0',
-    'bottom': '0'
-    //transformOrigin: 'center top',         
-};
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __values = (this && this.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
-};
-import EventEmiter from 'j-eventemitter';
-import util from 'j-design-util';
-var Transform = /** @class */ (function (_super) {
-    __extends(Transform, _super);
-    function Transform(option, targetOption) {
-        var _this = _super.call(this) || this;
-        // 响应变化换元素和属性
-        _this.targets = [];
-        // x偏移量
-        _this.translateX = 0;
-        // y偏移量
-        _this.translateY = 0;
-        // z偏移量
-        _this.translateZ = 0;
-        _this.rotateX = 0;
-        _this.rotateY = 0;
-        _this.rotateZ = 0;
-        _this.scaleX = 1;
-        _this.scaleY = 1;
-        _this.scaleZ = 1;
-        _this.skewX = 0;
-        _this.skewY = 0;
-        if (option)
-            Object.assign(_this, option);
-        if (targetOption)
-            _this.bind(targetOption);
-        return _this;
-    }
-    Object.defineProperty(Transform.prototype, "translateXString", {
-        get: function () {
-            var x = this.translateX;
-            if (util.isNumber(x))
-                x = util.toPX(x);
-            return "translateX(".concat(x, ")");
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "translateYString", {
-        get: function () {
-            var y = this.translateY;
-            if (util.isNumber(y))
-                y = util.toPX(y);
-            return "translateY(".concat(y, ")");
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "translateZString", {
-        get: function () {
-            var x = this.translateZ;
-            if (util.isNumber(x))
-                x = util.toPX(x);
-            return "translateZ(".concat(x, ")");
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "rotateXString", {
-        get: function () {
-            return "rotateX(".concat(util.toRad(this.rotateX), ")");
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "rotateYString", {
-        get: function () {
-            return "rotateY(".concat(util.toRad(this.rotateY), ")");
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "rotateZString", {
-        get: function () {
-            return "rotateZ(".concat(util.toRad(this.rotateZ), ")");
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "scaleXString", {
-        get: function () {
-            return "scaleX(".concat(this.scaleX, ")");
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "scaleYString", {
-        get: function () {
-            return "scaleY(".concat(this.scaleY, ")");
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "scaleZString", {
-        get: function () {
-            return "scaleZ(".concat(this.scaleZ, ")");
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "skewXString", {
-        get: function () {
-            return "skewX(".concat(util.toRad(this.skewX), ")");
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "skewYString", {
-        get: function () {
-            return "skewY(".concat(util.toRad(this.skewY), ")");
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Transform.prototype.from = function (data) {
-        if (data)
-            Object.assign(this, data);
-    };
-    // 生效
-    Transform.prototype.apply = function (target) {
-        var e_1, _a;
-        if (target === void 0) { target = this.targets; }
-        if (Array.isArray(target)) {
-            try {
-                for (var target_1 = __values(target), target_1_1 = target_1.next(); !target_1_1.done; target_1_1 = target_1.next()) {
-                    var t = target_1_1.value;
-                    this.apply(t);
-                }
-            }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
-            finally {
-                try {
-                    if (target_1_1 && !target_1_1.done && (_a = target_1.return)) _a.call(target_1);
-                }
-                finally { if (e_1) throw e_1.error; }
-            }
-            return;
-        }
-        else {
-            if (target.target && target.target.css)
-                target.target.css('transform', this.toString(target.watchProps));
-            else if (target.target)
-                target.target.style.transform = this.toString(target.watchProps);
-        }
-    };
-    // 绑定并刷新到目标上
-    Transform.prototype.bind = function (target) {
-        this.targets.push(target);
-        this.apply(target);
-    };
-    Transform.prototype.unbind = function (target) {
-        for (var i = this.targets.length - 1; i > -1; i--) {
-            if (this.targets[i].target === target.target) {
-                this.targets.splice(i, 1);
-            }
-        }
-    };
-    // 生成transform代理
-    Transform.createProxy = function (obj, el) {
-        if (obj === void 0) { obj = {}; }
-        var transform = new Transform(obj, el);
-        // 代理处理
-        var proxy = new Proxy(transform, {
-            get: function (target, p, receiver) {
-                var v = target[p];
-                return v;
-            },
-            set: function (target, p, value, receiver) {
-                target[p] = value;
-                target.apply(); // 生效
-                return true;
-            }
-        });
-        return proxy;
-    };
-    Transform.prototype.toString = function (watchProps) {
-        var e_2, _a;
-        var res = [];
-        if (!watchProps) {
-            watchProps = ['translateX', 'translateY', 'translateZ', "rotateX", 'rotateY', 'rotateZ', 'scaleX', 'scaleY', 'scaleZ', 'skewX', 'skewY'];
-        }
-        try {
-            for (var watchProps_1 = __values(watchProps), watchProps_1_1 = watchProps_1.next(); !watchProps_1_1.done; watchProps_1_1 = watchProps_1.next()) {
-                var n = watchProps_1_1.value;
-                var nv = this[n + 'String'];
-                if (typeof this[n] !== 'undefined' && typeof nv !== 'undefined') {
-                    res.push(nv);
-                }
-            }
-        }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
-        finally {
-            try {
-                if (watchProps_1_1 && !watchProps_1_1.done && (_a = watchProps_1.return)) _a.call(watchProps_1);
-            }
-            finally { if (e_2) throw e_2.error; }
-        }
-        return res.join(' ');
-    };
-    Transform.prototype.toJSON = function () {
-        return {
-            translateX: this.translateX,
-            translateY: this.translateY,
-            translateZ: this.translateZ,
-            rotateX: this.rotateX,
-            rotateY: this.rotateY,
-            rotateZ: this.rotateZ,
-            scaleX: this.scaleX,
-            scaleY: this.scaleY,
-            scaleZ: this.scaleZ,
-            skewX: this.skewX,
-            skewY: this.skewY,
-        };
-    };
-    return Transform;
-}(EventEmiter));
-export default Transform;
-
-import JElementCssStyle from './styleMap';
-export { JElementCssStyle };
 
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -4398,3 +3231,1169 @@ var JElementStyle = /** @class */ (function (_super) {
     return JElementStyle;
 }(JElementCssStyle));
 export default JElementStyle;
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
+import EventEmiter from 'j-eventemitter';
+/**
+ * JData 类：提供了一种方式来处理和管理数据
+ * @public
+ */
+var JData = /** @class */ (function (_super) {
+    __extends(JData, _super);
+    function JData(data) {
+        if (data === void 0) { data = {}; }
+        var _this = _super.call(this) || this;
+        /** 用于存放数据的对象 */
+        _this.data = {};
+        /** 存放数据变化的监听器 */
+        _this.watcher = new Map();
+        _this.from(data);
+        return _this;
+    }
+    // 监控某个属性变化
+    JData.prototype.watch = function (name, watcher) {
+        var e_1, _a;
+        if (Array.isArray(name)) {
+            try {
+                for (var name_1 = __values(name), name_1_1 = name_1.next(); !name_1_1.done; name_1_1 = name_1.next()) {
+                    var n = name_1_1.value;
+                    if (!n)
+                        continue;
+                    this.watch(n, watcher);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (name_1_1 && !name_1_1.done && (_a = name_1.return)) _a.call(name_1);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+            return this;
+        }
+        var watches = [];
+        if (this.watcher.has(name))
+            watches = this.watcher.get(name);
+        else {
+            this.watcher.set(name, watches);
+        }
+        watches.push(watcher);
+        this.data[name] && this.propertyChange(name); // 触发一次
+        return this;
+    };
+    // 属性改变
+    JData.prototype.propertyChange = function (name, value) {
+        var e_2, _a;
+        if (typeof value !== 'undefined')
+            this.data[name] = value;
+        else {
+            value = this.data[name];
+        }
+        var watches = this.watcher.get(name);
+        if (watches && watches.length) {
+            try {
+                for (var watches_1 = __values(watches), watches_1_1 = watches_1.next(); !watches_1_1.done; watches_1_1 = watches_1.next()) {
+                    var w = watches_1_1.value;
+                    w && w.set && w.set({
+                        name: name,
+                        value: value
+                    });
+                }
+            }
+            catch (e_2_1) { e_2 = { error: e_2_1 }; }
+            finally {
+                try {
+                    if (watches_1_1 && !watches_1_1.done && (_a = watches_1.return)) _a.call(watches_1);
+                }
+                finally { if (e_2) throw e_2.error; }
+            }
+        }
+        this.emit('change', {
+            name: name,
+            value: value
+        });
+    };
+    // 读取属性
+    JData.prototype.getProperty = function (name) {
+        var e_3, _a;
+        var watches = this.watcher.get(name);
+        if (watches && watches.length) {
+            try {
+                for (var watches_2 = __values(watches), watches_2_1 = watches_2.next(); !watches_2_1.done; watches_2_1 = watches_2.next()) {
+                    var w = watches_2_1.value;
+                    var v = w && w.get && w.get(name);
+                    if (typeof v !== 'undefined')
+                        return v;
+                }
+            }
+            catch (e_3_1) { e_3 = { error: e_3_1 }; }
+            finally {
+                try {
+                    if (watches_2_1 && !watches_2_1.done && (_a = watches_2.return)) _a.call(watches_2);
+                }
+                finally { if (e_3) throw e_3.error; }
+            }
+        }
+        return this.data[name];
+    };
+    /**
+     * 从对象中导入数据到当前实例
+     * @param data - 需导入的数据对象
+     * @returns 返回当前 JData 实例
+     */
+    JData.prototype.from = function (data) {
+        if (this.data)
+            Object.assign(this, data);
+        return this;
+    };
+    // 遍历
+    JData.prototype.map = function (fun) {
+        var e_4, _a;
+        var props = Object.getOwnPropertyNames(this.data);
+        var res = [];
+        try {
+            for (var props_1 = __values(props), props_1_1 = props_1.next(); !props_1_1.done; props_1_1 = props_1.next()) {
+                var name_2 = props_1_1.value;
+                if (typeof this[name_2] === 'undefined' || typeof this[name_2] === 'function')
+                    continue;
+                var ret = fun && fun(name_2, this[name_2]);
+                if (ret !== false) {
+                    res.push({
+                        name: name_2,
+                        value: this[name_2]
+                    });
+                }
+            }
+        }
+        catch (e_4_1) { e_4 = { error: e_4_1 }; }
+        finally {
+            try {
+                if (props_1_1 && !props_1_1.done && (_a = props_1.return)) _a.call(props_1);
+            }
+            finally { if (e_4) throw e_4.error; }
+        }
+        return res;
+    };
+    /**
+     * 导出数据为 JSON 对象
+     * @returns 返回 JSON 对象
+     */
+    JData.prototype.toJSON = function () {
+        var obj = {};
+        this.map(function (name, value) {
+            obj[name] = value;
+        });
+        return obj;
+    };
+    // 生成数据Data
+    JData.createProxy = function (data) {
+        // 代理处理
+        var proxy = new Proxy(data, {
+            get: function (target, p, receiver) {
+                var v = target[p];
+                if (typeof v === 'undefined' && typeof p === 'string') {
+                    return target.getProperty(p);
+                }
+                return v;
+            },
+            set: function (target, p, value, receiver) {
+                if (typeof p === 'string')
+                    target.propertyChange(p, value);
+                else
+                    target[p] = value;
+                return true;
+            }
+        });
+        return proxy;
+    };
+    return JData;
+}(EventEmiter));
+export default JData;
+/**
+ * 元素的基础数据类
+ * @public
+ */
+var JElementData = /** @class */ (function (_super) {
+    __extends(JElementData, _super);
+    function JElementData(data) {
+        if (data === void 0) { data = {}; }
+        return _super.call(this, data) || this;
+    }
+    return JElementData;
+}(JData));
+export { JElementData };
+/**
+ * 图片元素的数据类，继承自元素的基础数据类 JElementData
+ * @public
+ */
+var JImageData = /** @class */ (function (_super) {
+    __extends(JImageData, _super);
+    function JImageData() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return JImageData;
+}(JElementData));
+export { JImageData };
+/**
+ * svg
+ * @public
+ */
+var JSvgData = /** @class */ (function (_super) {
+    __extends(JSvgData, _super);
+    function JSvgData() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return JSvgData;
+}(JImageData));
+export { JSvgData };
+/**
+ * 文本元素的数据类，继承自元素的基础数据类 JElementData
+ * @public
+ */
+var JTextData = /** @class */ (function (_super) {
+    __extends(JTextData, _super);
+    function JTextData() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return JTextData;
+}(JElementData));
+export { JTextData };
+
+export {};
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var Filter = /** @class */ (function () {
+    function Filter(option) {
+        if (option) {
+            this.name = option.name;
+            this.displayName = option.displayName;
+            this.value = option.value;
+        }
+    }
+    Filter.prototype.toString = function () {
+        if (!this.name || !this.value)
+            return '';
+        return "".concat(this.name, "(").concat(this.value, ")");
+    };
+    Filter.prototype.toJSON = function () {
+        return {
+            name: this.name,
+            displayName: this.displayName || '',
+            value: this.value
+        };
+    };
+    return Filter;
+}());
+export { Filter };
+/**
+ * 高斯模糊
+ */
+var BlurFilter = /** @class */ (function (_super) {
+    __extends(BlurFilter, _super);
+    function BlurFilter(option) {
+        option = Object.assign({
+            name: 'BlurFilter',
+            displayName: '模糊',
+            value: '10%'
+        }, option);
+        return _super.call(this, option) || this;
+    }
+    return BlurFilter;
+}(Filter));
+export { BlurFilter };
+var filters = {
+    BlurFilter: BlurFilter
+};
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
+import EventEmiter from 'j-eventemitter';
+export var topZIndex = 10000;
+/**
+ * 支持的样式属性列表
+ * @public
+ */
+var JElementStyleDeclaration = /** @class */ (function (_super) {
+    __extends(JElementStyleDeclaration, _super);
+    function JElementStyleDeclaration() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return JElementStyleDeclaration;
+}(EventEmiter));
+export { JElementStyleDeclaration };
+/**
+ * 样式属性集合
+ * @public
+ */
+var JElementStyleProperty = /** @class */ (function () {
+    function JElementStyleProperty() {
+        this.accentColor = '';
+        this.alignContent = '';
+        this.alignItems = '';
+        this.alignSelf = '';
+        this.alignmentBaseline = '';
+        this.all = '';
+        this.animation = '';
+        this.animationComposition = '';
+        this.animationDelay = '';
+        this.animationDirection = '';
+        this.animationDuration = '';
+        this.animationFillMode = '';
+        this.animationIterationCount = '';
+        this.animationName = '';
+        this.animationPlayState = '';
+        this.animationTimingFunction = '';
+        this.appearance = '';
+        this.aspectRatio = '';
+        this.backdropFilter = '';
+        this.backfaceVisibility = '';
+        this.background = '';
+        this.backgroundAttachment = '';
+        this.backgroundBlendMode = '';
+        this.backgroundClip = '';
+        this.backgroundColor = '';
+        this.backgroundImage = '';
+        this.backgroundOrigin = '';
+        this.backgroundPosition = '';
+        this.backgroundPositionX = '';
+        this.backgroundPositionY = '';
+        this.backgroundRepeat = '';
+        this.backgroundSize = '';
+        this.baselineShift = '';
+        this.blockSize = '';
+        this.border = '';
+        this.borderBlock = '';
+        this.borderBlockColor = '';
+        this.borderBlockEnd = '';
+        this.borderBlockEndColor = '';
+        this.borderBlockEndStyle = '';
+        this.borderBlockEndWidth = '';
+        this.borderBlockStart = '';
+        this.borderBlockStartColor = '';
+        this.borderBlockStartStyle = '';
+        this.borderBlockStartWidth = '';
+        this.borderBlockStyle = '';
+        this.borderBlockWidth = '';
+        this.borderBottom = '';
+        this.borderBottomColor = '';
+        this.borderBottomLeftRadius = '';
+        this.borderBottomRightRadius = '';
+        this.borderBottomStyle = '';
+        this.borderBottomWidth = '';
+        this.borderCollapse = '';
+        this.borderColor = '';
+        this.borderEndEndRadius = '';
+        this.borderEndStartRadius = '';
+        this.borderImage = '';
+        this.borderImageOutset = '';
+        this.borderImageRepeat = '';
+        this.borderImageSlice = '';
+        this.borderImageSource = '';
+        this.borderImageWidth = '';
+        this.borderInline = '';
+        this.borderInlineColor = '';
+        this.borderInlineEnd = '';
+        this.borderInlineEndColor = '';
+        this.borderInlineEndStyle = '';
+        this.borderInlineEndWidth = '';
+        this.borderInlineStart = '';
+        this.borderInlineStartColor = '';
+        this.borderInlineStartStyle = '';
+        this.borderInlineStartWidth = '';
+        this.borderInlineStyle = '';
+        this.borderInlineWidth = '';
+        this.borderLeft = '';
+        this.borderLeftColor = '';
+        this.borderLeftStyle = '';
+        this.borderLeftWidth = '';
+        this.borderRadius = '';
+        this.borderRight = '';
+        this.borderRightColor = '';
+        this.borderRightStyle = '';
+        this.borderRightWidth = '';
+        this.borderSpacing = '';
+        this.borderStartEndRadius = '';
+        this.borderStartStartRadius = '';
+        this.borderStyle = '';
+        this.borderTop = '';
+        this.borderTopColor = '';
+        this.borderTopLeftRadius = '';
+        this.borderTopRightRadius = '';
+        this.borderTopStyle = '';
+        this.borderTopWidth = '';
+        this.borderWidth = '';
+        this.bottom = '';
+        this.boxShadow = '';
+        this.boxSizing = '';
+        this.breakAfter = '';
+        this.breakBefore = '';
+        this.breakInside = '';
+        this.captionSide = '';
+        this.caretColor = '';
+        this.clear = '';
+        this.clip = '';
+        this.clipPath = '';
+        this.clipRule = '';
+        this.color = '';
+        this.colorInterpolation = '';
+        this.colorInterpolationFilters = '';
+        this.colorScheme = '';
+        this.columnCount = '';
+        this.columnFill = '';
+        this.columnGap = '';
+        this.columnRule = '';
+        this.columnRuleColor = '';
+        this.columnRuleStyle = '';
+        this.columnRuleWidth = '';
+        this.columnSpan = '';
+        this.columnWidth = '';
+        this.columns = '';
+        this.contain = '';
+        this.containIntrinsicBlockSize = '';
+        this.containIntrinsicHeight = '';
+        this.containIntrinsicInlineSize = '';
+        this.containIntrinsicSize = '';
+        this.containIntrinsicWidth = '';
+        this.container = '';
+        this.containerName = '';
+        this.containerType = '';
+        this.content = '';
+        this.counterIncrement = '';
+        this.counterReset = '';
+        this.counterSet = '';
+        this.cssFloat = '';
+        this.cssText = '';
+        this.cursor = '';
+        this.direction = '';
+        this.display = '';
+        this.dominantBaseline = '';
+        this.emptyCells = '';
+        this.fill = '';
+        this.fillOpacity = '';
+        this.fillRule = '';
+        this.filter = '';
+        this.flex = '';
+        this.flexBasis = '';
+        this.flexDirection = '';
+        this.flexFlow = '';
+        this.flexGrow = '';
+        this.flexShrink = '';
+        this.flexWrap = '';
+        this.float = '';
+        this.floodColor = '';
+        this.floodOpacity = '';
+        this.font = '';
+        this.fontFamily = '';
+        this.fontFeatureSettings = '';
+        this.fontKerning = '';
+        this.fontOpticalSizing = '';
+        this.fontPalette = '';
+        this.fontSize = '';
+        this.fontSizeAdjust = '';
+        this.fontStretch = '';
+        this.fontStyle = '';
+        this.fontSynthesis = '';
+        this.fontSynthesisSmallCaps = '';
+        this.fontSynthesisStyle = '';
+        this.fontSynthesisWeight = '';
+        this.fontVariant = '';
+        this.fontVariantAlternates = '';
+        this.fontVariantCaps = '';
+        this.fontVariantEastAsian = '';
+        this.fontVariantLigatures = '';
+        this.fontVariantNumeric = '';
+        this.fontVariantPosition = '';
+        this.fontVariationSettings = '';
+        this.fontWeight = '';
+        this.forcedColorAdjust = '';
+        this.gap = '';
+        this.grid = '';
+        this.gridArea = '';
+        this.gridAutoColumns = '';
+        this.gridAutoFlow = '';
+        this.gridAutoRows = '';
+        this.gridColumn = '';
+        this.gridColumnEnd = '';
+        this.gridColumnGap = '';
+        this.gridColumnStart = '';
+        this.gridGap = '';
+        this.gridRow = '';
+        this.gridRowEnd = '';
+        this.gridRowGap = '';
+        this.gridRowStart = '';
+        this.gridTemplate = '';
+        this.gridTemplateAreas = '';
+        this.gridTemplateColumns = '';
+        this.gridTemplateRows = '';
+        this.height = '';
+        this.hyphenateCharacter = '';
+        this.hyphens = '';
+        this.imageOrientation = '';
+        this.imageRendering = '';
+        this.inlineSize = '';
+        this.inset = '';
+        this.insetBlock = '';
+        this.insetBlockEnd = '';
+        this.insetBlockStart = '';
+        this.insetInline = '';
+        this.insetInlineEnd = '';
+        this.insetInlineStart = '';
+        this.isolation = '';
+        this.justifyContent = '';
+        this.justifyItems = '';
+        this.justifySelf = '';
+        this.left = '';
+        this.letterSpacing = '';
+        this.lightingColor = '';
+        this.lineBreak = '';
+        this.lineHeight = '';
+        this.listStyle = '';
+        this.listStyleImage = '';
+        this.listStylePosition = '';
+        this.listStyleType = '';
+        this.margin = '';
+        this.marginBlock = '';
+        this.marginBlockEnd = '';
+        this.marginBlockStart = '';
+        this.marginBottom = '';
+        this.marginInline = '';
+        this.marginInlineEnd = '';
+        this.marginInlineStart = '';
+        this.marginLeft = '';
+        this.marginRight = '';
+        this.marginTop = '';
+        this.marker = '';
+        this.markerEnd = '';
+        this.markerMid = '';
+        this.markerStart = '';
+        this.mask = '';
+        this.maskClip = '';
+        this.maskComposite = '';
+        this.maskImage = '';
+        this.maskMode = '';
+        this.maskOrigin = '';
+        this.maskPosition = '';
+        this.maskRepeat = '';
+        this.maskSize = '';
+        this.maskType = '';
+        this.mathStyle = '';
+        this.maxBlockSize = '';
+        this.maxHeight = '';
+        this.maxInlineSize = '';
+        this.maxWidth = '';
+        this.minBlockSize = '';
+        this.minHeight = '';
+        this.minInlineSize = '';
+        this.minWidth = '';
+        this.mixBlendMode = '';
+        this.objectFit = '';
+        this.objectPosition = '';
+        this.offset = '';
+        this.offsetDistance = '';
+        this.offsetPath = '';
+        this.offsetRotate = '';
+        this.opacity = '';
+        this.order = '';
+        this.orphans = '';
+        this.outline = '';
+        this.outlineColor = '';
+        this.outlineOffset = '';
+        this.outlineStyle = '';
+        this.outlineWidth = '';
+        this.overflow = '';
+        this.overflowAnchor = '';
+        this.overflowClipMargin = '';
+        this.overflowWrap = '';
+        this.overflowX = '';
+        this.overflowY = '';
+        this.overscrollBehavior = '';
+        this.overscrollBehaviorBlock = '';
+        this.overscrollBehaviorInline = '';
+        this.overscrollBehaviorX = '';
+        this.overscrollBehaviorY = '';
+        this.padding = '';
+        this.paddingBlock = '';
+        this.paddingBlockEnd = '';
+        this.paddingBlockStart = '';
+        this.paddingBottom = '';
+        this.paddingInline = '';
+        this.paddingInlineEnd = '';
+        this.paddingInlineStart = '';
+        this.paddingLeft = '';
+        this.paddingRight = '';
+        this.paddingTop = '';
+        this.page = '';
+        this.pageBreakAfter = '';
+        this.pageBreakBefore = '';
+        this.pageBreakInside = '';
+        this.paintOrder = '';
+        this.perspective = '';
+        this.perspectiveOrigin = '';
+        this.placeContent = '';
+        this.placeItems = '';
+        this.placeSelf = '';
+        this.pointerEvents = '';
+        this.position = '';
+        this.printColorAdjust = '';
+        this.quotes = '';
+        this.resize = '';
+        this.right = '';
+        this.rotate = '';
+        this.rowGap = '';
+        this.rubyPosition = '';
+        this.scale = '';
+        this.scrollBehavior = '';
+        this.scrollMargin = '';
+        this.scrollMarginBlock = '';
+        this.scrollMarginBlockEnd = '';
+        this.scrollMarginBlockStart = '';
+        this.scrollMarginBottom = '';
+        this.scrollMarginInline = '';
+        this.scrollMarginInlineEnd = '';
+        this.scrollMarginInlineStart = '';
+        this.scrollMarginLeft = '';
+        this.scrollMarginRight = '';
+        this.scrollMarginTop = '';
+        this.scrollPadding = '';
+        this.scrollPaddingBlock = '';
+        this.scrollPaddingBlockEnd = '';
+        this.scrollPaddingBlockStart = '';
+        this.scrollPaddingBottom = '';
+        this.scrollPaddingInline = '';
+        this.scrollPaddingInlineEnd = '';
+        this.scrollPaddingInlineStart = '';
+        this.scrollPaddingLeft = '';
+        this.scrollPaddingRight = '';
+        this.scrollPaddingTop = '';
+        this.scrollSnapAlign = '';
+        this.scrollSnapStop = '';
+        this.scrollSnapType = '';
+        this.scrollbarGutter = '';
+        this.shapeImageThreshold = '';
+        this.shapeMargin = '';
+        this.shapeOutside = '';
+        this.shapeRendering = '';
+        this.stopColor = '';
+        this.stopOpacity = '';
+        this.stroke = '';
+        this.strokeDasharray = '';
+        this.strokeDashoffset = '';
+        this.strokeLinecap = '';
+        this.strokeLinejoin = '';
+        this.strokeMiterlimit = '';
+        this.strokeOpacity = '';
+        this.strokeWidth = '';
+        this.tabSize = '';
+        this.tableLayout = '';
+        this.textAlign = '';
+        this.textAlignLast = '';
+        this.textAnchor = '';
+        this.textCombineUpright = '';
+        this.textDecoration = '';
+        this.textDecorationColor = '';
+        this.textDecorationLine = '';
+        this.textDecorationSkipInk = '';
+        this.textDecorationStyle = '';
+        this.textDecorationThickness = '';
+        this.textEmphasis = '';
+        this.textEmphasisColor = '';
+        this.textEmphasisPosition = '';
+        this.textEmphasisStyle = '';
+        this.textIndent = '';
+        this.textOrientation = '';
+        this.textOverflow = '';
+        this.textRendering = '';
+        this.textShadow = '';
+        this.textTransform = '';
+        this.textUnderlineOffset = '';
+        this.textUnderlinePosition = '';
+        this.top = '';
+        this.touchAction = '';
+        this.transform = '';
+        this.transformBox = '';
+        this.transformOrigin = '';
+        this.transformStyle = '';
+        this.transition = '';
+        this.transitionDelay = '';
+        this.transitionDuration = '';
+        this.transitionProperty = '';
+        this.transitionTimingFunction = '';
+        this.translate = '';
+        this.unicodeBidi = '';
+        this.userSelect = '';
+        this.verticalAlign = '';
+        this.visibility = '';
+        this.webkitAlignContent = '';
+        this.webkitAlignItems = '';
+        this.webkitAlignSelf = '';
+        this.webkitAnimation = '';
+        this.webkitAnimationDelay = '';
+        this.webkitAnimationDirection = '';
+        this.webkitAnimationDuration = '';
+        this.webkitAnimationFillMode = '';
+        this.webkitAnimationIterationCount = '';
+        this.webkitAnimationName = '';
+        this.webkitAnimationPlayState = '';
+        this.webkitAnimationTimingFunction = '';
+        this.webkitAppearance = '';
+        this.webkitBackfaceVisibility = '';
+        this.webkitBackgroundClip = '';
+        this.webkitBackgroundOrigin = '';
+        this.webkitBackgroundSize = '';
+        this.webkitBorderBottomLeftRadius = '';
+        this.webkitBorderBottomRightRadius = '';
+        this.webkitBorderRadius = '';
+        this.webkitBorderTopLeftRadius = '';
+        this.webkitBorderTopRightRadius = '';
+        this.webkitBoxAlign = '';
+        this.webkitBoxFlex = '';
+        this.webkitBoxOrdinalGroup = '';
+        this.webkitBoxOrient = '';
+        this.webkitBoxPack = '';
+        this.webkitBoxShadow = '';
+        this.webkitBoxSizing = '';
+        this.webkitFilter = '';
+        this.webkitFlex = '';
+        this.webkitFlexBasis = '';
+        this.webkitFlexDirection = '';
+        this.webkitFlexFlow = '';
+        this.webkitFlexGrow = '';
+        this.webkitFlexShrink = '';
+        this.webkitFlexWrap = '';
+        this.webkitJustifyContent = '';
+        this.webkitLineClamp = '';
+        this.webkitMask = '';
+        this.webkitMaskBoxImage = '';
+        this.webkitMaskBoxImageOutset = '';
+        this.webkitMaskBoxImageRepeat = '';
+        this.webkitMaskBoxImageSlice = '';
+        this.webkitMaskBoxImageSource = '';
+        this.webkitMaskBoxImageWidth = '';
+        this.webkitMaskClip = '';
+        this.webkitMaskComposite = '';
+        this.webkitMaskImage = '';
+        this.webkitMaskOrigin = '';
+        this.webkitMaskPosition = '';
+        this.webkitMaskRepeat = '';
+        this.webkitMaskSize = '';
+        this.webkitOrder = '';
+        this.webkitPerspective = '';
+        this.webkitPerspectiveOrigin = '';
+        this.webkitTextFillColor = '';
+        this.webkitTextSizeAdjust = '';
+        this.webkitTextStroke = '';
+        this.webkitTextStrokeColor = '';
+        this.webkitTextStrokeWidth = '';
+        this.webkitTransform = '';
+        this.webkitTransformOrigin = '';
+        this.webkitTransformStyle = '';
+        this.webkitTransition = '';
+        this.webkitTransitionDelay = '';
+        this.webkitTransitionDuration = '';
+        this.webkitTransitionProperty = '';
+        this.webkitTransitionTimingFunction = '';
+        this.webkitUserSelect = '';
+        this.whiteSpace = '';
+        this.widows = '';
+        this.width = '';
+        this.willChange = '';
+        this.wordBreak = '';
+        this.wordSpacing = '';
+        this.wordWrap = '';
+        this.writingMode = '';
+        this.zIndex = 0;
+    }
+    return JElementStyleProperty;
+}());
+export { JElementStyleProperty };
+/**
+ * @public
+ */
+var JElementCssStyle = /** @class */ (function (_super) {
+    __extends(JElementCssStyle, _super);
+    function JElementCssStyle() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Object.defineProperty(JElementCssStyle.prototype, "names", {
+        // 所有样式名称
+        get: function () {
+            var e_1, _a;
+            if (!JElementCssStyle.styleNamesMap.length) {
+                var map = new JElementStyleProperty();
+                var keys = Object.getOwnPropertyNames(map);
+                try {
+                    for (var keys_1 = __values(keys), keys_1_1 = keys_1.next(); !keys_1_1.done; keys_1_1 = keys_1.next()) {
+                        var k = keys_1_1.value;
+                        var t = typeof map[k];
+                        if (t === 'string' || t === 'number')
+                            JElementCssStyle.styleNamesMap.push(k);
+                    }
+                }
+                catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                finally {
+                    try {
+                        if (keys_1_1 && !keys_1_1.done && (_a = keys_1.return)) _a.call(keys_1);
+                    }
+                    finally { if (e_1) throw e_1.error; }
+                }
+            }
+            return JElementCssStyle.styleNamesMap;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    JElementCssStyle.styleNamesMap = [];
+    return JElementCssStyle;
+}(JElementStyleDeclaration));
+export default JElementCssStyle;
+// 最外层容器默认样式
+export var ContainerDefaultStyle = {
+    position: 'absolute',
+    left: '0',
+    top: '0',
+    width: 'auto',
+    height: 'auto',
+    right: 'auto',
+    bottom: 'auto',
+    //padding: '0',
+    transformOrigin: 'center center',
+    transform: 'none',
+    //"paddingTop": '0',
+    //"paddingLeft": '0',
+    //"paddingRight": '0',
+    //"paddingBottom": '0',
+    //margin: '0',
+    //"marginTop": '0',
+    //"marginLeft": '0',
+    //"marginRight": '0',
+    //"marginBottom": '0',
+    zIndex: '0',
+    display: 'inline-block',
+    overflow: 'visible',
+    'filter': 'none',
+};
+/**
+ * 默认编辑器样式
+ */
+export var editorDefaultCssContent = ".j-design-editor-container {\n        border: none;\n        font: normal normal normal 14px/normal Arial,sans-serif;\n        background-color: transparent;\n        color: #000;\n        box-sizing: content-box;\n        word-break: break-word;\n        overflow-wrap: break-word;\n    }\n    .j-design-editor-container * {\n        box-sizing: content-box;\n        margin: 0;\n        padding: 0;\n        outline: none;     \n        transition: color 0.3s ease;\n    }\n    .j-design-editor-container.selected {\n        box-shadow: 0 0 1px rgba(6,155,181,1);\n    }\n    .j-design-editor-container:hover {\n        box-shadow: 0 0 2px 2px rgba(0,0,0,0.3);\n    }\n    .j-design-editor-container .j-design-editor-component-target {\n        display: block;\n        cursor: pointer;\n        width: 100%;\n        height: 100%;   \n    }\n    .j-design-editor-controller {     \n        cursor: move;    \n        border: 1px solid rgba(6,155,181,1);\n        background-color: transparent;\n        position: absolute;\n    }\n    .j-design-editor-controller .item{     \n        border: 1px solid #ccc;\n        background-color: #fff;\n        position: absolute;\n    }\n    \n    .j-design-editor-controller .item-move,.j-design-editor-controller .item-scale {\n        box-shadow: 0 0 2px 2px #eee;\n        opacity: 0.5;\n    }\n    .j-design-editor-controller .item-move:hover,.j-design-editor-controller .item-scale:hover {\n        opacity: 0.9;\n    }\n    .j-design-editor-controller .item-rotate {\n        opacity: 0.5;\n    }\n    .j-design-editor-controller .item-rotate:hover {\n        opacity: 1;\n    }\n    .j-design-editor-container div[contenteditable=\"true\"]:empty:before{\n        content: ' ';\n        -webkit-tap-highlight-color:transparent;\n        -webkit-user-modify:read-write;\n        outline:none;\n        border:none;\n    }\n    ";
+// 编辑器默认样式，并且不可改
+export var editorDefaultStyle = {
+    'boxShadow': '0 0 10px 10px #ccc',
+    'position': 'absolute',
+    //'backgroundSize': '100% 100%',   
+    'left': '0',
+    'top': '0',
+    'right': '0',
+    'bottom': '0'
+    //transformOrigin: 'center top',         
+};
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
+import EventEmiter from 'j-eventemitter';
+import util from 'j-design-util';
+var Transform = /** @class */ (function (_super) {
+    __extends(Transform, _super);
+    function Transform(option, targetOption) {
+        var _this = _super.call(this) || this;
+        // 响应变化换元素和属性
+        _this.targets = [];
+        // x偏移量
+        _this.translateX = 0;
+        // y偏移量
+        _this.translateY = 0;
+        // z偏移量
+        _this.translateZ = 0;
+        _this.rotateX = 0;
+        _this.rotateY = 0;
+        _this.rotateZ = 0;
+        _this.scaleX = 1;
+        _this.scaleY = 1;
+        _this.scaleZ = 1;
+        _this.skewX = 0;
+        _this.skewY = 0;
+        if (option)
+            Object.assign(_this, option);
+        if (targetOption)
+            _this.bind(targetOption);
+        return _this;
+    }
+    Object.defineProperty(Transform.prototype, "translateXString", {
+        get: function () {
+            var x = this.translateX;
+            if (util.isNumber(x))
+                x = util.toPX(x);
+            return "translateX(".concat(x, ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "translateYString", {
+        get: function () {
+            var y = this.translateY;
+            if (util.isNumber(y))
+                y = util.toPX(y);
+            return "translateY(".concat(y, ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "translateZString", {
+        get: function () {
+            var x = this.translateZ;
+            if (util.isNumber(x))
+                x = util.toPX(x);
+            return "translateZ(".concat(x, ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "rotateXString", {
+        get: function () {
+            return "rotateX(".concat(util.toRad(this.rotateX), ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "rotateYString", {
+        get: function () {
+            return "rotateY(".concat(util.toRad(this.rotateY), ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "rotateZString", {
+        get: function () {
+            return "rotateZ(".concat(util.toRad(this.rotateZ), ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "scaleXString", {
+        get: function () {
+            return "scaleX(".concat(this.scaleX, ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "scaleYString", {
+        get: function () {
+            return "scaleY(".concat(this.scaleY, ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "scaleZString", {
+        get: function () {
+            return "scaleZ(".concat(this.scaleZ, ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "skewXString", {
+        get: function () {
+            return "skewX(".concat(util.toRad(this.skewX), ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "skewYString", {
+        get: function () {
+            return "skewY(".concat(util.toRad(this.skewY), ")");
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Transform.prototype.from = function (data) {
+        if (data)
+            Object.assign(this, data);
+    };
+    // 生效
+    Transform.prototype.apply = function (target) {
+        var e_1, _a;
+        if (target === void 0) { target = this.targets; }
+        if (Array.isArray(target)) {
+            try {
+                for (var target_1 = __values(target), target_1_1 = target_1.next(); !target_1_1.done; target_1_1 = target_1.next()) {
+                    var t = target_1_1.value;
+                    this.apply(t);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (target_1_1 && !target_1_1.done && (_a = target_1.return)) _a.call(target_1);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+            return;
+        }
+        else {
+            if (target.target && target.target.css)
+                target.target.css('transform', this.toString(target.watchProps));
+            else if (target.target)
+                target.target.style.transform = this.toString(target.watchProps);
+        }
+    };
+    // 绑定并刷新到目标上
+    Transform.prototype.bind = function (target) {
+        this.targets.push(target);
+        this.apply(target);
+    };
+    Transform.prototype.unbind = function (target) {
+        for (var i = this.targets.length - 1; i > -1; i--) {
+            if (this.targets[i].target === target.target) {
+                this.targets.splice(i, 1);
+            }
+        }
+    };
+    // 生成transform代理
+    Transform.createProxy = function (obj, el) {
+        if (obj === void 0) { obj = {}; }
+        var transform = new Transform(obj, el);
+        // 代理处理
+        var proxy = new Proxy(transform, {
+            get: function (target, p, receiver) {
+                var v = target[p];
+                return v;
+            },
+            set: function (target, p, value, receiver) {
+                target[p] = value;
+                target.apply(); // 生效
+                return true;
+            }
+        });
+        return proxy;
+    };
+    Transform.prototype.toString = function (watchProps) {
+        var e_2, _a;
+        var res = [];
+        if (!watchProps) {
+            watchProps = ['translateX', 'translateY', 'translateZ', "rotateX", 'rotateY', 'rotateZ', 'scaleX', 'scaleY', 'scaleZ', 'skewX', 'skewY'];
+        }
+        try {
+            for (var watchProps_1 = __values(watchProps), watchProps_1_1 = watchProps_1.next(); !watchProps_1_1.done; watchProps_1_1 = watchProps_1.next()) {
+                var n = watchProps_1_1.value;
+                var nv = this[n + 'String'];
+                if (typeof this[n] !== 'undefined' && typeof nv !== 'undefined') {
+                    res.push(nv);
+                }
+            }
+        }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        finally {
+            try {
+                if (watchProps_1_1 && !watchProps_1_1.done && (_a = watchProps_1.return)) _a.call(watchProps_1);
+            }
+            finally { if (e_2) throw e_2.error; }
+        }
+        return res.join(' ');
+    };
+    Transform.prototype.toJSON = function () {
+        return {
+            translateX: this.translateX,
+            translateY: this.translateY,
+            translateZ: this.translateZ,
+            rotateX: this.rotateX,
+            rotateY: this.rotateY,
+            rotateZ: this.rotateZ,
+            scaleX: this.scaleX,
+            scaleY: this.scaleY,
+            scaleZ: this.scaleZ,
+            skewX: this.skewX,
+            skewY: this.skewY,
+        };
+    };
+    return Transform;
+}(EventEmiter));
+export default Transform;
+
+import JElementCssStyle from './styleMap';
+export { JElementCssStyle };

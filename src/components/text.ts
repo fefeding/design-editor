@@ -45,11 +45,15 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
             dataType: option.dataType || JTextData
         });
 
-        // 多子元素, 这种模式下不需要data.text属性
-        if(option.children?.length) {
+        // 如果在选项中提供，设置 'text' 属性
+        // @ts-ignore
+        const text = option.text;
+        if(text && !this.data?.text && !this.isChildrenMode) this.data.text = text;   
+
+        // 多子元素
+        if(option.children?.length && !this.data?.text) {
             this.isChildrenMode = true;
-            delete this.data?.text;
-        }
+        }     
 
         // 'text' 属性变化映射到 innerText
         this.data.watch([
@@ -87,11 +91,6 @@ export default class JText extends Base<HTMLDivElement> implements IJTextCompone
                 else return this.style[name];
             }
         });
-
-        // 如果在选项中提供，设置 'text' 属性
-        // @ts-ignore
-        const text = option.text;
-        if(text && !this.isChildrenMode) this.data.text = text;
 
         // 添加双击事件监听器，进入编辑状态
         this.on('dblclick', (e: MouseEvent) => {
