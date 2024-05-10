@@ -240,14 +240,16 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 		if (e.target.nodeName === 'IMG') {
 			const idAttr = e.target.attributes['data-tmplid'];
 			if (idAttr && idAttr.value) {
-				loadTemplate(idAttr.value, (tmpl) => {                    
+				loadTemplate(idAttr.value, (tmpl) => {     
+					if(!tmpl.type && tmpl.data && tmpl.data.type === 'editor') tmpl = tmpl.data;               
 		            editor.fromJSON(tmpl);
                 });
 			}
 		}
 	});
 
-	loadTemplate(2, (tmpl) => {                    
+	loadTemplate(2, (tmpl) => {     
+		if(!tmpl.type && tmpl.data && tmpl.data.type === 'editor') tmpl = tmpl.data;                   
 		editor.fromJSON(tmpl);
 	});
 	//editor.fromJSON();
