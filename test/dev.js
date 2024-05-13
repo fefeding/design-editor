@@ -6,8 +6,8 @@ const app = express();
 
 builder.watch();// 监听文件修改
 
-const figma2htmlPath = path.join(__dirname, '../node_modules', 'j-figma2html/dist/index.esm.js');
-const figma2htmlLibPath = path.join(__dirname, '../example/lib/j-figma2html/index.esm.js');
+const figma2htmlPath = path.join(__dirname, '../node_modules', '@cicctencent/figma2html/dist/index.esm.js');
+const figma2htmlLibPath = path.join(__dirname, '../example/lib/figma2html/index.esm.js');
 console.log('copy', figma2htmlPath, figma2htmlLibPath);
 const wf = fs.createWriteStream(figma2htmlLibPath, 'utf8');
 fs.createReadStream(figma2htmlPath, 'utf8').pipe(wf).on('close', (e)=>{

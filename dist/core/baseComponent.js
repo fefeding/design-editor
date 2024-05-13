@@ -1,5 +1,5 @@
-import util from 'j-design-util';
-import CssFilterManager from 'j-css-filters';
+import util from '@fefeding/utils';
+import CssFilterManager from '@fefeding/css-filters';
 import { ContainerDefaultStyle } from '../constant/styleMap';
 import { SupportEventNames, ElementWatchEventNames } from '../core/event';
 import JElement from '../core/element';

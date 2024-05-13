@@ -1,4 +1,4 @@
-import EventEmiter from 'j-eventemitter';
+import EventEmiter from '@fefeding/eventemitter';
 /**
  * JData 类：提供了一种方式来处理和管理数据
  * @public

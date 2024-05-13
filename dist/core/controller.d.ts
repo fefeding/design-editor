@@ -1,4 +1,4 @@
-import { ItemType, ControllerCursorData } from 'j-design-util';
+import { ItemType, ControllerCursorData } from '@fefeding/utils';
 import JElement from './element';
 import { IJControllerItem, IJControllerComponent, IJBaseComponent, IControllerOption, IControllerItemOption } from '../constant/types';
 export declare class JControllerItem extends JElement<HTMLDivElement> implements IJControllerItem {

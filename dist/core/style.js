@@ -1,5 +1,5 @@
 import JElementCssStyle from '../constant/styleMap';
-import util from 'j-design-util';
+import util from '@fefeding/utils';
 const NumberStyleMap = ['left', 'top', 'right', 'bottom', 'width', 'height'];
 export default class JElementStyle extends JElementCssStyle {
     constructor(option, maps = []) {

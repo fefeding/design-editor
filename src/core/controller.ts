@@ -1,5 +1,5 @@
 
-import util, { controller, ItemType, ControllerCursorData } from 'j-design-util';
+import util, { controller, ItemType, ControllerCursorData } from '@fefeding/utils';
 import JElement from './element';
 import { IJControllerItem, IJControllerComponent, IJBaseComponent, IControllerOption, IControllerItemOption } from '../constant/types';
 import { topZIndex } from '../constant/styleMap';

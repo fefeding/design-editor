@@ -1,4 +1,4 @@
-import util, { controller } from 'j-design-util';
+import util, { controller } from '@fefeding/utils';
 import JElement from './element';
 import { topZIndex } from '../constant/styleMap';
 // 控制元素移动和矩阵变换

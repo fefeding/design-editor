@@ -1,4 +1,4 @@
-import EventEmiter from 'j-eventemitter';
+import EventEmiter from '@fefeding/eventemitter';
 /**
  * 数据项，包含名字和值
  * @public

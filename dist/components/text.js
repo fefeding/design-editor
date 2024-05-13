@@ -1,6 +1,6 @@
 import Base from '../core/baseComponent';
 import { JTextData } from '../constant/data';
-import util from 'j-design-util';
+import util from '@fefeding/utils';
 import JHtmlElement from '../core/baseHtmlElement';
 /**
  * 文本组件类 JText，继承于基础组件 Base。

@@ -1,7 +1,7 @@
-import EventEmiter from 'j-eventemitter';
+import EventEmiter from '@fefeding/eventemitter';
 import JTransform from '../constant/transform';
 import JStyle from './style';
-import util from 'j-design-util';
+import util from '@fefeding/utils';
 import JEvent from '../core/event';
 import { JElementData } from '../constant/data';
 /**

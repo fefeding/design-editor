@@ -1,8 +1,8 @@
-import { Point, ItemType, ControllerCursorData, IJFonts } from 'j-design-util';
-import { IFilter, IFilterManager } from 'j-css-filters';
+import { Point, ItemType, ControllerCursorData, IJFonts } from '@fefeding/utils';
+import { IFilter, IFilterManager } from '@fefeding/css-filters';
 import JElementCssStyle, { IJElementStyleDeclaration, IStyleTransform } from './styleMap';
 import { JElementData, JTextData, JImageData, IJElementData, IJTexteData, IJImageData, IJFontData, JSvgData, IJSvgData } from './data';
-import type EventEmitter from 'j-eventemitter';
+import type EventEmitter from '@fefeding/eventemitter';
 import type { DomNode, JDomElement, StringKeyValue } from './elementTypes';
 
 export {

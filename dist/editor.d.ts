@@ -1,4 +1,4 @@
-import { Point, IJFonts } from 'j-design-util';
+import { Point, IJFonts } from '@fefeding/utils';
 import JBase from './core/baseComponent';
 import JText from './components/text';
 import JImage from './components/image';

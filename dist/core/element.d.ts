@@ -1,4 +1,4 @@
-import EventEmiter from 'j-eventemitter';
+import EventEmiter from '@fefeding/eventemitter';
 import JEvent from '../core/event';
 import JElementCssStyle from '../constant/styleMap';
 import { IJElement, ITransform, IJEditor, IElementOption, IElementJSON } from '../constant/types';

@@ -1,4 +1,4 @@
-import EventEmiter from 'j-eventemitter';
+import EventEmiter from '@fefeding/eventemitter';
 import { IStyleTransform } from './styleMap';
 import { ITransform, TransformWatcher } from './types';
 export default class Transform extends EventEmiter implements ITransform {

@@ -1,5 +1,5 @@
 
-import util from 'j-design-util';
+import util from '@fefeding/utils';
 import JBaseComponent from './core/baseComponent';
 import JText from './components/text';
 import JImage from './components/image';
@@ -7,7 +7,7 @@ import JElement from './core/element';
 import JEditor from './editor';
 import JData  from './constant/data';
 import JEvent from './core/event';
-import { filters as CssFilters } from 'j-css-filters';
+import { filters as CssFilters } from '@fefeding/css-filters';
 
 export {JElementStyleDeclaration, JElementStyleProperty} from './constant/styleMap';
 export  * from './constant/data';

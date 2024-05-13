@@ -1,5 +1,5 @@
-import EventEmiter from 'j-eventemitter';
-import util from 'j-design-util';
+import EventEmiter from '@fefeding/eventemitter';
+import util from '@fefeding/utils';
 import { IStyleTransform } from './styleMap';
 import { ITransform, TransformWatcher } from './types';
 

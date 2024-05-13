@@ -1,5 +1,5 @@
 import Base from '../core/baseComponent';
-import util from 'j-design-util';
+import util from '@fefeding/utils';
 import { JSvgData } from '../constant/data';
 import JElement from '../core/element';
 export default class JSvg extends Base {

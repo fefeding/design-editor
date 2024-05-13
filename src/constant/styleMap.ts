@@ -1,5 +1,5 @@
 
-import EventEmiter from 'j-eventemitter';
+import EventEmiter from '@fefeding/eventemitter';
 
 export const topZIndex = 10000;
 

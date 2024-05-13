@@ -1,4 +1,4 @@
-import { IFilterManager } from 'j-css-filters';
+import { IFilterManager } from '@fefeding/css-filters';
 import { IElementOption } from '../constant/types';
 import JElement from '../core/element';
 /**

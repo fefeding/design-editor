@@ -1,5 +1,5 @@
-import EventEmiter from 'j-eventemitter';
-import util from 'j-design-util';
+import EventEmiter from '@fefeding/eventemitter';
+import util from '@fefeding/utils';
 export default class Transform extends EventEmiter {
     constructor(option, targetOption) {
         super();

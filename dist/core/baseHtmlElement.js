@@ -1,4 +1,4 @@
-import CssFilterManager from 'j-css-filters';
+import CssFilterManager from '@fefeding/css-filters';
 import JElement from '../core/element';
 /**
  * @public
