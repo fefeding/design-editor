@@ -1,4 +1,4 @@
-# j-html-design-editor
+# @cicctencent/design-editor
 html设计编辑器
 
 ```zsh
@@ -25,7 +25,7 @@ src
     └── util.ts
 ```
 
-[example](https://jiamao.github.io/j-html-design-editor/example/index.html)
+[example](https://fefeding.github.io/design-editor/example/index.html)
 
 # API
 [API](./docs/api/index.md)
