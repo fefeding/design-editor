@@ -1,6 +1,6 @@
 {
   "name": "@cicctencent/design-editor",
-  "version": "1.0.84",
+  "version": "1.0.85",
   "description": "design html 设计图片编辑库",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

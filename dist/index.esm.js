@@ -4698,16 +4698,15 @@ class JControllerComponent extends JControllerItem {
     bindTargetPositionAndSizeHandler;
     get center() {
         const bounds = util.getElementBoundingRect(this.dom);
-        const center = {
-            x: util.toNumber(this.data.left) + util.toNumber(this.data.width) / 2,
-            y: util.toNumber(this.data.top) + util.toNumber(this.data.height) / 2,
-        };
-        const center2 = this.editor.toEditorPosition({
+        /*const center = {
+            x: util.toNumber(this.data.left) + util.toNumber(this.data.width)/2,
+            y: util.toNumber(this.data.top) + util.toNumber(this.data.height)/2,
+        };*/
+        const center = this.editor.toEditorPosition({
             x: bounds.x + bounds.width / 2,
             y: bounds.y + bounds.height / 2,
         });
-        console.log(center, center2);
-        return center2;
+        return center;
     }
     // 生成控制点
     createItem(id, option) {
