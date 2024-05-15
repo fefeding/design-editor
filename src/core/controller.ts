@@ -449,11 +449,17 @@ export default class JControllerComponent extends JControllerItem implements IJC
     private bindTargetPositionAndSizeHandler: (...args: any[]) => void;
 
     get center() {
+        const bounds = util.getElementBoundingRect(this.dom);
         const center = {
             x: util.toNumber(this.data.left) + util.toNumber(this.data.width)/2,
             y: util.toNumber(this.data.top) + util.toNumber(this.data.height)/2,
         };
-        return center;
+        const center2 = this.editor.toEditorPosition({
+            x: bounds.x + bounds.width/2,
+            y: bounds.y + bounds.height/2,
+        });
+        console.log(center, center2);
+        return center2;
     }
 
     // 生成控制点
@@ -572,14 +578,20 @@ export default class JControllerComponent extends JControllerItem implements IJC
             }
             case 'element': {
                 // 元素位置控制器
-                args.x = offX;
-                args.y = offY;
+                args.x = offX / this.editor.transform.scaleX;
+                args.y = offY / this.editor.transform.scaleY;
                 break;
             }
             case 'move': {
                 const target = this.target?.target || this.target;
-                const dx = util.toNumber(target.transform.translateX) + offX;
-                const dy = util.toNumber(target.transform.translateY) + offY;
+                // 如果发生旋转，则坐标要先换算成未旋转的情况再做偏移计算
+                if(this.transform.rotateZ) {
+                    const [p1, p2] = util.rotatePoints([oldPosition, newPosition], center, -this.transform.rotateZ);
+                    offX = p2.x - p1.x;
+                    offY = p2.y - p1.y;
+                }
+                const dx = util.toNumber(target.transform.translateX) + offX / this.editor.transform.scaleX;
+                const dy = util.toNumber(target.transform.translateY) + offY / this.editor.transform.scaleY;
                 target.transform.translateX = dx;
                 target.transform.translateY = dy;
                 target.transform.apply();
@@ -600,8 +612,8 @@ export default class JControllerComponent extends JControllerItem implements IJC
                         offY = p2.y - p1.y;
                     }
 
-                    e.item.transform.translateX = util.toNumber(e.item.transform.translateX) + offX;
-                    e.item.transform.translateY = util.toNumber(e.item.transform.translateY) + offY;
+                    e.item.transform.translateX = util.toNumber(e.item.transform.translateX) + offX / this.editor.transform.scaleX;
+                    e.item.transform.translateY = util.toNumber(e.item.transform.translateY) + offY / this.editor.transform.scaleY;
                     e.item.transform.apply();
                 }
                 break;
@@ -609,8 +621,8 @@ export default class JControllerComponent extends JControllerItem implements IJC
             default: {
                 // 根据操作参数，计算大小和偏移量
                 args = controller.getChangeData(dir, {
-                    x: offX,
-                    y: offY
+                    x: offX / this.editor.transform.scaleX,
+                    y: offY / this.editor.transform.scaleY
                 }, oldPosition, newPosition, center, this.transform.rotateZ);
             }
         }

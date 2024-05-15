@@ -2009,11 +2009,17 @@ var JControllerComponent = /** @class */ (function (_super) {
     };
     Object.defineProperty(JControllerComponent.prototype, "center", {
         get: function () {
+            var bounds = util.getElementBoundingRect(this.dom);
             var center = {
                 x: util.toNumber(this.data.left) + util.toNumber(this.data.width) / 2,
                 y: util.toNumber(this.data.top) + util.toNumber(this.data.height) / 2,
             };
-            return center;
+            var center2 = this.editor.toEditorPosition({
+                x: bounds.x + bounds.width / 2,
+                y: bounds.y + bounds.height / 2,
+            });
+            console.log(center, center2);
+            return center2;
         },
         enumerable: false,
         configurable: true
@@ -2122,14 +2128,20 @@ var JControllerComponent = /** @class */ (function (_super) {
             }
             case 'element': {
                 // 元素位置控制器
-                args.x = offX;
-                args.y = offY;
+                args.x = offX / this.editor.transform.scaleX;
+                args.y = offY / this.editor.transform.scaleY;
                 break;
             }
             case 'move': {
                 var target = ((_a = this.target) === null || _a === void 0 ? void 0 : _a.target) || this.target;
-                var dx = util.toNumber(target.transform.translateX) + offX;
-                var dy = util.toNumber(target.transform.translateY) + offY;
+                // 如果发生旋转，则坐标要先换算成未旋转的情况再做偏移计算
+                if (this.transform.rotateZ) {
+                    var _c = __read(util.rotatePoints([oldPosition, newPosition], center, -this.transform.rotateZ), 2), p1 = _c[0], p2 = _c[1];
+                    offX = p2.x - p1.x;
+                    offY = p2.y - p1.y;
+                }
+                var dx = util.toNumber(target.transform.translateX) + offX / this.editor.transform.scaleX;
+                var dy = util.toNumber(target.transform.translateY) + offY / this.editor.transform.scaleY;
                 target.transform.translateX = dx;
                 target.transform.translateY = dy;
                 target.transform.apply();
@@ -2145,12 +2157,12 @@ var JControllerComponent = /** @class */ (function (_super) {
                 if (e.item) {
                     // 如果发生旋转，则坐标要先换算成未旋转的情况再做偏移计算
                     if (this.transform.rotateZ) {
-                        var _c = __read(util.rotatePoints([oldPosition, newPosition], center, -this.transform.rotateZ), 2), p1 = _c[0], p2 = _c[1];
+                        var _d = __read(util.rotatePoints([oldPosition, newPosition], center, -this.transform.rotateZ), 2), p1 = _d[0], p2 = _d[1];
                         offX = p2.x - p1.x;
                         offY = p2.y - p1.y;
                     }
-                    e.item.transform.translateX = util.toNumber(e.item.transform.translateX) + offX;
-                    e.item.transform.translateY = util.toNumber(e.item.transform.translateY) + offY;
+                    e.item.transform.translateX = util.toNumber(e.item.transform.translateX) + offX / this.editor.transform.scaleX;
+                    e.item.transform.translateY = util.toNumber(e.item.transform.translateY) + offY / this.editor.transform.scaleY;
                     e.item.transform.apply();
                 }
                 break;
@@ -2158,8 +2170,8 @@ var JControllerComponent = /** @class */ (function (_super) {
             default: {
                 // 根据操作参数，计算大小和偏移量
                 args = controller.getChangeData(dir, {
-                    x: offX,
-                    y: offY
+                    x: offX / this.editor.transform.scaleX,
+                    y: offY / this.editor.transform.scaleY
                 }, oldPosition, newPosition, center, this.transform.rotateZ);
             }
         }

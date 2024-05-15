@@ -33,10 +33,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
     paddingSize: number;
     isEditor: boolean;
     private bindTargetPositionAndSizeHandler;
-    get center(): {
-        x: number;
-        y: number;
-    };
+    get center(): import("@fefeding/utils").Point;
     createItem(id: string, option: IControllerItemOption): JControllerItem;
     initMasks(): boolean;
     change(e: any): void;
