@@ -118,7 +118,24 @@ export interface IControllerStyle extends IJElementStyleDeclaration {
 export interface IControllerOption extends IControllerItemOption {
     style?: IControllerStyle;
     itemSize?: number;
+    /**
+     * 是否显示提示信息
+     */
     tipVisible?: boolean;
+    /**
+     * 是否展示缩放操作杆
+     */
+    scaleVisible?: boolean;
+    /**
+     * 是否展示移动操作杆
+     */
+	moveVisible?: boolean;
+
+    /**
+     * 是否保持比例缩放
+     */
+    //preserveRatio?: boolean;
+
     itemCursors?: ControllerCursorData;
     itemIcons?: {
         rotate?: string;

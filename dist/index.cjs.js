@@ -3115,39 +3115,45 @@ var JControllerComponent = /** @class */ (function (_super) {
             }
         });
         // 图片操作杆
-        this.targetMoveItem = this.createItem('move', {
-            size: 24,
-            style: __assign(__assign(__assign({ left: '50%', top: '50%', borderRadius: '50%', cursor: "pointer" }, option.style.itemStyle), { border: '9px solid rgba(0,0,0,0.8)', backgroundColor: '#fff', 'backgroundSize': '100%' }), option.style.moveStyle),
-            transform: {
-                translateX: '-50%',
-                translateY: '-50%'
-            }
-        });
-        // 操作过程中不截断图片
-        var oldOverflow = '';
-        this.targetMoveItem.on('dragStart', function (e) {
-            oldOverflow = _this.target.style.overflow;
-            _this.target.style.overflow = 'visible';
-        }).on('dragEnd', function (e) {
-            if (oldOverflow)
-                _this.target.style.overflow = oldOverflow || 'hidden';
-        });
+        if (option.moveVisible !== false) {
+            this.targetMoveItem = this.createItem('move', {
+                size: 24,
+                style: __assign(__assign(__assign({ left: '50%', top: '50%', borderRadius: '50%', cursor: "pointer" }, option.style.itemStyle), { border: '9px solid rgba(0,0,0,0.8)', backgroundColor: '#fff', 'backgroundSize': '100%' }), option.style.moveStyle),
+                transform: {
+                    translateX: '-50%',
+                    translateY: '-50%'
+                }
+            });
+            // 操作过程中不截断图片
+            var oldOverflow_1 = '';
+            this.targetMoveItem.on('dragStart', function (e) {
+                oldOverflow_1 = _this.target.style.overflow;
+                _this.target.style.overflow = 'visible';
+            }).on('dragEnd', function (e) {
+                if (oldOverflow_1)
+                    _this.target.style.overflow = oldOverflow_1 || 'hidden';
+            });
+        }
         // 图片缩放
-        this.targetScaleItem = this.createItem('scale', {
-            size: 20,
-            style: __assign(__assign(__assign({ left: '50%', top: '50%', borderRadius: '50%', cursor: "pointer" }, option.style.itemStyle), { border: '2px solid rgba(0,0,0,0.8)', backgroundColor: '#fff', 'backgroundSize': '100%' }), option.style.scaleStyle),
-        });
-        this.targetScaleItem.on('dragStart', function (e) {
-            oldOverflow = _this.target.style.overflow;
-            _this.target.style.overflow = 'visible';
-        }).on('dragEnd', function (e) {
-            if (oldOverflow)
-                _this.target.style.overflow = oldOverflow || 'hidden';
-            // 归位
-            _this.targetScaleItem.transform.translateX = 0;
-            _this.targetScaleItem.transform.translateY = 0;
-            _this.targetScaleItem.transform.apply();
-        });
+        if (option.scaleVisible !== false) {
+            this.targetScaleItem = this.createItem('scale', {
+                size: 20,
+                style: __assign(__assign(__assign({ left: '50%', top: '50%', borderRadius: '50%', cursor: "pointer" }, option.style.itemStyle), { border: '2px solid rgba(0,0,0,0.8)', backgroundColor: '#fff', 'backgroundSize': '100%' }), option.style.scaleStyle),
+            });
+            // 操作过程中不截断图片
+            var oldOverflow_2 = '';
+            this.targetScaleItem.on('dragStart', function (e) {
+                oldOverflow_2 = _this.target.style.overflow;
+                _this.target.style.overflow = 'visible';
+            }).on('dragEnd', function (e) {
+                if (oldOverflow_2)
+                    _this.target.style.overflow = oldOverflow_2 || 'hidden';
+                // 归位
+                _this.targetScaleItem.transform.translateX = 0;
+                _this.targetScaleItem.transform.translateY = 0;
+                _this.targetScaleItem.transform.apply();
+            });
+        }
         if (option.tipVisible !== false) {
             var tipOption = {
                 data: {
@@ -3347,24 +3353,12 @@ var JControllerComponent = /** @class */ (function (_super) {
                 this.move(args.x, args.y);
         }
         if (args.width) {
-            var oldWidth = util.toNumber(this.data.width);
-            var width_1 = oldWidth + args.width;
-            this.data.width = Math.max(Number(width_1.toFixed(2)), 1);
-            // 如果是编辑器，且不支持移动， 则需要保持居中，移动一半大小改变一半
-            /*if(!this.target.moveable && this.isEditor) {
-                const offx = this.data.width - oldWidth;
-                this.move(-offx/2, 0);
-            }*/
+            var newWidth = width + args.width;
+            this.data.width = Math.max(Number(newWidth.toFixed(2)), 1);
         }
         if (args.height) {
-            var oldHeight = util.toNumber(this.data.height);
-            var height_1 = oldHeight + args.height;
-            this.data.height = Math.max(Number(height_1.toFixed(2)), 1);
-            // 如果是编辑器，且不支持移动， 则需要保持居中，移动一半大小改变一半
-            /*if(!this.target.moveable && this.isEditor) {
-                const offy = this.data.height - oldHeight;
-                this.move(0, -offy/2);
-            }*/
+            var newHeight = height + args.height;
+            this.data.height = Math.max(Number(newHeight.toFixed(2)), 1);
         }
         // 目标元素移动
         if (args.skew.x || args.skew.y) {
@@ -3533,7 +3527,7 @@ var JControllerComponent = /** @class */ (function (_super) {
                 switch (item.dir) {
                     case 'scale':
                     case 'move': {
-                        item.visible = itemVisible && !this.isEditor && this.target.typeName === 'image';
+                        item.visible = itemVisible && !this.isEditor; // && this.target.typeName === 'image';
                         break;
                     }
                     case 'rotate': {

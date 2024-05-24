@@ -35,6 +35,8 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 		},
 		controllerOption: {
 			tipVisible: true, // 是否展示坐标和大小数据
+			scaleVisible: true,// 是否展示缩放操作杆
+			moveVisible: true, // 是否展示移动操作杆
 			style: {
 				//itemStyle?: IJElementStyleDeclaration
 				// 标线
@@ -44,6 +46,12 @@ import JEditor, { util, CssFilters, JImage } from "../dist/index.esm.js";
 				rotateStyle: {
 					//backgroundColor: 'transparent',
 					//border:'none'
+				},
+				moveStyle: {
+					display: 'none'
+				},
+				scaleStyle: {
+					display: 'none'
 				}
 			},
 			// 操作点的指针, 指定二个就可以，其它的会旋转得到，你也可以指定全部

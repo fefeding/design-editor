@@ -321,60 +321,66 @@ export default class JControllerComponent extends JControllerItem implements IJC
         });
 
         // 图片操作杆
-        this.targetMoveItem = this.createItem('move', {
-            size: 24,
-            style: {
-                left: '50%',
-                top: '50%',
-                borderRadius: '50%',
-                cursor: `pointer`,
-                ...option.style.itemStyle,
-                border: '9px solid rgba(0,0,0,0.8)',
-                backgroundColor: '#fff',
-                'backgroundSize': '100%',
-                ...option.style.moveStyle,
-                //backgroundImage: option.itemIcons?.skew || ''
-            },
-            transform: {
-                translateX: '-50%',
-                translateY: '-50%'
-            }
-        });
-        
-        // 操作过程中不截断图片
-        let oldOverflow = '';
-        this.targetMoveItem.on('dragStart', (e) => {
-            oldOverflow = this.target.style.overflow;
-            this.target.style.overflow = 'visible';
-        }).on('dragEnd', (e) => {            
-            if(oldOverflow) this.target.style.overflow = oldOverflow||'hidden';
-        });
+        if(option.moveVisible !== false) {
+            this.targetMoveItem = this.createItem('move', {
+                size: 24,
+                style: {
+                    left: '50%',
+                    top: '50%',
+                    borderRadius: '50%',
+                    cursor: `pointer`,
+                    ...option.style.itemStyle,
+                    border: '9px solid rgba(0,0,0,0.8)',
+                    backgroundColor: '#fff',
+                    'backgroundSize': '100%',
+                    ...option.style.moveStyle,
+                    //backgroundImage: option.itemIcons?.skew || ''
+                },
+                transform: {
+                    translateX: '-50%',
+                    translateY: '-50%'
+                }
+            });
+            
+            // 操作过程中不截断图片
+            let oldOverflow = '';
+            this.targetMoveItem.on('dragStart', (e) => {
+                oldOverflow = this.target.style.overflow;
+                this.target.style.overflow = 'visible';
+            }).on('dragEnd', (e) => {            
+                if(oldOverflow) this.target.style.overflow = oldOverflow||'hidden';
+            });
+        }
 
         // 图片缩放
-        this.targetScaleItem = this.createItem('scale', {
-            size: 20,
-            style: {
-                left: '50%',
-                top: '50%',
-                borderRadius: '50%',
-                cursor: `pointer`,
-                ...option.style.itemStyle,
-                border: '2px solid rgba(0,0,0,0.8)',
-                backgroundColor: '#fff',
-                'backgroundSize': '100%',
-                ...option.style.scaleStyle,
-            },
-        });
-        this.targetScaleItem.on('dragStart', (e) => {
-            oldOverflow = this.target.style.overflow;
-            this.target.style.overflow = 'visible';
-        }).on('dragEnd', (e) => {            
-            if(oldOverflow) this.target.style.overflow = oldOverflow||'hidden';
-            // 归位
-            this.targetScaleItem.transform.translateX = 0;
-            this.targetScaleItem.transform.translateY = 0;
-            this.targetScaleItem.transform.apply();
-        });
+        if(option.scaleVisible !== false) {
+            this.targetScaleItem = this.createItem('scale', {
+                size: 20,
+                style: {
+                    left: '50%',
+                    top: '50%',
+                    borderRadius: '50%',
+                    cursor: `pointer`,
+                    ...option.style.itemStyle,
+                    border: '2px solid rgba(0,0,0,0.8)',
+                    backgroundColor: '#fff',
+                    'backgroundSize': '100%',
+                    ...option.style.scaleStyle,
+                },
+            });
+            // 操作过程中不截断图片
+            let oldOverflow = '';
+            this.targetScaleItem.on('dragStart', (e) => {
+                oldOverflow = this.target.style.overflow;
+                this.target.style.overflow = 'visible';
+            }).on('dragEnd', (e) => {            
+                if(oldOverflow) this.target.style.overflow = oldOverflow||'hidden';
+                // 归位
+                this.targetScaleItem.transform.translateX = 0;
+                this.targetScaleItem.transform.translateY = 0;
+                this.targetScaleItem.transform.apply();
+            });
+        }
 
         if(option.tipVisible !== false) {
             const tipOption = {
@@ -559,7 +565,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
 
         const center = this.center;
         const width = util.toNumber(this.data.width);
-        const height = util.toNumber(this.data.height);
+        const height = util.toNumber(this.data.height);        
 
         switch(dir) {
             case 'rotate': {
@@ -633,24 +639,14 @@ export default class JControllerComponent extends JControllerItem implements IJC
             if(this.target.moveable) this.move(args.x, args.y);
         }
         if(args.width) {
-            const oldWidth = util.toNumber(this.data.width);
-            const width = oldWidth + args.width;
-            this.data.width = Math.max(Number(width.toFixed(2)), 1);
-            // 如果是编辑器，且不支持移动， 则需要保持居中，移动一半大小改变一半
-            /*if(!this.target.moveable && this.isEditor) {
-                const offx = this.data.width - oldWidth;
-                this.move(-offx/2, 0);
-            }*/
+            const newWidth = width + args.width;
+            this.data.width = Math.max(Number(newWidth.toFixed(2)), 1);
+            
         }
         if(args.height) {
-            const oldHeight = util.toNumber(this.data.height);
-            const height = oldHeight + args.height;
-            this.data.height = Math.max(Number(height.toFixed(2)), 1);
-            // 如果是编辑器，且不支持移动， 则需要保持居中，移动一半大小改变一半
-            /*if(!this.target.moveable && this.isEditor) {
-                const offy = this.data.height - oldHeight;
-                this.move(0, -offy/2);
-            }*/
+            const newHeight = height + args.height;
+            this.data.height = Math.max(Number(newHeight.toFixed(2)), 1);
+            
         }
         // 目标元素移动
         if(args.skew.x || args.skew.y) {
@@ -771,7 +767,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
             switch(item.dir) {
                 case 'scale': 
                 case 'move': {                    
-                    item.visible = itemVisible && !this.isEditor && this.target.typeName === 'image';
+                    item.visible = itemVisible && !this.isEditor;// && this.target.typeName === 'image';
                     break;
                 }
                 case 'rotate': {
