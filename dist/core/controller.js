@@ -150,6 +150,10 @@ export default class JControllerComponent extends JControllerItem {
         this.editor.dom.appendChild(this.dom);
         this.resetCursor(this.transform.rotateZ);
     }
+    /**
+     * 改变大小时，是否保持宽高比
+     */
+    preserveRatio = false;
     init(option) {
         const itemSize = option.itemSize || 8;
         const pointSize = itemSize * 1.5;
@@ -575,6 +579,7 @@ export default class JControllerComponent extends JControllerItem {
                     x: offX / this.editor.transform.scaleX,
                     y: offY / this.editor.transform.scaleY
                 }, oldPosition, newPosition, center, this.transform.rotateZ);
+                this.checkPreserveRatio(args); // 检查是否需要按配置调整 
             }
         }
         // 位移 
@@ -608,6 +613,38 @@ export default class JControllerComponent extends JControllerItem {
         }
         this.applyToTarget();
     }
+    // 检查宽高比，如果指定了保持一至，则需要同步处理位移和宽高
+    checkPreserveRatio(arg) {
+        // 如果保持宽高比，则要计算比例不能变化
+        // 宽度和高度的变化比例要一至
+        if (this.preserveRatio && (arg.width || arg.height)) {
+            const width = util.toNumber(this.data.width);
+            const height = util.toNumber(this.data.height);
+            const per = width / height;
+            const newWidth = width + arg.width;
+            const newHeight = height + arg.height;
+            if (newWidth / newHeight !== per) {
+                let w = newWidth, h = newHeight;
+                // 如果不一至，则取变化更小的比例
+                if (Math.abs(arg.width) < Math.abs(arg.height)) {
+                    h = w / per;
+                    arg.height = h - height;
+                    const offy = h - newHeight;
+                    if (arg.y) {
+                        arg.y -= offy;
+                    }
+                }
+                else {
+                    w = h * per;
+                    arg.width = w - width;
+                    const offx = w - newWidth;
+                    if (arg.x) {
+                        arg.x -= offx;
+                    }
+                }
+            }
+        }
+    }
     // 把变换应用到目标元素
     applyToTarget() {
         if (!this.target)
@@ -633,12 +670,16 @@ export default class JControllerComponent extends JControllerItem {
         });
         const width = util.toNumber(this.data.width) - this.paddingSize * 2;
         const height = util.toNumber(this.data.height) - this.paddingSize * 2;
-        if (this.target.data.width !== width)
-            this.target.data.width = width;
-        if (this.target.data.height !== height)
-            this.target.data.height = height;
-        this.setTip();
-        this.initMasks(); // 重新定位mask
+        if (this.target.data.width !== width || this.target.data.height !== height) {
+            //this.target.data.width = width;
+            this.target.resize(width, height);
+        }
+        // if(this.target.data.height !== height) {
+        //     this.target.data.height = height;
+        // }
+        // this.setTip();
+        // this.initMasks();// 重新定位mask
+        this.bindTargetPositionAndSize(); // 改变元素后，可以不是预期结果(比如有些元素有内部的处理逻辑)，所以还需要同步回来
     }
     // 移动
     move(dx, dy) {
@@ -722,6 +763,7 @@ export default class JControllerComponent extends JControllerItem {
     bindTargetPositionAndSize() {
         if (!this.target)
             return;
+        this.preserveRatio = !!this.target.option?.preserveRatio;
         // 编辑器的话，需要把它的坐标转为相对于容器的
         const pos = {
             x: (this.isEditor ? 0 : util.toNumber(this.target.data.left)),

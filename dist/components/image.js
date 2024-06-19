@@ -14,6 +14,7 @@ export default class JImage extends Base {
             option.style = {};
         option.style.overflow = 'hidden';
         super({
+            preserveRatio: true, // 图片默认保持比例
             ...option,
             nodeType: 'img',
             type: option.type || 'image',
@@ -59,6 +60,24 @@ export default class JImage extends Base {
     get typeName() {
         return 'image';
     }
+    // // 重置大小
+    // resize(w: number, h: number) {
+    //     // 如果保持宽高比，则要计算比例不能变化
+    //     // 宽度和高度的变化比例要一至
+    //     if(this.option?.preserveRatio) {
+    //         const width = util.toNumber(this.data.width);
+    //         const height = util.toNumber(this.data.height);
+    //         const pw = w / width;
+    //         const ph = h / height;
+    //         if(pw !== ph) {
+    //             // 如果不一至，则取变化更多的比例
+    //             const p = Math.abs(pw) > Math.abs(ph)? pw: ph;
+    //             w = width * p;
+    //             h = height * p;
+    //         }
+    //     }
+    //     return super.resize(w, h);
+    // }
     // 设置css到dom
     /*setDomStyle(name: string, value: string) {
         // transform应用于图片元素上面

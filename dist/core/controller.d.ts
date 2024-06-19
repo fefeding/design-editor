@@ -1,4 +1,4 @@
-import { ItemType, ControllerCursorData } from '@fefeding/utils';
+import { ItemType, ControllerCursorData, ChangeData } from '@fefeding/utils';
 import JElement from './element';
 import { IJControllerItem, IJControllerComponent, IJBaseComponent, IControllerOption, IControllerItemOption } from '../constant/types';
 export declare class JControllerItem extends JElement<HTMLDivElement> implements IJControllerItem {
@@ -20,6 +20,10 @@ export declare class JControllerItem extends JElement<HTMLDivElement> implements
 }
 export default class JControllerComponent extends JControllerItem implements IJControllerComponent {
     constructor(option: IControllerOption);
+    /**
+     * 改变大小时，是否保持宽高比
+     */
+    preserveRatio: boolean;
     init(option: IControllerOption): void;
     cursorData: ControllerCursorData;
     items: JControllerItem[];
@@ -37,6 +41,7 @@ export default class JControllerComponent extends JControllerItem implements IJC
     createItem(id: string, option: IControllerItemOption): JControllerItem;
     initMasks(): boolean;
     change(e: any): void;
+    checkPreserveRatio(arg: ChangeData): void;
     applyToTarget(): void;
     move(dx: any, dy: any): void;
     reset(isEditor?: boolean): void;

@@ -34,6 +34,10 @@ export interface IElementOption<T extends IJElementData = IJElementData> {
     children?: Array<IElementOption>;
     filters?: IFilter[];
     attributes?: StringKeyValue;
+    /**
+     * 是否保持宽高比
+     */
+    preserveRatio?: boolean;
 }
 /**
  * 文本选项接口
@@ -54,10 +58,6 @@ export interface IImageOption extends IElementOption<IJImageData> {
      * 数据类型，应为JImageData
      */
     dataType?: JImageData;
-    /**
-     * 是否保持宽高比
-     */
-    preserveRatio?: boolean;
 }
 /**
  * @public
